@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, ExternalLink, Heart, Github } from 'lucide-react';
+import { BookOpen, ExternalLink, Github, Heart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { FADE_IN_ANIMATION_VARIANTS, STAGGER_ANIMATION_VARIANTS, cn } from '../lib/utils';
 
 type Resource = {
@@ -103,7 +103,7 @@ export default function Footer() {
             className="flex justify-center items-center mb-4 sm:mb-6"
             variants={FADE_IN_ANIMATION_VARIANTS}
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Additional Resources</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white font-open-sans">Additional Resources</h2>
           </motion.div>
           
           <motion.div 
@@ -128,15 +128,15 @@ export default function Footer() {
                   )}>
                     {resource.icon}
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-white group-hover:text-gray-300 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white group-hover:text-gray-300 transition-colors font-open-sans">
                     {resource.title}
                   </h3>
                 </div>
-                <p className="text-gray-300/80 text-xs sm:text-sm mb-2">
+                <p className="text-gray-300/80 text-xs sm:text-sm mb-2 font-open-sans">
                   {resource.description}
                 </p>
                 <div className="mt-auto flex items-center text-gray-400 text-sm gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Learn more</span>
+                  <span className="font-open-sans">Learn more</span>
                   <ExternalLink className="h-3 w-3" />
                 </div>
                 
@@ -166,7 +166,7 @@ export default function Footer() {
             className="mt-10 text-center text-gray-400 text-sm"
             variants={FADE_IN_ANIMATION_VARIANTS}
           >
-            <p className="flex items-center justify-center gap-1">
+            <p className="flex items-center justify-center gap-1 font-open-sans">
               Made with <Heart className="h-4 w-4 text-gray-400 animate-pulse" /> by FASHN AI | © {currentYear}
             </p>
           </motion.div>

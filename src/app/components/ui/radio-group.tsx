@@ -1,5 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
+import React from 'react';
 import { cn } from '../../lib/utils';
 
 type Option = {
@@ -52,7 +52,7 @@ export default function RadioGroup({
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 font-open-sans">
           {label}
         </label>
       )}
@@ -100,7 +100,7 @@ export default function RadioGroup({
                   )}
                 </motion.div>
               </div>
-              <span className="text-sm">{option.label}</span>
+              <span className="text-sm font-open-sans">{option.label}</span>
             </motion.label>
           ) : (
             <motion.div
@@ -146,9 +146,9 @@ export default function RadioGroup({
                   </motion.div>
                 </div>
                 <div className="grid gap-1">
-                  <div className="text-sm font-medium">{option.label}</div>
+                  <div className="text-sm font-medium font-open-sans">{option.label}</div>
                   {option.description && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{option.description}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-open-sans">{option.description}</div>
                   )}
                 </div>
               </div>

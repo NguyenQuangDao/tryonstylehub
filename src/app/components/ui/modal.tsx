@@ -82,7 +82,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       {/* Modal content */}
       <div
         className={cn(
-          "modal-content bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-lg w-full border border-white/20 dark:border-gray-700/50",
+          "modal-content bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-lg w-full border border-white/20 dark:border-gray-700/50 font-open-sans",
           className
         )}
         style={{
@@ -98,7 +98,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-700/50">
-            <h2 className="text-xl font-semibold">{title}</h2>
+            <h2 className="text-xl font-semibold font-open-sans">{title}</h2>
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

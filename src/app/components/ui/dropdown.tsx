@@ -1,6 +1,6 @@
-import React, { ReactNode, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { ReactNode, useState } from 'react';
 import { cn } from '../../lib/utils';
 
 interface DropdownProps {
@@ -28,7 +28,7 @@ export function Dropdown({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full px-3 py-2 text-left text-sm font-medium rounded-md transition-colors flex items-center justify-between',
+          'w-full px-3 py-2 text-left text-sm font-medium rounded-md transition-colors flex items-center justify-between font-open-sans',
           colorStyles[colorScheme]
         )}
         whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}

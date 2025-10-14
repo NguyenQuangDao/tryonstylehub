@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Key, ExternalLink, Github } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ExternalLink, Github, Key, X } from 'lucide-react';
+import { useState } from 'react';
 import Button from './ui/button';
 
 interface ApiKeyModalProps {
@@ -59,7 +59,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Key className="h-5 w-5 text-gray-600" />
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 font-open-sans">
                   Enter FASHN API Key
                 </h2>
               </div>
@@ -74,12 +74,12 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-open-sans">
                 To use the virtual try-on feature, you need a FASHN API key. Your key will be stored locally in your browser.
               </p>
 
               <div>
-                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-open-sans">
                   API Key
                 </label>
                 <input
@@ -91,18 +91,18 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
                     setError('');
                   }}
                   placeholder="fa-xxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-open-sans"
                   autoFocus
                 />
                 {error && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 font-open-sans">
                     {error}
                   </p>
                 )}
               </div>
 
               <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-open-sans">
                   Don&apos;t have an API key yet?
                 </p>
                 <motion.a

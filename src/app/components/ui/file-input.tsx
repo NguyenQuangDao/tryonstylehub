@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { cn } from '../../lib/utils';
 
 type FileInputProps = {
@@ -81,8 +81,8 @@ export default function FileInput({
       <div className="flex flex-col items-center gap-1 text-center">
         <Upload className="h-6 w-6 text-gray-400" />
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-xs font-medium">{label}</span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs font-medium font-open-sans">{label}</span>
+          <span className="text-xs text-gray-500 font-open-sans">
             Drag and drop here or click to browse
           </span>
         </div>

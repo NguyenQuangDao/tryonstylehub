@@ -75,7 +75,7 @@ export default function TipsModal({ isOpen, onClose }: TipsModalProps) {
               <Lightbulb className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent vietnamese-heading">
                 Mẹo Sử Dụng
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -108,11 +108,11 @@ export default function TipsModal({ isOpen, onClose }: TipsModalProps) {
               
               {/* Content */}
               <div className="relative z-10">
-                <h3 className="font-bold text-lg mb-3 text-gray-800 dark:text-gray-200">
+                <h3 className="font-bold text-lg mb-3 text-gray-800 dark:text-gray-200 vietnamese-heading">
                   {tip.title}
                 </h3>
                 
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed vietnamese-text">
                   {tip.description}
                 </p>
               </div>

@@ -1,7 +1,6 @@
-import React from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Instagram, MessageSquare, ExternalLink } from 'lucide-react';
+import { ExternalLink, Github, Instagram, Linkedin, MessageSquare } from 'lucide-react';
+import Image from 'next/image';
 import { FADE_IN_ANIMATION_VARIANTS, STAGGER_ANIMATION_VARIANTS, cn } from '../lib/utils';
 
 const socialLinks = [
@@ -75,7 +74,7 @@ export default function Banner() {
           </motion.div>
           <div className="text-center sm:text-left">
             <motion.h1 
-              className="text-4xl text-white m-0 font-sans font-bold"
+              className="text-4xl text-white m-0 font-open-sans font-bold"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -83,7 +82,7 @@ export default function Banner() {
               FASHN AI
             </motion.h1>
             <motion.span 
-              className="text-lg text-gray-300"
+              className="text-lg text-gray-300 font-open-sans"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -107,9 +106,9 @@ export default function Banner() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Virtual Try-On Demo</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white font-open-sans">Virtual Try-On Demo</h2>
               </div>
-              <p className="text-sm sm:text-base text-white/80 leading-relaxed">
+              <p className="text-sm sm:text-base text-white/80 leading-relaxed font-open-sans">
                 Experience <span className="text-gray-300 font-semibold">FASHN AI&apos;s</span> virtual try-on technology. 
                 Upload your model and garment images to see stunning, realistic results in seconds.
               </p>
@@ -131,7 +130,7 @@ export default function Banner() {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2",
+                "flex items-center gap-1.5 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-open-sans",
                 link.color
               )}
               variants={FADE_IN_ANIMATION_VARIANTS}

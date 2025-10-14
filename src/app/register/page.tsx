@@ -69,7 +69,7 @@ export default function RegisterPage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl mb-6 shadow-lg">
               <UserPlus className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2 vietnamese-heading">
               Đăng Ký
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">

@@ -509,9 +509,9 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="floating-element"
+          className="floating-element mb-2"
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold modern-gradient-text mb-8 leading-tight">
+          <h1 className="text-display-lg md:text-display-md lg:text-display-sm font-extrabold modern-gradient-text vietnamese-heading">
             Thử Đồ Ảo AI
           </h1>
         </motion.div>
@@ -520,7 +520,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-xl md:text-2xl lg:text-3xl text-gray-700 dark:text-gray-300 max-w-5xl mx-auto leading-relaxed font-light"
+          className="mb-0 text-body-lg md:text-title-lg lg:text-headline-sm text-gray-700 dark:text-gray-300 max-w-5xl mx-auto font-light vietnamese-text"
         >
           Trải nghiệm công nghệ thử đồ ảo tiên tiến nhất với AI - Xem ngay kết quả trang phục trên người bạn
         </motion.p>
@@ -558,7 +558,7 @@ export default function Home() {
             <Lightbulb className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
+            <h2 className="text-headline-sm sm:text-headline-md font-semibold text-gray-900 dark:text-gray-100 vietnamese-heading">
               Mẹo để có kết quả tốt nhất
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -599,7 +599,7 @@ export default function Home() {
                 <UserRound className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl md:text-2xl font-bold modern-gradient-text">
+                <h3 className="text-headline-sm md:text-headline-md font-semibold modern-gradient-text vietnamese-heading">
                   Ảnh Người Mẫu
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -778,7 +778,7 @@ export default function Home() {
                 <Shirt className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h3 className="text-headline-sm md:text-headline-md font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent vietnamese-heading">
                   Ảnh Trang Phục
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -996,7 +996,7 @@ export default function Home() {
                   <Settings className="h-8 w-8 text-white" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-3xl md:text-4xl font-bold modern-gradient-text mb-2">
+                  <h3 className="text-headline-lg md:text-display-sm font-bold modern-gradient-text mb-2 vietnamese-heading">
                     Điều Khiển Thử Đồ
                   </h3>
                   <p className="text-base text-gray-600 dark:text-gray-400">

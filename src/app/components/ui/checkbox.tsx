@@ -1,6 +1,6 @@
-import React, { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import React, { forwardRef } from 'react';
 import { cn } from '../../lib/utils';
 
 export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -63,13 +63,13 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {label && (
               <label
                 htmlFor={props.id || id}
-                className="cursor-pointer text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="cursor-pointer text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-open-sans"
               >
                 {label}
               </label>
             )}
             {description && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-open-sans">
                 {description}
               </p>
             )}

@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '../../lib/utils';
-import { FADE_IN_ANIMATION_CARD_VARIANTS } from '../../lib/utils';
+import React from 'react';
+import { cn, FADE_IN_ANIMATION_CARD_VARIANTS } from '../../lib/utils';
 
 interface CardProps {
   children: React.ReactNode;
@@ -21,7 +20,7 @@ export function Card({ children, className, colorScheme = 'default' }: CardProps
       initial="hidden"
       animate="show"
       className={cn(
-        'rounded-lg border shadow-sm transition-all',
+        'rounded-lg border shadow-sm transition-all font-open-sans',
         colorStyles[colorScheme],
         className
       )}
@@ -51,7 +50,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className }: CardTitleProps) {
   return (
-    <h3 className={cn('text-xl font-semibold leading-none tracking-tight', className)}>
+    <h3 className={cn('text-xl font-semibold leading-none tracking-tight font-open-sans', className)}>
       {children}
     </h3>
   );
@@ -64,7 +63,7 @@ interface CardDescriptionProps {
 
 export function CardDescription({ children, className }: CardDescriptionProps) {
   return (
-    <p className={cn('text-sm text-gray-500 dark:text-gray-400', className)}>
+    <p className={cn('text-sm text-gray-500 dark:text-gray-400 font-open-sans', className)}>
       {children}
     </p>
   );

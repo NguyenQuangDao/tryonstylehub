@@ -35,17 +35,21 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-x-hidden">
         <header className="sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-800/50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-gray-950/70 shadow-sm">
-          <div className="mx-auto flex items-center justify-between px-8 py-4">
+          <div className="mx-auto flex items-center justify-between px-8 py-2">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
               <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <Sparkles className="h-5 w-5 text-white" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                  <img 
+                    src="/logo/logo.png" 
+                    alt="AIStyleHub Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
                 </div>
-                <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300">
+                <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300 font-open-sans">
                   AIStyleHub
                 </span>
               </Link>
@@ -66,7 +70,7 @@ export function Layout({ children }: LayoutProps) {
                   >
                     <Link
                       href={link.href}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 relative group ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 relative group font-open-sans ${
                         isActive 
                           ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
                           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400'
@@ -98,7 +102,7 @@ export function Layout({ children }: LayoutProps) {
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
                           <User className="h-5 w-5 text-white" />
                         </div>
-                        <span className="hidden lg:inline text-sm font-semibold">{user.name}</span>
+                        <span className="hidden lg:inline text-sm font-semibold font-open-sans">{user.name}</span>
                       </button>
                       
                       <AnimatePresence>
@@ -134,14 +138,14 @@ export function Layout({ children }: LayoutProps) {
                     <div className="flex items-center gap-2">
                       <Link
                         href="/login"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 font-open-sans"
                       >
                         <LogIn className="h-4 w-4" />
                         Đăng Nhập
                       </Link>
                       <Link
                         href="/register"
-                        className="px-6 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="px-6 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl font-open-sans"
                       >
                         Đăng Ký
                       </Link>
@@ -181,7 +185,7 @@ export function Layout({ children }: LayoutProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
+                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 font-open-sans ${
                       isActive 
                         ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -201,7 +205,7 @@ export function Layout({ children }: LayoutProps) {
                     <>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-open-sans"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
@@ -212,7 +216,7 @@ export function Layout({ children }: LayoutProps) {
                           handleLogout();
                           setMobileMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left font-open-sans"
                       >
                         <LogOut className="h-4 w-4" />
                         Đăng Xuất
@@ -222,14 +226,14 @@ export function Layout({ children }: LayoutProps) {
                     <>
                       <Link
                         href="/login"
-                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-open-sans"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Đăng Nhập
                       </Link>
                       <Link
                         href="/register"
-                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-open-sans"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Đăng Ký
@@ -253,11 +257,11 @@ export function Layout({ children }: LayoutProps) {
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium font-open-sans">
                   © {new Date().getFullYear()} AIStyleHub. Tất cả quyền được bảo lưu.
                 </p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium font-open-sans">
                 Được tạo ra với trí tuệ phong cách AI ✨
               </p>
             </div>

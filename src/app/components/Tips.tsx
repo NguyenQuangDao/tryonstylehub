@@ -1,6 +1,6 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { Camera, Image as ImageIcon, Info, Lightbulb, RectangleHorizontal, Users } from 'lucide-react';
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, Camera, RectangleHorizontal, Users, Image as ImageIcon, Info } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 type Tip = {
@@ -65,7 +65,7 @@ export default function Tips() {
     >
       <div className="flex items-center gap-2 justify-center">
         <Lightbulb className="h-5 w-5 text-gray-600" />
-        <h2 className="text-xl font-semibold text-center">Tips for successful try-on generations</h2>
+        <h2 className="text-xl font-semibold text-center font-open-sans">Tips for successful try-on generations</h2>
       </div>
       
       <motion.div 
@@ -100,13 +100,13 @@ export default function Tips() {
           >
             <div className="flex items-center gap-2 z-10">
               {tip.icon}
-              <h3 className="font-medium">{tip.title}</h3>
+              <h3 className="font-medium font-open-sans">{tip.title}</h3>
             </div>
             
             <AnimatePresence>
               {expandedTip === tip.id && (
                 <motion.p 
-                  className="mt-2 text-sm opacity-90 z-10"
+                  className="mt-2 text-sm opacity-90 z-10 font-open-sans"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
@@ -139,7 +139,7 @@ export default function Tips() {
       </motion.div>
       
       <motion.p 
-        className="text-sm text-center text-gray-500 dark:text-gray-400 mt-2 italic"
+        className="text-sm text-center text-gray-500 dark:text-gray-400 mt-2 italic font-open-sans"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}

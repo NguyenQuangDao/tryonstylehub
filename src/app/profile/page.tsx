@@ -36,7 +36,7 @@ export default function ProfilePage() {
         className="space-y-6"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Hồ Sơ Cá Nhân</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 vietnamese-heading">Hồ Sơ Cá Nhân</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Quản lý thông tin tài khoản của bạn
           </p>

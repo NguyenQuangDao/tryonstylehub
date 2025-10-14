@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import React, { useCallback, useRef, useState } from 'react';
 import { cn } from '../../lib/utils';
 
 export interface SliderProps {
@@ -78,10 +78,10 @@ export default function Slider({
     <div className={cn('space-y-2', className)}>
       {label && (
         <div className="flex justify-between">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 font-open-sans">
             {label}
           </label>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-open-sans">
             {value}
           </span>
         </div>
