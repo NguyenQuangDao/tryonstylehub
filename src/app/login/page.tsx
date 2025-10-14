@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,9 +16,19 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
+
+  // Show loading state while checking auth
   if (user) {
-    router.push('/');
-    return null;
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -218,9 +218,61 @@
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
+/* Light Mode Colors */
+.light {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --muted: #64748B;
+  --border: #E2E8F0;
+}
+
 /* Dark Mode Colors */
+.dark {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --muted: #A1A1AA;
+  --border: #27272A;
+  
+  /* Additional dark mode colors */
+  --bg-primary: #000000;
+  --bg-secondary: #09090B;
+  --bg-tertiary: #18181B;
+  --bg-card: #09090B;
+  --bg-input: #09090B;
+  --bg-button: #18181B;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #E4E4E7;
+  --text-muted: #A1A1AA;
+  --text-disabled: #71717A;
+  
+  --border-primary: #27272A;
+  --border-secondary: #3F3F46;
+  --border-focus: #3B82F6;
+  
+  --accent-primary: #3B82F6;
+  --accent-secondary: #8B5CF6;
+  --accent-success: #10B981;
+  --accent-warning: #F59E0B;
+  --accent-error: #EF4444;
+}
+
+/* Ensure body and html also get theme classes */
+html.light,
+body.light {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+html.dark,
+body.dark {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* System theme fallback */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.dark) {
     --background: #0F172A;
     --foreground: #F8FAFC;
     --muted: #94A3B8;
@@ -248,6 +300,7 @@ body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Prevent horizontal scroll */
@@ -321,6 +374,433 @@ html, body {
 /* Smooth transitions */
 * {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Ensure all elements use theme colors */
+* {
+  color: inherit;
+}
+
+/* Force theme colors on common elements */
+input, textarea, select, button {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Ensure all components use theme colors */
+.light * {
+  color-scheme: light;
+}
+
+.dark * {
+  color-scheme: dark;
+}
+
+/* Override any hardcoded colors */
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Dark mode overrides - Force all elements to use dark colors */
+.dark {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark * {
+  color: var(--text-primary) !important;
+}
+
+/* Override common white backgrounds */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override text colors */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-gray-600 {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: var(--text-muted) !important;
+}
+
+/* Override border colors */
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400 {
+  border-color: var(--border-primary) !important;
+}
+
+/* Override input and form elements */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* Override button backgrounds */
+.dark button:not(.bg-gradient-to-r) {
+  background-color: var(--bg-button) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Override card backgrounds */
+.dark .bg-white\/95,
+.dark .bg-white\/80,
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override backdrop blur backgrounds */
+.dark .backdrop-blur-xl {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+}
+
+/* Override shadow colors */
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Override specific Tailwind classes that are commonly white */
+.dark .bg-gray-50\/50,
+.dark .bg-gray-100\/50,
+.dark .bg-white\/10,
+.dark .bg-white\/20,
+.dark .bg-white\/30,
+.dark .bg-white\/40,
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-white\/95 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override hover states */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-white:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
+/* Override focus states */
+.dark .focus\:bg-white:focus {
+  background-color: var(--bg-input) !important;
+}
+
+/* Override specific component backgrounds */
+.dark .bg-gradient-to-br.from-gray-50.to-white,
+.dark .bg-gradient-to-br.from-gray-100.to-gray-200 {
+  background: linear-gradient(to bottom right, var(--bg-card), var(--bg-tertiary)) !important;
+}
+
+/* Override modal and overlay backgrounds */
+.dark .bg-black\/50,
+.dark .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Override glass effects */
+.dark .glass-effect {
+  background: rgba(9, 9, 11, 0.8) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+/* Override modern card backgrounds */
+.dark .modern-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+/* Override specific component classes */
+.dark .bg-gradient-to-r.from-blue-50.to-purple-50,
+.dark .bg-gradient-to-r.from-gray-50.to-white {
+  background: linear-gradient(to right, var(--bg-card), var(--bg-tertiary)) !important;
+}
+
+/* Override hero section backgrounds */
+.dark .hero-section {
+  background: linear-gradient(135deg, rgba(9, 9, 11, 0.8) 0%, rgba(24, 24, 27, 0.8) 100%) !important;
+}
+
+/* Override loading states */
+.dark .animate-pulse {
+  background-color: var(--bg-tertiary) !important;
+}
+
+/* Override scrollbar in dark mode */
+.dark ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--border-secondary) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted) !important;
+}
+
+/* Force all text to be white in dark mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark p, .dark span, .dark div, .dark a, .dark label {
+  color: var(--text-primary) !important;
+}
+
+/* Override any remaining white backgrounds */
+.dark [class*="bg-white"],
+.dark [class*="bg-gray-50"],
+.dark [class*="bg-gray-100"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Force override all white backgrounds with higher specificity */
+.dark .bg-white\/95,
+.dark .bg-white\/90,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/60,
+.dark .bg-white\/50,
+.dark .bg-white\/40,
+.dark .bg-white\/30,
+.dark .bg-white\/20,
+.dark .bg-white\/10 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override all gray backgrounds */
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark .bg-gray-300 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override backdrop blur backgrounds */
+.dark .backdrop-blur-xl,
+.dark .backdrop-blur-lg,
+.dark .backdrop-blur-md {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+}
+
+/* Override specific component classes */
+.dark .bg-gradient-to-r.from-blue-50.to-purple-50,
+.dark .bg-gradient-to-r.from-gray-50.to-white,
+.dark .bg-gradient-to-br.from-gray-50.to-white,
+.dark .bg-gradient-to-br.from-blue-50.to-purple-50 {
+  background: linear-gradient(to right, var(--bg-card), var(--bg-tertiary)) !important;
+}
+
+/* Override hero section and main containers */
+.dark .bg-gradient-to-br.from-gray-50.to-white,
+.dark .bg-gradient-to-br.from-blue-50.to-purple-50 {
+  background: linear-gradient(to bottom right, var(--bg-card), var(--bg-tertiary)) !important;
+}
+
+/* Override specific Tailwind classes with higher specificity */
+.dark .bg-white\/95.dark\:bg-gray-900\/95,
+.dark .bg-white\/90.dark\:bg-gray-900\/90,
+.dark .bg-white\/80.dark\:bg-gray-900\/80 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override all possible white background combinations */
+.dark [class*="bg-white"][class*="dark:bg-gray"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override rounded containers and cards */
+.dark .rounded-3xl,
+.dark .rounded-2xl,
+.dark .rounded-xl,
+.dark .rounded-lg {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override specific component patterns */
+.dark .bg-white\/95.backdrop-blur-xl,
+.dark .bg-white\/90.backdrop-blur-xl,
+.dark .bg-white\/80.backdrop-blur-xl {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+}
+
+/* Override search and filter sections */
+.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl {
+  background-color: rgba(9, 9, 11, 0.95) !important;
+}
+
+/* Override product cards */
+.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override modal backgrounds */
+.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-2xl {
+  background-color: var(--bg-card) !important;
+}
+
+/* Nuclear option - Override everything with maximum specificity */
+html.dark body.dark * {
+  background-color: var(--bg-card) !important;
+}
+
+/* But preserve gradients and special elements */
+html.dark body.dark .bg-gradient-to-r,
+html.dark body.dark .bg-gradient-to-br,
+html.dark body.dark .bg-gradient-to-tl,
+html.dark body.dark .bg-gradient-to-bl {
+  background: var(--bg-card) !important;
+}
+
+/* Override with even higher specificity */
+html.dark body.dark div[class*="bg-white"],
+html.dark body.dark div[class*="bg-gray-50"],
+html.dark body.dark div[class*="bg-gray-100"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override all possible combinations */
+html.dark body.dark [class*="bg-white"][class*="dark:bg-gray"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Force override for specific patterns */
+html.dark body.dark .bg-white\/95,
+html.dark body.dark .bg-white\/90,
+html.dark body.dark .bg-white\/80,
+html.dark body.dark .bg-white\/70,
+html.dark body.dark .bg-white\/60,
+html.dark body.dark .bg-white\/50 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override specific component classes with maximum specificity */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.p-6.shadow-lg {
+  background-color: var(--bg-card) !important;
+}
+
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border {
+  background-color: var(--bg-card) !important;
+}
+
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-2xl {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override product cards specifically */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border.overflow-hidden {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override empty state cards */
+html.dark body.dark .text-center.py-16.bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override modal content */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-2xl.max-w-2xl {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override login/register forms */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-2xl.border.p-8 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override generate-image page cards */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border.p-6 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override recommend page cards */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border.p-6 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override dashboard cards */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border.p-6 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override profile cards */
+html.dark body.dark .bg-white\/95.dark\:bg-gray-900\/95.backdrop-blur-xl.rounded-3xl.shadow-lg.border.p-6 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override all remaining white backgrounds with universal selector */
+html.dark body.dark *[class*="bg-white"] {
+  background-color: var(--bg-card) !important;
+}
+
+html.dark body.dark *[class*="bg-gray-50"] {
+  background-color: var(--bg-card) !important;
+}
+
+html.dark body.dark *[class*="bg-gray-100"] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Final nuclear option - Override everything */
+html.dark body.dark * {
+  background-color: var(--bg-card) !important;
+}
+
+/* But preserve important elements */
+html.dark body.dark .bg-gradient-to-r,
+html.dark body.dark .bg-gradient-to-br,
+html.dark body.dark .bg-gradient-to-tl,
+html.dark body.dark .bg-gradient-to-bl,
+html.dark body.dark .bg-blue-600,
+html.dark body.dark .bg-purple-600,
+html.dark body.dark .bg-green-600,
+html.dark body.dark .bg-red-600,
+html.dark body.dark .bg-yellow-600,
+html.dark body.dark .bg-pink-600,
+html.dark body.dark .bg-indigo-600,
+html.dark body.dark .bg-transparent {
+  background-color: inherit !important;
+}
+
+/* Override with maximum specificity for all divs */
+html.dark body.dark div {
+  background-color: var(--bg-card) !important;
+}
+
+/* Override sections and containers */
+html.dark body.dark section,
+html.dark body.dark main,
+html.dark body.dark article,
+html.dark body.dark aside {
+  background-color: var(--bg-card) !important;
+}
+
+/* Ensure proper contrast in both themes */
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 /* Custom scrollbar */

@@ -17,13 +17,74 @@ export function applyTheme(theme: Theme): void {
   if (typeof window === 'undefined') return
   
   const root = document.documentElement
+  const body = document.body
+  
+  // Determine if dark mode should be active
   const isDark = theme === 'dark' || 
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
-  if (isDark) {
+  // Remove all theme classes first
+  root.classList.remove('light', 'dark')
+  body.classList.remove('light', 'dark')
+  
+  // Add the appropriate class
+  if (theme === 'light') {
+    root.classList.add('light')
+    body.classList.add('light')
+  } else if (theme === 'dark') {
     root.classList.add('dark')
+    body.classList.add('dark')
   } else {
-    root.classList.remove('dark')
+    // System theme
+    if (isDark) {
+      root.classList.add('dark')
+      body.classList.add('dark')
+    } else {
+      root.classList.add('light')
+      body.classList.add('light')
+    }
   }
+  
+  // Force a repaint to ensure theme is applied immediately
+  root.style.colorScheme = isDark ? 'dark' : 'light'
+  
+  // Update meta theme-color for mobile browsers
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', isDark ? '#000000' : '#FFFFFF')
+  }
+  
+  // Debug logging
+  console.log('Theme applied:', {
+    theme,
+    isDark,
+    rootClasses: root.className,
+    bodyClasses: body.className,
+    colorScheme: root.style.colorScheme,
+    computedStyle: getComputedStyle(root).getPropertyValue('--background'),
+    bodyBackground: getComputedStyle(body).backgroundColor,
+    bodyColor: getComputedStyle(body).color
+  })
+}
+
+// Test function to verify dark mode
+export function testDarkMode(): void {
+  if (typeof window === 'undefined') return
+  
+  const root = document.documentElement
+  const body = document.body
+  
+  console.log('Dark Mode Test:', {
+    hasDarkClass: root.classList.contains('dark'),
+    hasLightClass: root.classList.contains('light'),
+    bodyHasDarkClass: body.classList.contains('dark'),
+    bodyHasLightClass: body.classList.contains('light'),
+    colorScheme: root.style.colorScheme,
+    backgroundVar: getComputedStyle(root).getPropertyValue('--background'),
+    foregroundVar: getComputedStyle(root).getPropertyValue('--foreground'),
+    bodyBackground: getComputedStyle(body).backgroundColor,
+    bodyColor: getComputedStyle(body).color,
+    localStorage: localStorage.getItem('theme-preference')
+  })
 }
 

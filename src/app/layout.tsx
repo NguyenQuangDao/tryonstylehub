@@ -28,6 +28,36 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#FFFFFF" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme-preference') || 'system';
+                  const isDark = theme === 'dark' || 
+                    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.body.classList.add('dark');
+                    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                    if (metaThemeColor) metaThemeColor.setAttribute('content', '#000000');
+                  } else {
+                    document.documentElement.classList.add('light');
+                    document.body.classList.add('light');
+                    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                    if (metaThemeColor) metaThemeColor.setAttribute('content', '#FFFFFF');
+                  }
+                } catch (e) {
+                  console.log('Theme initialization error:', e);
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className="antialiased"
         suppressHydrationWarning

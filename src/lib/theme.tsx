@@ -23,8 +23,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(savedTheme)
     
     const updateResolvedTheme = () => {
-      const isDark = savedTheme === 'dark' || 
-        (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const currentTheme = theme || savedTheme
+      const isDark = currentTheme === 'dark' || 
+        (currentTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
       setResolvedTheme(isDark ? 'dark' : 'light')
     }
     
@@ -34,16 +35,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     mediaQuery.addEventListener('change', updateResolvedTheme)
     
     return () => mediaQuery.removeEventListener('change', updateResolvedTheme)
-  }, [])
+  }, [theme])
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
     setThemePreference(newTheme)
+    
+    // Apply theme immediately
     applyTheme(newTheme)
     
+    // Update resolved theme
     const isDark = newTheme === 'dark' || 
       (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     setResolvedTheme(isDark ? 'dark' : 'light')
+    
+    // Force a small delay to ensure DOM updates
+    setTimeout(() => {
+      applyTheme(newTheme)
+    }, 10)
   }
 
   return (
