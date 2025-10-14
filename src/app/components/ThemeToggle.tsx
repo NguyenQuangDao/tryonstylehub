@@ -3,9 +3,21 @@
 import { useTheme } from '@/lib/theme'
 import { motion } from 'framer-motion'
 import { Monitor, Moon, Sun } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="p-2 w-10 h-10" /> // Placeholder
+    )
+  }
 
   const themes = [
     { value: 'light' as const, icon: Sun, label: 'Light' },

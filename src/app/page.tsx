@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lightbulb, RefreshCw, Settings, Shirt, Sparkles, UserRound, X, Zap } from 'lucide-react';
+import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, X, Zap } from 'lucide-react';
 import Image from 'next/image';
 import pica from 'pica';
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
@@ -9,12 +9,10 @@ import { ReactCompareSlider, ReactCompareSliderImage, useReactCompareSliderRef }
 import ApiKeyModal from './components/ApiKeyModal';
 import TipsModal from './components/TipsModal';
 import Button from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import Checkbox from './components/ui/checkbox';
 import { Dropdown } from './components/ui/dropdown';
 import FileInput from './components/ui/file-input';
 import RadioGroup from './components/ui/radio-group';
-import Slider from './components/ui/slider';
 import { cn } from './lib/utils';
 
 // Map display names to API values
@@ -27,15 +25,15 @@ const CATEGORY_API_MAPPING: { [key: string]: string } = {
 
 // Sample images for examples
 const modelExamples = [
-  '/models/model-example.png',
   'https://mjc1kvq4a1.ufs.sh/f/7ZFSVc14Zv0C8dvOAdbI21g63JATVpzHqifdbOhcmUeZFvPl',
   'https://mjc1kvq4a1.ufs.sh/f/7ZFSVc14Zv0Csg1xV5QSBjvaUSEcZtbnN695WHDuFpOqyYmi',
   'https://mjc1kvq4a1.ufs.sh/f/7ZFSVc14Zv0CHZRDgQFXB9Y7ge5vh286IQ1uZocGnkCqxSOa',
-  'https://mjc1kvq4a1.ufs.sh/f/7ZFSVc14Zv0CAOAqzwJROP5XLHFwxVJrYC3gjzd9SsckvIKo'
+  'https://mjc1kvq4a1.ufs.sh/f/7ZFSVc14Zv0CAOAqzwJROP5XLHFwxVJrYC3gjzd9SsckvIKo',
+  '/models/model-example.png',
 ];
 
 const garmentExamples = [
-  '/garments/garment-example.jpg',
+  // '/garments/garment-example.jpg',
   '/garments/women-dress.png',
   '/garments/man-shirt.png',
 ];
@@ -56,7 +54,7 @@ export default function Home() {
   const [segmentationFree, setSegmentationFree] = useState(true);
   const [garmentPhotoType, setGarmentPhotoType] = useState('Auto');
   const [category, setCategory] = useState('Auto');
-  const [mode, setMode] = useState('Balanced');
+  const [mode, setMode] = useState('Quality');
   const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1000000));
   const [numSamples, setNumSamples] = useState<number>(1);
   const [modelVersion, setModelVersion] = useState('tryon-v1.6');
@@ -68,10 +66,10 @@ export default function Home() {
   const [resultGallery, setResultGallery] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Advanced settings toggle
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  
+  // const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+
   // Tips modal state
   const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
 
@@ -82,17 +80,17 @@ export default function Home() {
   // Results modal state
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
-  
+
   // Comparison modal state
   const [isComparisonMode, setIsComparisonMode] = useState(false);
   const [selectedResults, setSelectedResults] = useState<number[]>([]);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
-  
+
   // Animation state for comparison slider
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<'right' | 'left'>('right');
-  
+
   // Ref for programmatic control of the comparison slider
   const compareSliderRef = useReactCompareSliderRef();
 
@@ -149,34 +147,34 @@ export default function Home() {
     setIsApiKeyModalOpen(false);
   };
 
-    // Automated comparison slider animation
+  // Automated comparison slider animation
   useEffect(() => {
     let animationActive = true;
-    
+
     if (isAnimating && compareSliderRef.current) {
       const animateSlider = async () => {
         let step = 0;
         while (animationActive && isAnimating) {
           const positions = [85, 25, 50];
           const directions: ('right' | 'left')[] = ['right', 'left', 'right'];
-          
+
           const currentPos = positions[step % positions.length];
           const currentDir = directions[step % directions.length];
-          
+
           if (compareSliderRef.current && animationActive) {
             compareSliderRef.current.setPosition(currentPos);
             setSliderPosition(currentPos);
             setAnimationDirection(currentDir);
             await new Promise(resolve => setTimeout(resolve, 2500));
           }
-          
+
           step++;
         }
       };
-      
+
       animateSlider();
     }
-    
+
     return () => {
       animationActive = false;
     };
@@ -220,7 +218,7 @@ export default function Home() {
       const file = e.target.files[0];
       setImageFile(file);
       setPreview(URL.createObjectURL(file));
-      
+
       // Clear validation errors when both images are available
       if (setImageFile === setModelImageFile && garmentImageFile) {
         setError(null);
@@ -256,7 +254,7 @@ export default function Home() {
     } else if (selectedResults.length < 2) {
       const newSelection = [...selectedResults, index];
       setSelectedResults(newSelection);
-      
+
       // Auto-open comparison modal when 2 results are selected
       if (newSelection.length === 2) {
         setIsComparisonModalOpen(true);
@@ -287,7 +285,7 @@ export default function Home() {
       const file = new File([blob], filename, { type: blob.type });
       setImageFile(file);
       setPreview(URL.createObjectURL(file));
-      
+
       // Clear validation errors when both images are available
       if (setImageFile === setModelImageFile && garmentImageFile) {
         setError(null);
@@ -296,7 +294,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Failed to load example image:", err);
-      setError("Failed to load example image.");
+      setError("Không thể tải ảnh mẫu.");
     }
   };
 
@@ -311,7 +309,7 @@ export default function Home() {
     setSegmentationFree(true);
     setGarmentPhotoType('Auto');
     setCategory('Auto');
-    setMode('Balanced');
+    setMode('Quality');
     setSeed(Math.floor(Math.random() * 1000000));
     setNumSamples(1);
     setModelVersion('tryon-v1.6');
@@ -392,15 +390,12 @@ export default function Home() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!modelImageFile || !garmentImageFile) {
-      setError("Please select both a model and a garment image.");
+      setError("Vui lòng chọn cả ảnh người mẫu và ảnh trang phục.");
       return;
     }
 
-    // Check if API key is available
-    if (!apiKey) {
-      setIsApiKeyModalOpen(true);
-      return;
-    }
+    // No need to check API key here - backend will use env var if available
+    // Only show modal if backend explicitly requires it
 
     setIsLoading(true);
     setError(null);
@@ -409,7 +404,7 @@ export default function Home() {
       // Preprocess images according to FASHN API best practices
       // Base64 encoding is used for simplicity, though CDN-hosted images are recommended for production
       let modelImageBase64, garmentImageBase64;
-      
+
       try {
         const resizedModelFile = await resizeImagePica(modelImageFile);
         const resizedGarmentFile = await resizeImagePica(garmentImageFile);
@@ -430,7 +425,7 @@ export default function Home() {
         segmentation_free: segmentationFree,
         seed: seed,
         num_samples: numSamples,
-        api_key: apiKey,
+        api_key: apiKey || '', // Send empty string if no local key, backend will use env var
       };
 
       if (comparison) {
@@ -503,1032 +498,1064 @@ export default function Home() {
 
 
   return (
-    <div className="w-full space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Virtual Try-On AI
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
-          Thử đồ ảo với công nghệ AI tiên tiến từ FASHN
-        </p>
-      </div>
-        
+    <div className="w-full max-w-full overflow-x-hidden space-y-8 responsive-container">
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="hero-section text-center space-y-6 relative z-10"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="floating-element"
+        >
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold modern-gradient-text mb-8 leading-tight">
+            Thử Đồ Ảo AI
+          </h1>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-xl md:text-2xl lg:text-3xl text-gray-700 dark:text-gray-300 max-w-5xl mx-auto leading-relaxed font-light"
+        >
+          Trải nghiệm công nghệ thử đồ ảo tiên tiến nhất với AI - Xem ngay kết quả trang phục trên người bạn
+        </motion.p>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.1 }}
-          className="p-4 sm:p-6 border border-gray-200 dark:border-gray-700 rounded-lg my-4 bg-gray-50 dark:bg-gray-800 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
+          transition={{ delay: 0.6 }}
+          className="flex flex-wrap items-center justify-center gap-6 pt-8"
         >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 flex-shrink-0" />
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-              Tips for successful try-on generations
-            </h2>
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+            <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">AI-Powered</span>
           </div>
-          
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={() => setIsTipsModalOpen(true)}
-            className="w-full sm:w-auto flex-shrink-0"
-          >
-            View Tips
-          </Button>
-          
-          <TipsModal 
-            isOpen={isTipsModalOpen} 
-            onClose={() => setIsTipsModalOpen(false)} 
-          />
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Chất Lượng Cao</span>
+          </div>
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+            <Shirt className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Thời Trang Hiện Đại</span>
+          </div>
         </motion.div>
+      </motion.div>
 
-        <motion.form 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.2 }}
-          onSubmit={handleSubmit} 
-          className="mt-10 space-y-10"
+      {/* Tips Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="modern-card glass-effect flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6"
+      >
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <div className="w-12 h-12 rounded-2xl modern-gradient-bg flex items-center justify-center flex-shrink-0 pulse-glow">
+            <Lightbulb className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
+              Mẹo để có kết quả tốt nhất
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Khám phá các mẹo và thủ thuật để tối ưu hóa trải nghiệm thử đồ ảo
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setIsTipsModalOpen(true)}
+          className="modern-button bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-700"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Column 1: Model Image */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserRound className="h-5 w-5 text-gray-600" />
-                  Model Image
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FileInput 
-                  onChange={(e) => handleImageChange(e, setModelImageFile, setModelImagePreview)}
-                  accept="image/*"
-                  label="Upload model image"
-                />
-                
-                <AnimatePresence mode="wait">
-                  {modelImagePreview ? (
-                    <motion.div 
-                      key="preview"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                      className="relative"
+          <Lightbulb className="h-4 w-4 mr-2" />
+          Xem Mẹo
+        </Button>
+
+        <TipsModal
+          isOpen={isTipsModalOpen}
+          onClose={() => setIsTipsModalOpen(false)}
+        />
+      </motion.div>
+
+      <motion.form
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, delay: 0.2 }}
+        onSubmit={handleSubmit}
+        className="mt-10 space-y-8"
+      >
+        {/* Images Section - 2 Column Layout */}
+        <div className="modern-grid grid-cols-1 lg:grid-cols-2">
+          {/* Model Image Card */}
+          <div className="modern-card group">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <UserRound className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl md:text-2xl font-bold modern-gradient-text">
+                  Ảnh Người Mẫu
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Tải lên ảnh người mẫu hoặc chọn từ ví dụ
+                </p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <FileInput
+                onChange={(e) => handleImageChange(e, setModelImageFile, setModelImagePreview)}
+                accept="image/*"
+                label="Tải lên ảnh người mẫu"
+              />
+
+              <AnimatePresence mode="wait">
+                {modelImagePreview ? (
+                  <motion.div
+                    key="preview"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative"
+                  >
+                    <div className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={modelImagePreview}
+                        alt="Model Preview"
+                        className="max-w-full max-h-full object-contain p-4"
+                        width={400}
+                        height={500}
+                        unoptimized
+                      />
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      type="button"
+                      onClick={() => {
+                        setModelImageFile(null);
+                        setModelImagePreview(null);
+                      }}
+                      className="absolute -top-3 -right-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-full p-2 shadow-lg cursor-pointer"
                     >
-                      <div className="aspect-[2/2.5] max-w-[280px] max-h-[350px] mx-auto border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
-                        <Image 
-                          src={modelImagePreview} 
-                          alt="Model Preview" 
-                          className="max-w-full max-h-full object-contain p-2" 
-                          width={280}
-                          height={350}
-                          unoptimized
-                        />
+                      <X className="h-5 w-5" />
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto border-2 border-dashed border-blue-300 dark:border-blue-700 relative overflow-hidden"
+                  >
+                    {/* Top overlay with text */}
+                    <div className="absolute top-4 left-4 right-4 z-10">
+                      <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 backdrop-blur-sm text-white px-4 py-2.5 rounded-full shadow-lg">
+                        <UserRound className="h-5 w-5" />
+                        <p className="text-sm font-medium">Chọn ảnh người mẫu</p>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        type="button"
-                        onClick={() => {
-                          setModelImageFile(null);
-                          setModelImagePreview(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-full p-1 shadow-md cursor-pointer"
-                      >
-                        <X className="h-4 w-4" />
-                      </motion.button>
-                    </motion.div>
-                  ) : (
-                    <motion.div 
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="aspect-[2/2.5] max-w-[280px] max-h-[350px] mx-auto border border-dashed border-gray-200 dark:border-gray-700 rounded-lg relative overflow-hidden bg-gray-50 dark:bg-gray-800"
-                    >
-                      {/* Top overlay with text */}
-                      <div className="absolute top-3 left-3 right-3 z-10">
-                        <div className="inline-flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-full">
-                          <UserRound className="h-4 w-4" />
-                          <p className="text-xs font-medium">Select a model image</p>
-                        </div>
-                      </div>
-                      
-                      {/* Main example content taking most space */}
-                      {modelExamples.length > 0 ? (
-                        <div className="w-full h-full relative">
+                    </div>
+
+                    {/* Main example content taking most space */}
+                    {modelExamples.length > 0 ? (
+                      <div className="w-full h-full relative">
+                        <motion.button
+                          key={modelExampleIndex}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(e, info) => {
+                            if (info.offset.x > 50) {
+                              handleModelSwipe('left');
+                            } else if (info.offset.x < -50) {
+                              handleModelSwipe('right');
+                            }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            loadExampleImage(modelExamples[modelExampleIndex], setModelImageFile, setModelImagePreview);
+                          }}
+                          className="w-full h-full cursor-pointer group"
+                        >
+                          <Image
+                            src={modelExamples[modelExampleIndex]}
+                            alt={`Model Example ${modelExampleIndex + 1}`}
+                            width={400}
+                            height={500}
+                            className="w-full h-full object-contain pointer-events-none"
+                          />
+
+                          {/* Swipe hint overlay */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="bg-black/80 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm">
+                              👆 Nhấn để sử dụng • Vuốt để xem thêm
+                            </div>
+                          </div>
+                        </motion.button>
+
+                        {/* Navigation controls at bottom */}
+                        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-between px-6">
                           <motion.button
-                            key={modelExampleIndex}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            dragElastic={0.2}
-                            onDragEnd={(e, info) => {
-                              if (info.offset.x > 50) {
-                                handleModelSwipe('left');
-                              } else if (info.offset.x < -50) {
-                                handleModelSwipe('right');
-                              }
-                            }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              loadExampleImage(modelExamples[modelExampleIndex], setModelImageFile, setModelImagePreview);
+                              handleModelSwipe('left');
                             }}
-                            className="w-full h-full cursor-pointer group"
+                            disabled={modelExampleIndex === 0}
+                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
-                            <Image 
-                              src={modelExamples[modelExampleIndex]} 
-                              alt={`Model Example ${modelExampleIndex + 1}`} 
-                              width={280} 
-                              height={350} 
-                              className="w-full h-full object-contain pointer-events-none transform scale-70" 
-                            />
-                            
-                            {/* Swipe hint overlay */}
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <div className="bg-black/80 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
-                                Tap to use • Swipe to browse
-                              </div>
-                            </div>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
                           </motion.button>
-                          
-                          {/* Navigation controls at bottom */}
-                          <div className="absolute bottom-3 left-0 right-0 flex items-center justify-between px-4">
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleModelSwipe('left');
-                              }}
-                              disabled={modelExampleIndex === 0}
-                              className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                              </svg>
-                            </motion.button>
-                            
-                            {/* Dots indicator */}
-                            <div className="flex gap-1.5">
-                              {modelExamples.map((_, idx) => (
-                                <motion.div 
-                                  key={idx} 
-                                  className={`w-2 h-2 rounded-full transition-all ${
-                                    idx === modelExampleIndex ? 'bg-white scale-125' : 'bg-white/50'
+
+                          {/* Dots indicator */}
+                          <div className="flex gap-2">
+                            {modelExamples.map((_, idx) => (
+                              <motion.div
+                                key={idx}
+                                className={`w-2.5 h-2.5 rounded-full transition-all ${idx === modelExampleIndex ? 'bg-white scale-125' : 'bg-white/50'
                                   }`}
-                                  whileHover={{ scale: 1.2 }}
-                                />
-                              ))}
-                            </div>
-                            
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleModelSwipe('right');
-                              }}
-                              disabled={modelExampleIndex === modelExamples.length - 1}
-                              className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </motion.button>
+                                whileHover={{ scale: 1.3 }}
+                              />
+                            ))}
                           </div>
+
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleModelSwipe('right');
+                            }}
+                            disabled={modelExampleIndex === modelExamples.length - 1}
+                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </motion.button>
                         </div>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                          <UserRound className="h-12 w-12 text-gray-400 mb-3" />
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">
-                            No examples available
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        <UserRound className="h-16 w-16 text-blue-400 mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          Không có ví dụ
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="pt-4">
                 <Checkbox
                   checked={segmentationFree}
                   onChange={(e) => setSegmentationFree(e.target.checked)}
-                  label="Segmentation Free"
-                  description="Let the API handle segmentation automatically"
+                  label="Phân đoạn tự động"
+                  description="Để AI tự động xử lý phân đoạn hình ảnh"
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
 
-            {/* Column 2: Garment Image */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shirt className="h-5 w-5 text-gray-600" />
-                  Garment Image
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FileInput 
-                  onChange={(e) => handleImageChange(e, setGarmentImageFile, setGarmentImagePreview)}
-                  accept="image/*"
-                  label="Upload garment image"
-                />
-                
-                <AnimatePresence mode="wait">
-                  {garmentImagePreview ? (
-                    <motion.div 
-                      key="preview"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                      className="relative"
+          {/* Garment Image Card */}
+          <div className="modern-card group">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+                <Shirt className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Ảnh Trang Phục
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Tải lên ảnh trang phục hoặc chọn từ ví dụ
+                </p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <FileInput
+                onChange={(e) => handleImageChange(e, setGarmentImageFile, setGarmentImagePreview)}
+                accept="image/*"
+                label="Tải lên ảnh trang phục"
+              />
+
+              <AnimatePresence mode="wait">
+                {garmentImagePreview ? (
+                  <motion.div
+                    key="preview"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative"
+                  >
+                    <div className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={garmentImagePreview}
+                        alt="Garment Preview"
+                        className="max-w-full max-h-full object-contain p-4"
+                        width={400}
+                        height={500}
+                        unoptimized
+                      />
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      type="button"
+                      onClick={() => {
+                        setGarmentImageFile(null);
+                        setGarmentImagePreview(null);
+                      }}
+                      className="absolute -top-3 -right-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-full p-2 shadow-lg cursor-pointer"
                     >
-                      <div className="aspect-[2/2.5] max-w-[280px] max-h-[350px] mx-auto border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
-                        <Image 
-                          src={garmentImagePreview} 
-                          alt="Garment Preview" 
-                          className="max-w-full max-h-full object-contain p-2" 
-                          width={280}
-                          height={350}
-                          unoptimized
-                        />
+                      <X className="h-5 w-5" />
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto border-2 border-dashed border-purple-300 dark:border-purple-700 relative overflow-hidden"
+                  >
+                    {/* Top overlay with text */}
+                    <div className="absolute top-4 left-4 right-4 z-10">
+                      <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 backdrop-blur-sm text-white px-4 py-2.5 rounded-full shadow-lg">
+                        <Shirt className="h-5 w-5" />
+                        <p className="text-sm font-medium">Chọn ảnh trang phục</p>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        type="button"
-                        onClick={() => {
-                          setGarmentImageFile(null);
-                          setGarmentImagePreview(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-full p-1 shadow-md cursor-pointer"
-                      >
-                        <X className="h-4 w-4" />
-                      </motion.button>
-                    </motion.div>
-                  ) : (
-                    <motion.div 
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="aspect-[2/2.5] max-w-[280px] max-h-[350px] mx-auto border border-dashed border-gray-200 dark:border-gray-700 rounded-lg relative overflow-hidden bg-gray-50 dark:bg-gray-800"
-                    >
-                      {/* Top overlay with text */}
-                      <div className="absolute top-3 left-3 right-3 z-10">
-                        <div className="inline-flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-full">
-                          <Shirt className="h-4 w-4" />
-                          <p className="text-xs font-medium">Select a garment image</p>
-                        </div>
-                      </div>
-                      
-                      {/* Main example content taking most space */}
-                      {garmentExamples.length > 0 ? (
-                        <div className="w-full h-full relative">
+                    </div>
+
+                    {/* Main example content taking most space */}
+                    {garmentExamples.length > 0 ? (
+                      <div className="w-full h-full relative">
+                        <motion.button
+                          key={garmentExampleIndex}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(e, info) => {
+                            if (info.offset.x > 50) {
+                              handleGarmentSwipe('left');
+                            } else if (info.offset.x < -50) {
+                              handleGarmentSwipe('right');
+                            }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            loadExampleImage(garmentExamples[garmentExampleIndex], setGarmentImageFile, setGarmentImagePreview);
+                          }}
+                          className="w-full h-full cursor-pointer group"
+                        >
+                          <Image
+                            src={garmentExamples[garmentExampleIndex]}
+                            alt={`Garment Example ${garmentExampleIndex + 1}`}
+                            width={400}
+                            height={500}
+                            className="w-full h-full object-contain pointer-events-none"
+                          />
+
+                          {/* Swipe hint overlay */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="bg-black/80 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm">
+                              👆 Nhấn để sử dụng • Vuốt để xem thêm
+                            </div>
+                          </div>
+                        </motion.button>
+
+                        {/* Navigation controls at bottom */}
+                        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-between px-6">
                           <motion.button
-                            key={garmentExampleIndex}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            dragElastic={0.2}
-                            onDragEnd={(e, info) => {
-                              if (info.offset.x > 50) {
-                                handleGarmentSwipe('left');
-                              } else if (info.offset.x < -50) {
-                                handleGarmentSwipe('right');
-                              }
-                            }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              loadExampleImage(garmentExamples[garmentExampleIndex], setGarmentImageFile, setGarmentImagePreview);
+                              handleGarmentSwipe('left');
                             }}
-                            className="w-full h-full cursor-pointer group"
+                            disabled={garmentExampleIndex === 0}
+                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
-                            <Image 
-                              src={garmentExamples[garmentExampleIndex]} 
-                              alt={`Garment Example ${garmentExampleIndex + 1}`} 
-                              width={280} 
-                              height={350} 
-                              className="w-full h-full object-contain pointer-events-none transform scale-70" 
-                            />
-                            
-                            {/* Swipe hint overlay */}
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <div className="bg-black/80 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
-                                Tap to use • Swipe to browse
-                              </div>
-                            </div>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
                           </motion.button>
-                          
-                          {/* Navigation controls at bottom */}
-                          <div className="absolute bottom-3 left-0 right-0 flex items-center justify-between px-4">
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGarmentSwipe('left');
-                              }}
-                              disabled={garmentExampleIndex === 0}
-                              className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                              </svg>
-                            </motion.button>
-                            
-                            {/* Dots indicator */}
-                            <div className="flex gap-1.5">
-                              {garmentExamples.map((_, idx) => (
-                                <motion.div 
-                                  key={idx} 
-                                  className={`w-2 h-2 rounded-full transition-all ${
-                                    idx === garmentExampleIndex ? 'bg-white scale-125' : 'bg-white/50'
+
+                          {/* Dots indicator */}
+                          <div className="flex gap-2">
+                            {garmentExamples.map((_, idx) => (
+                              <motion.div
+                                key={idx}
+                                className={`w-2.5 h-2.5 rounded-full transition-all ${idx === garmentExampleIndex ? 'bg-white scale-125' : 'bg-white/50'
                                   }`}
-                                  whileHover={{ scale: 1.2 }}
-                                />
-                              ))}
-                            </div>
-                            
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGarmentSwipe('right');
-                              }}
-                              disabled={garmentExampleIndex === garmentExamples.length - 1}
-                              className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </motion.button>
+                                whileHover={{ scale: 1.3 }}
+                              />
+                            ))}
                           </div>
+
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGarmentSwipe('right');
+                            }}
+                            disabled={garmentExampleIndex === garmentExamples.length - 1}
+                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </motion.button>
                         </div>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                          <Shirt className="h-12 w-12 text-gray-400 mb-3" />
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">
-                            No examples available
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        <Shirt className="h-16 w-16 text-purple-400 mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          Không có ví dụ
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="pt-2">
                 <Dropdown
-                  label="Garment Settings"
+                  label="⚙️ Cài đặt trang phục"
                   className="mt-2"
                 >
                   <div className="space-y-4">
                     <RadioGroup
-                      label="Photo Type"
+                      label="Loại ảnh"
                       name="garmentPhotoType"
                       options={[
-                        { label: "Auto", value: "Auto", description: "Let the API determine the photo type" },
-                        { label: "Flat-Lay", value: "Flat-Lay", description: "Garment photographed flat without a model" },
-                        { label: "Model", value: "Model", description: "Garment worn by a model" }
+                        { label: "Tự động", value: "Auto", description: "AI tự động nhận diện loại ảnh" },
+                        { label: "Phẳng", value: "Flat-Lay", description: "Ảnh trang phục nằm phẳng" },
+                        { label: "Người mẫu", value: "Model", description: "Trang phục được mặc trên người" }
                       ]}
                       value={garmentPhotoType}
                       onChange={setGarmentPhotoType}
                       variant="card"
                       layout="vertical"
                     />
-                    
+
                     <RadioGroup
-                      label="Category"
+                      label="Phân loại"
                       name="category"
                       options={[
-                        { label: "Auto", value: "Auto", description: "Automatically detect garment category" },
-                        { label: "Top", value: "Top", description: "Upper body garments like shirts, tops, etc." },
-                        { label: "Bottom", value: "Bottom", description: "Lower body garments like pants, skirts, etc." },
-                        { label: "Full-body", value: "Full-body", description: "Full-body garments like dresses, jumpsuits, etc." }
+                        { label: "Tự động", value: "Auto", description: "Tự động phát hiện loại trang phục" },
+                        { label: "Áo", value: "Top", description: "Trang phục phần thân trên như áo sơ mi, áo thun" },
+                        { label: "Quần", value: "Bottom", description: "Trang phục phần thân dưới như quần, váy" },
+                        { label: "Toàn thân", value: "Full-body", description: "Trang phục toàn thân như váy dài, jumpsuit" }
                       ]}
                       value={category}
                       onChange={setCategory}
                     />
                   </div>
                 </Dropdown>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {/* Column 3: Controls */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-gray-600" />
-                  Controls
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !modelImageFile || !garmentImageFile}
-                    loading={isLoading}
-                    className="flex-1"
-                  >
-                    {isLoading ? 'Generating...' : 'Run Try-On'}
-                  </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleReset}
-                    className="px-3"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
+        {/* Controls Section - Full Width Below */}
+        <div className="modern-card-enhanced relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 gradient-bg-subtle opacity-30"></div>
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-tl from-purple-500 to-pink-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          </div>
+
+          <div className="relative z-10">
+            {/* Header */}
+            {/* <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-3xl gradient-bg-modern flex items-center justify-center shadow-2xl pulse-glow-enhanced">
+                  <Settings className="h-8 w-8 text-white" />
                 </div>
-                
-                <RadioGroup
-                  label="Run Mode"
-                  name="mode"
-                  options={[
-                    { label: "Performance", value: "Performance", description: "Faster generation with good quality" },
-                    { label: "Balanced", value: "Balanced", description: "Good balance between speed and quality" },
-                    { label: "Quality", value: "Quality", description: "Highest quality but slower generation" }
-                  ]}
-                  value={mode}
-                  onChange={setMode}
-                  variant="card"
-                  layout="horizontal"
-                />
-                
-                <motion.div
-                  animate={{ height: showAdvancedSettings ? 'auto' : '0px', opacity: showAdvancedSettings ? 1 : 0 }}
-                  className={cn(
-                    "space-y-4 overflow-hidden px-2", 
-                    !showAdvancedSettings && "pointer-events-none"
-                  )}
+                <div className="text-left">
+                  <h3 className="text-3xl md:text-4xl font-bold modern-gradient-text mb-2">
+                    Điều Khiển Thử Đồ
+                  </h3>
+                  <p className="text-base text-gray-600 dark:text-gray-400">
+                    Cài đặt và điều khiển quá trình thử đồ ảo với AI tiên tiến
+                  </p>
+                </div>
+              </div>
+            </div> */}
+            {(!modelImageFile || !garmentImageFile) && (
+              <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium text-center">
+                  ⚠️ Vui lòng tải lên cả ảnh người mẫu và ảnh trang phục để tiếp tục
+                </p>
+              </div>
+            )}
+            {/* Main Controls */}
+            <div className="space-y-10">
+              {/* Primary Action */}
+              <div className="text-center">
+                <Button
+                  type="submit"
+                  disabled={isLoading || !modelImageFile || !garmentImageFile}
+                  loading={isLoading}
+                  className="modern-button-enhanced"
                 >
-                  <Slider
-                    min={1}
-                    max={4}
-                    step={1}
-                    value={numSamples}
-                    onChange={setNumSamples}
-                    label="Number of Samples"
-                  />
-                  
-                  <div className="relative">
-                    <label htmlFor="seed" className="block text-sm font-medium mb-1">
-                      Seed
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        id="seed"
-                        min={0}
-                        value={seed}
-                        onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-                      />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                        onClick={() => setSeed(Math.floor(Math.random() * 1000000))}
-                        className="px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md text-sm font-medium transition-colors cursor-pointer"
-                        title="Generate random seed"
-                      >
-                        🎲
-                      </motion.button>
-                    </div>
-                  </div>
-                  
-                  <RadioGroup
-                    label="Model Version"
-                    name="modelVersion"
-                    options={[
-                      { label: "v1.6 (Latest)", value: "tryon-v1.6", description: "Recommended production model" },
-                      { label: "v1.5", value: "tryon-v1.5", description: "Original model for backwards compatibility" },
-                      { label: "Staging", value: "tryon-staging", description: "Experimental model, may be slow" }
-                    ]}
-                    value={modelVersion}
-                    onChange={setModelVersion}
-                    variant="card"
-                    layout="vertical"
-                  />
-                  
-                  <Checkbox
-                    checked={comparison}
-                    onChange={(e) => setComparison(e.target.checked)}
-                    label="⚖️ Model Comparison"
-                    description="Run two models in parallel to compare results side by side"
-                  />
-                  
-                  {comparison && (
-                    <div className="space-y-3 mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600">
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Select models to compare:
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                            Model 1
-                          </label>
-                          <select
-                            value={comparisonModel1}
-                            onChange={(e) => setComparisonModel1(e.target.value)}
-                            className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
-                          >
-                            <option value="tryon-v1.5">v1.5 (Stable)</option>
-                            <option value="tryon-v1.6">v1.6 (Latest)</option>
-                            <option value="tryon-staging">Staging</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                            Model 2
-                          </label>
-                          <select
-                            value={comparisonModel2}
-                            onChange={(e) => setComparisonModel2(e.target.value)}
-                            className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
-                          >
-                            <option value="tryon-v1.5">v1.5</option>
-                            <option value="tryon-v1.6">v1.6 (Latest)</option>
-                            <option value="tryon-staging">Staging</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
+                  {isLoading ? (
+                    <span className="flex items-center gap-4">
+                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Đang tạo kết quả thử đồ...</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-4">
+                      <Sparkles className="h-8 w-8" />
+                      <span>Thử Đồ Ngay</span>
+                    </span>
                   )}
-                  
-                </motion.div>
-                
+                </Button>
+
+
+              </div>
+
+              {/* Secondary Actions */}
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                  className="w-full text-sm flex justify-center items-center gap-1"
+                  variant="outline"
+                  onClick={handleReset}
+                  className="px-10 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg"
+                  title="Đặt lại tất cả"
                 >
-                  <Settings className="h-4 w-4" />
-                  {showAdvancedSettings ? 'Hide' : 'Show'} Advanced Settings
+                  <RefreshCw className="h-5 w-5" />
+                  <span className="ml-2">Đặt lại</span>
                 </Button>
-                
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm rounded-md border border-gray-300 dark:border-gray-600"
-                  >
-                    <div className="flex items-start gap-2">
-                      <X className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                      <p>{error}</p>
-                    </div>
-                  </motion.div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </motion.form>
 
-        {/* Try-On Results Section */}
-        <AnimatePresence mode="wait">
-          {(isLoading || resultGallery.length > 0) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="mt-8"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-gray-600" />
-                      Try-On Results
-                    </div>
-                    {resultGallery.length > 1 && !isLoading && (
-                      <div className="flex items-center gap-2">
-                        {isComparisonMode && (
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
-                            Select 2 results to compare ({selectedResults.length}/2)
-                          </span>
-                        )}
-                        <Button
-                          variant={isComparisonMode ? "primary" : "outline"}
-                          size="sm"
-                          onClick={toggleComparisonMode}
-                          className="flex items-center gap-1"
-                        >
-                          {isComparisonMode ? (
-                            <>
-                              <X className="h-4 w-4" />
-                              Cancel
-                            </>
-                          ) : (
-                            <>
-                              ⚖️
-                              Compare
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AnimatePresence mode="wait">
-                    {isLoading ? (
-                      <motion.div 
-                        key="loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex flex-col items-center justify-center py-12 text-center space-y-4"
-                      >
-                        <div className="relative">
-                          <div className="h-16 w-16 rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-gray-900 dark:border-t-gray-100 animate-spin" />
-                          <Sparkles className="h-6 w-6 text-gray-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">
-                          Generating your virtual try-on...
-                        </p>
-                      </motion.div>
-                    ) : (
-                      <motion.div 
-                        key="results"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-                      >
-                        {resultGallery.map((url, index) => {
-                          const isSelected = selectedResults.includes(index);
-                          const canSelect = isComparisonMode && (selectedResults.length < 2 || isSelected);
-                          
-                          return (
-                            <motion.div 
-                              key={index}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ 
-                                opacity: 1, 
-                                scale: 1,
-                                transition: { delay: index * 0.05, duration: 0.2 }
-                              }}
-                              className={cn(
-                                "relative group cursor-pointer",
-                                isSelected && "ring-2 ring-blue-500 ring-offset-2",
-                                isComparisonMode && !canSelect && "opacity-50 cursor-not-allowed"
-                              )}
-                              onClick={() => handleResultSelection(index)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  handleResultSelection(index);
-                                }
-                              }}
-                              tabIndex={0}
-                              role="button"
-                              aria-label={isComparisonMode ? `${isSelected ? 'Deselect' : 'Select'} result ${index + 1} for comparison` : `View result ${index + 1} in full screen`}
-                            >
-                              <div className="aspect-[2/3] border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
-                                <Image 
-                                  src={url} 
-                                  alt={`Result ${index + 1}`} 
-                                  className="max-w-full max-h-full object-contain p-2" 
-                                  width={300}
-                                  height={400}
-                                  unoptimized
-                                />
-                              </div>
-                              
-                              {/* Selection indicator */}
-                              {isComparisonMode && (
-                                <div className="absolute top-2 left-2 z-10">
-                                  <div className={cn(
-                                    "w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold",
-                                    isSelected ? "bg-blue-500 border-blue-500 text-white" : "bg-white/90 border-gray-400 text-gray-600"
-                                  )}>
-                                    {isSelected ? selectedResults.indexOf(index) + 1 : ""}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Hover overlay */}
-                              {!isComparisonMode && (
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <div className="bg-black/70 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2">
-                                    <Zap className="h-4 w-4" />
-                                    Click to view full size
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Comparison mode overlay */}
-                              {isComparisonMode && canSelect && (
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <div className="bg-blue-500/90 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2">
-                                    ⚖️
-                                    {isSelected ? 'Deselect' : 'Select for comparison'}
-                                  </div>
-                                </div>
-                              )}
-                            </motion.div>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Full-screen Results Modal */}
-        <AnimatePresence>
-          {isResultsModalOpen && resultGallery.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 w-screen h-screen bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
-              style={{ 
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                width: '100vw',
-                height: '100vh'
-              }}
-              onClick={() => setIsResultsModalOpen(false)}
-            >
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Close button */}
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsResultsModalOpen(false)}
-                  className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsTipsModalOpen(true)}
+                  className="px-10 py-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg"
                 >
-                  <X className="h-6 w-6" />
-                </motion.button>
+                  <Lightbulb className="h-5 w-5" />
+                  <span className="ml-2">Mẹo sử dụng</span>
+                </Button>
+              </div>
 
-                {/* Image counter */}
-                <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
-                  <div className="flex items-center gap-2">
-                    <span>{currentResultIndex + 1} of {resultGallery.length}</span>
-                    {resultGallery.length > 1 && (
-                      <span className="text-xs opacity-75">• Use ← → keys</span>
-                    )}
-                  </div>
+              {/* Status Indicators */}
+              <div className="flex flex-wrap justify-center gap-4 mt-8">
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-green-800 dark:text-green-200">AI Sẵn sàng</span>
                 </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Chất lượng cao</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-full">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-purple-800 dark:text-purple-200">Xử lý nhanh</span>
+                </div>
+              </div>
 
-                {/* Previous button */}
-                {currentResultIndex > 0 && (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigateResult('prev');
-                    }}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </motion.button>
-                )}
+              <RadioGroup
+                className='hidden'
+                label="Run Mode"
+                name="mode"
+                options={[
+                  { label: "Quality", value: "Quality", description: "Highest quality but slower generation" }
+                ]}
+                value={mode}
+                onChange={setMode}
+                variant="card"
+                layout="horizontal"
+              />
 
-                {/* Next button */}
-                {currentResultIndex < resultGallery.length - 1 && (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigateResult('next');
-                    }}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </motion.button>
-                )}
-
-                {/* Main image */}
+              {error && (
                 <motion.div
-                  key={currentResultIndex}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="w-full h-full flex items-center justify-center p-4"
-                  onClick={(e) => e.stopPropagation()}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-4 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100 rounded-xl border-2 border-red-200 dark:border-red-800 max-w-2xl mx-auto"
                 >
-                  <Image
-                    src={resultGallery[currentResultIndex]}
-                    alt={`Result ${currentResultIndex + 1}`}
-                    className="w-auto h-auto max-w-[min(400px,calc(100vw-2rem))] max-h-[min(533px,calc(100vh-2rem))] object-contain"
-                    width={1200}
-                    height={1600}
-                    unoptimized
-                  />
+                  <div className="flex items-start gap-3">
+                    <X className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <p className="font-medium">{error}</p>
+                  </div>
                 </motion.div>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.form>
 
-                {/* Download button */}
-                <motion.a
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href={resultGallery[currentResultIndex]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="absolute bottom-4 right-4 z-10 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm transition-colors cursor-pointer"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ marginRight: '1rem' }}
-                >
-                  <Zap className="h-4 w-4" />
-                  Download
-                </motion.a>
-
-                {/* Dots indicator for multiple results */}
-                {resultGallery.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
-                    {resultGallery.map((_, idx) => (
-                      <motion.button
-                        key={idx}
-                        whileHover={{ scale: 1.2 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentResultIndex(idx);
-                        }}
-                        className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                          idx === currentResultIndex ? 'bg-white scale-125' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
+      {/* Try-On Results Section */}
+      <AnimatePresence mode="wait">
+        {(isLoading || resultGallery.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="mt-8"
+          >
+            <div className="modern-card">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold modern-gradient-text">
+                      Kết Quả Thử Đồ
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Xem kết quả thử đồ ảo của bạn
+                    </p>
+                  </div>
+                </div>
+                {resultGallery.length > 1 && !isLoading && (
+                  <div className="flex items-center gap-2">
+                    {isComparisonMode && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        Chọn 2 kết quả để so sánh ({selectedResults.length}/2)
+                      </span>
+                    )}
+                    <Button
+                      variant={isComparisonMode ? "primary" : "outline"}
+                      size="sm"
+                      onClick={toggleComparisonMode}
+                      className="flex items-center gap-1"
+                    >
+                      {isComparisonMode ? (
+                        <>
+                          <X className="h-4 w-4" />
+                          Hủy
+                        </>
+                      ) : (
+                        <>
+                          ⚖️
+                          So Sánh
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <div>
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex flex-col items-center justify-center py-16 text-center space-y-6"
+                    >
+                      <div className="relative">
+                        <div className="h-20 w-20 rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 animate-spin" />
+                        <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                          Đang tạo kết quả thử đồ ảo...
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
+                          Vui lòng chờ trong giây lát
+                        </p>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="results"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="modern-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                    >
+                      {resultGallery.map((url, index) => {
+                        const isSelected = selectedResults.includes(index);
+                        const canSelect = isComparisonMode && (selectedResults.length < 2 || isSelected);
 
-        {/* Comparison Modal */}
-        <AnimatePresence>
-          {isComparisonModalOpen && selectedResults.length === 2 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 w-screen h-screen bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
-              style={{ 
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                width: '100vw',
-                height: '100vh'
-              }}
-              onClick={closeComparisonModal}
-            >
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Close button */}
+                        return (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{
+                              opacity: 1,
+                              scale: 1,
+                              transition: { delay: index * 0.05, duration: 0.2 }
+                            }}
+                            className={cn(
+                              "relative group cursor-pointer",
+                              isSelected && "ring-2 ring-blue-500 ring-offset-2",
+                              isComparisonMode && !canSelect && "opacity-50 cursor-not-allowed"
+                            )}
+                            onClick={() => handleResultSelection(index)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleResultSelection(index);
+                              }
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={isComparisonMode ? `${isSelected ? 'Deselect' : 'Select'} result ${index + 1} for comparison` : `View result ${index + 1} in full screen`}
+                          >
+                            <div className="modern-image-container aspect-[2/3] flex items-center justify-center overflow-hidden">
+                              <Image
+                                src={url}
+                                alt={`Result ${index + 1}`}
+                                className="max-w-full max-h-full object-contain p-3"
+                                width={300}
+                                height={400}
+                                unoptimized
+                              />
+                            </div>
+
+                            {/* Selection indicator */}
+                            {isComparisonMode && (
+                              <div className="absolute top-2 left-2 z-10">
+                                <div className={cn(
+                                  "w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold",
+                                  isSelected ? "bg-blue-500 border-blue-500 text-white" : "bg-white/90 border-gray-400 text-gray-600"
+                                )}>
+                                  {isSelected ? selectedResults.indexOf(index) + 1 : ""}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Hover overlay */}
+                            {!isComparisonMode && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
+                                <div className="bg-blue-600/90 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm">
+                                  <Zap className="h-4 w-4" />
+                                  Nhấn để xem toàn màn hình
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Comparison mode overlay */}
+                            {isComparisonMode && canSelect && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-purple-900/60 to-transparent">
+                                <div className="bg-purple-600/90 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm">
+                                  ⚖️
+                                  {isSelected ? 'Bỏ chọn' : 'Chọn để so sánh'}
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Full-screen Results Modal */}
+      <AnimatePresence>
+        {isResultsModalOpen && resultGallery.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 w-screen h-screen bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh'
+            }}
+            onClick={() => setIsResultsModalOpen(false)}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Close button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsResultsModalOpen(false)}
+                className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </motion.button>
+
+              {/* Image counter */}
+              <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm shadow-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{currentResultIndex + 1} / {resultGallery.length}</span>
+                  {resultGallery.length > 1 && (
+                    <span className="text-xs opacity-90">• Dùng phím ← →</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Previous button */}
+              {currentResultIndex > 0 && (
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={closeComparisonModal}
-                  className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateResult('prev');
+                  }}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
                 >
-                  <X className="h-6 w-6" />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </motion.button>
+              )}
 
-                {/* Title and Status Info */}
-                <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
-                  <div className="flex items-center gap-3">
-                    <span>⚖️ Compare Results</span>
-                    <span className="text-xs opacity-75">• Drag to reveal or use auto</span>
-                    {isAnimating && (
-                      <div className="text-xs opacity-75 flex items-center gap-1">
-                        <span>Moving:</span>
-                        <motion.span
-                          animate={{ opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                        >
-                          {animationDirection === 'right' ? '→' : '←'}
-                        </motion.span>
-                        <span className="text-yellow-300">
-                          {Math.round(sliderPosition)}%
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Animation Control Buttons */}
-                <div 
-                  className="absolute bottom-4 left-4 z-10 bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm"
-                  onClick={(e) => e.stopPropagation()}
+              {/* Next button */}
+              {currentResultIndex < resultGallery.length - 1 && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateResult('next');
+                  }}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              )}
+
+              {/* Main image */}
+              <motion.div
+                key={currentResultIndex}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="w-full h-full flex items-center justify-center p-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Image
+                  src={resultGallery[currentResultIndex]}
+                  alt={`Result ${currentResultIndex + 1}`}
+                  className="w-auto h-auto max-w-[min(400px,calc(100vw-2rem))] max-h-[min(533px,calc(100vh-2rem))] object-contain"
+                  width={1200}
+                  height={1600}
+                  unoptimized
+                />
+              </motion.div>
+
+              {/* Download button */}
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href={resultGallery[currentResultIndex]}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                className="absolute bottom-4 right-4 z-10 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 backdrop-blur-sm transition-all shadow-lg cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+                style={{ marginRight: '1rem' }}
+              >
+                <Zap className="h-4 w-4" />
+                Tải Xuống
+              </motion.a>
+
+              {/* Dots indicator for multiple results */}
+              {resultGallery.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
+                  {resultGallery.map((_, idx) => (
                     <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      key={idx}
+                      whileHover={{ scale: 1.2 }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (isAnimating) {
-                          stopSliderAnimation();
-                        } else {
-                          startSliderAnimation();
-                        }
+                        setCurrentResultIndex(idx);
                       }}
-                      className={`px-3 py-1 rounded text-xs transition-colors cursor-pointer ${
-                        isAnimating 
-                          ? 'bg-red-500/80 hover:bg-red-500' 
-                          : 'bg-green-500/80 hover:bg-green-500'
+                      className={`w-2 h-2 rounded-full transition-all cursor-pointer ${idx === currentResultIndex ? 'bg-white scale-125' : 'bg-white/50'
+                        }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Comparison Modal */}
+      <AnimatePresence>
+        {isComparisonModalOpen && selectedResults.length === 2 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 w-screen h-screen bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh'
+            }}
+            onClick={closeComparisonModal}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Close button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={closeComparisonModal}
+                className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </motion.button>
+
+              {/* Title and Status Info */}
+              <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-full text-sm backdrop-blur-sm shadow-lg">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">⚖️ So Sánh Kết Quả</span>
+                  <span className="text-xs opacity-90">• Kéo hoặc dùng tự động</span>
+                  {isAnimating && (
+                    <div className="text-xs opacity-90 flex items-center gap-1">
+                      <span>Đang di chuyển:</span>
+                      <motion.span
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      >
+                        {animationDirection === 'right' ? '→' : '←'}
+                      </motion.span>
+                      <span className="text-yellow-300 font-semibold">
+                        {Math.round(sliderPosition)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Animation Control Buttons */}
+              <div
+                className="absolute bottom-4 left-4 z-10 bg-black/80 text-white px-5 py-2.5 rounded-full text-sm backdrop-blur-sm shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isAnimating) {
+                        stopSliderAnimation();
+                      } else {
+                        startSliderAnimation();
+                      }
+                    }}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${isAnimating
+                      ? 'bg-red-500/90 hover:bg-red-500 shadow-md'
+                      : 'bg-green-500/90 hover:bg-green-500 shadow-md'
                       }`}
-                    >
-                      {isAnimating ? '⏸️ Pause Auto' : '▶️ Start Auto'}
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        resetSliderPosition();
-                      }}
-                      className="px-3 py-1 bg-blue-500/80 hover:bg-blue-500 rounded text-xs transition-colors cursor-pointer"
-                    >
-                      🔄 Center
-                    </motion.button>
+                  >
+                    {isAnimating ? '⏸️ Tạm Dừng' : '▶️ Tự Động'}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      resetSliderPosition();
+                    }}
+                    className="px-4 py-1.5 bg-blue-500/90 hover:bg-blue-500 rounded-full text-xs font-semibold transition-all cursor-pointer shadow-md"
+                  >
+                    🔄 Về Giữa
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Comparison container */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="relative w-full h-full flex items-center justify-center p-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative w-full max-w-2xl aspect-[2/3] overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
+                  <ReactCompareSlider
+                    ref={compareSliderRef}
+                    itemOne={
+                      <ReactCompareSliderImage
+                        src={resultGallery[selectedResults[0]]}
+                        alt={`${comparisonModel1} result`}
+                      />
+                    }
+                    itemTwo={
+                      <ReactCompareSliderImage
+                        src={resultGallery[selectedResults[1]]}
+                        alt={`${comparisonModel2} result`}
+                      />
+                    }
+                    position={sliderPosition}
+                    onPositionChange={(position: number) => {
+                      if (!isAnimating) {
+                        setSliderPosition(position);
+                      }
+                    }}
+                    changePositionOnHover={false}
+                    disabled={isAnimating}
+                    transition="1.5s ease-in-out"
+                    style={{ width: '100%', height: '100%' }}
+                  />
+
+                  {/* Model Labels */}
+                  <div className="absolute top-1/2 left-3 -translate-y-1/2 z-20 bg-black/80 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
+                    {comparisonModel1.replace('tryon-', '')}
+                  </div>
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2 z-20 bg-black/80 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
+                    {comparisonModel2.replace('tryon-', '')}
                   </div>
                 </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-                                 {/* Comparison container */}
-                 <motion.div
-                   initial={{ opacity: 0, scale: 0.95 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   exit={{ opacity: 0, scale: 0.95 }}
-                   transition={{ duration: 0.15, ease: "easeOut" }}
-                   className="relative w-full h-full flex items-center justify-center p-4"
-                   onClick={(e) => e.stopPropagation()}
-                 >
-                   <div className="relative w-full max-w-2xl aspect-[2/3] overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-                     <ReactCompareSlider
-                       ref={compareSliderRef}
-                       itemOne={
-                         <ReactCompareSliderImage 
-                           src={resultGallery[selectedResults[0]]} 
-                           alt={`${comparisonModel1} result`}
-                         />
-                       }
-                       itemTwo={
-                         <ReactCompareSliderImage 
-                           src={resultGallery[selectedResults[1]]} 
-                           alt={`${comparisonModel2} result`}
-                         />
-                       }
-                       position={sliderPosition}
-                       onPositionChange={(position: number) => {
-                         if (!isAnimating) {
-                           setSliderPosition(position);
-                         }
-                       }}
-                       changePositionOnHover={false}
-                       disabled={isAnimating}
-                       transition="1.5s ease-in-out"
-                       style={{ width: '100%', height: '100%' }}
-                     />
-                     
-                     {/* Model Labels */}
-                     <div className="absolute top-1/2 left-3 -translate-y-1/2 z-20 bg-black/80 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
-                       {comparisonModel1.replace('tryon-', '')}
-                     </div>
-                     <div className="absolute top-1/2 right-3 -translate-y-1/2 z-20 bg-black/80 text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
-                       {comparisonModel2.replace('tryon-', '')}
-                     </div>
-                   </div>
-                 </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* API Key Modal */}
-        <ApiKeyModal
-          isOpen={isApiKeyModalOpen}
-          onClose={() => setIsApiKeyModalOpen(false)}
-          onSave={handleSaveApiKey}
-        />
+      {/* API Key Modal */}
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onSave={handleSaveApiKey}
+      />
     </div>
   );
 }

@@ -1,145 +1,468 @@
-# FASHN AI Virtual Try-On Next.js App
+# AIStyleHub - AI Virtual Try-On & Fashion Platform
 
-![FASHN AI Try-On App](https://cilsrdpvqtgutxprdofn.supabase.co/storage/v1/object/public/assets/logo-enhanced_60x60.png)
+![Next.js](https://img.shields.io/badge/Next.js-15.3-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19.0-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)
+![Prisma](https://img.shields.io/badge/Prisma-5.22-green?logo=prisma)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-This repository is a Next.js application for the FASHN Virtual Try-On API, allowing users to upload model and garment images to see virtual try-on results.
+Một nền tảng thời trang AI toàn diện kết hợp **Virtual Try-On** từ FASHN, **AI Recommendations** từ OpenAI GPT-4, và **AI Image Generation** với DALL-E 3.
 
-## [Live demo 🔗](https://tryon-nextjs-app.vercel.app/)
+![AIStyleHub Preview](/public/preview.png)
 
-![FASHN AI Next App preview](/public/preview.png)
+## 🌟 Tính Năng Chính
 
-### Sign Up to FASHN
-This repository requires an API key from a FASHN account.
+### 1. 👗 Virtual Try-On (FASHN AI)
+- Thử đồ ảo với công nghệ AI tiên tiến
+- Hỗ trợ nhiều loại trang phục: áo, quần, váy, jumpsuit
+- So sánh nhiều phiên bản model (v1.5, v1.6, staging)
+- Chất lượng cao với 3 chế độ: Performance, Balanced, Quality
+- Tích hợp image preprocessing tự động
 
-Don't have an account yet? [Create an account](https://app.fashn.ai/?utm_source=nextjs-tryon-app&utm_medium=readme&utm_campaign=signup)
+### 2. 🤖 AI Fashion Recommendations (GPT-4)
+- Gợi ý trang phục dựa trên mô tả phong cách
+- Kết hợp sản phẩm thông minh với AI
+- Tích hợp cơ sở dữ liệu sản phẩm
+- Cache thông minh để tối ưu chi phí
 
-If you already have an account, go to Settings → API → `+ Create new API key`
+### 3. 🎨 AI Image Generation (DALL-E 3)
+- Tạo ảnh thời trang từ text prompts
+- Chất lượng HD, photorealistic
+- Tối ưu hóa chi phí với LRU cache
+- Enhanced prompts tự động
 
-## Getting Started
+### 4. 🔐 Authentication & User Management
+- Đăng ký/Đăng nhập với JWT
+- Quản lý profile người dùng
+- Bảo mật với bcrypt password hashing
+- Protected routes với middleware
+
+### 5. 📦 Product Management
+- Quản lý danh mục sản phẩm
+- Tích hợp với shops
+- Tags và categorization
+- Prisma ORM với MySQL
+
+### 6. 💰 Cost Tracking & Analytics
+- Theo dõi chi phí API (OpenAI, FASHN)
+- Dashboard thống kê chi tiết
+- Báo cáo theo ngày/tuần/tháng
+- Real-time cost monitoring
+
+### 7. ☁️ AWS S3 Integration
+- Upload và lưu trữ ảnh trên cloud
+- Presigned URLs cho bảo mật
+- Base64 to S3 converter
+- Public và private bucket support
+
+### 8. 🌙 Dark Mode & Modern UI
+- Light/Dark/System theme
+- Responsive design
+- Framer Motion animations
+- Tailwind CSS v4
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (v18+)
-- npm or yarn
-- FASHN API key (get one from [fashn.ai](https://fashn.ai/?utm_source=nextjs-tryon-app&utm_medium=readme&utm_campaign=api-key))
+- **Node.js** 18+ và npm
+- **MySQL** database (local hoặc cloud)
+- **OpenAI API key** - [Get it here](https://platform.openai.com/api-keys)
+- **FASHN API key** - [Get it here](https://app.fashn.ai)
+- **AWS S3** (optional) - [Setup guide](https://aws.amazon.com/s3/)
 
 ### Installation
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/fashn-AI/tryon-nextjs-app
-   cd tryon-nextjs-app
-   ```
+```bash
+# 1. Clone repository
+git clone https://github.com/YOUR_USERNAME/tryonstylehub.git
+cd tryonstylehub
 
-2. Install dependencies
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
+# 2. Install dependencies
+npm install
 
-3. Create a `.env.local` file in the root directory with your FASHN API key:
-   ```
-   FASHN_API_KEY=your-api-key-here
-   ```
+# 3. Setup environment variables
+cp .env.example .env.local
+# Edit .env.local with your API keys
 
-4. Start the development server
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+# 4. Setup database
+npm run prisma:generate
+npm run db:push
+npm run db:seed  # Optional: seed sample data
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+# 5. Run development server
+npm run dev
+```
 
-## Usage
+Mở [http://localhost:3000](http://localhost:3000) để xem ứng dụng.
 
-1. Upload a model image (a photo of a person)
-2. Upload a garment image (a clothing item)
-3. Configure the parameters:
-   - Garment photo type (Auto, Flat-Lay, Model)
-   - Category (Auto, Top, Bottom, Full-body)
-   - Run mode (Performance, Balanced, Quality)
-   - Advanced settings (Seed, Number of samples)
-4. Click "Run Try-On" to see the results
+## ⚙️ Environment Variables
 
-## API Parameters Explained
+Tạo file `.env.local` với các biến sau:
 
-- **Category**: Determines how the API interprets the clothing item
-  - `Auto`: Automatically detect garment type (best for general use)
-  - `Top`: Upper body garments like shirts, t-shirts (most reliable category)
-  - `Bottom`: Lower body garments like pants, skirts (requires clear garment image)
-  - `Full-body`: Complete outfits like dresses, jumpsuits (requires full-body model)
+```env
+# Database
+DATABASE_URL="mysql://username:password@localhost:3306/database_name"
 
-- **Photo Type**: Helps optimize processing based on garment image style
-  - `Auto`: Automatic detection (general use)
-  - `Flat-Lay`: Garment laid flat (e-commerce product images)
-  - `Model`: Garment worn by a model (photos with people)
+# JWT Secret (thay đổi trong production!)
+JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-- **Run Mode**: Balances processing speed vs. quality
-  - `Performance`: Fastest processing (~7s), lower quality
-  - `Balanced`: Good balance of speed (~9s) and quality
-  - `Quality`: Best results but slowest (~13s)
+# OpenAI API
+OPENAI_API_KEY="sk-proj-your-openai-api-key"
 
-- **Other Settings**: 
-  - `Segmentation Free`: May improve quality for complex backgrounds
-  - `Seed`: Controls randomness for reproducible results
-  - `Number of Samples`: Generate multiple variations (1-4)
+# FASHN API
+FASHN_API_KEY="your-fashn-api-key"
 
-## Image Preprocessing
+# AWS S3 (Optional)
+AWS_S3_REGION="us-east-1"
+AWS_S3_BUCKET="your-bucket-name"
+AWS_ACCESS_KEY_ID="your-aws-access-key"
+AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
 
-This application implements best practices for image preprocessing before sending to the FASHN API:
+# App URL
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
 
-- **Resize**: Images with height exceeding 2000px are automatically resized while maintaining aspect ratio
-- **Format**: Images are converted to JPEG format with a quality setting of 95%
-- **Base64 Encoding**: Images are sent as base64 strings rather than URLs for simplicity in this demo app
-  (Note: In production, FASHN recommends using CDN-hosted images for better performance)
+## 📁 Project Structure
 
-These preprocessing steps help ensure optimal performance with the API while keeping payload sizes reasonable.
+```
+tryonstylehub/
+├── src/
+│   ├── app/
+│   │   ├── api/                    # API Routes
+│   │   │   ├── auth/              # Authentication endpoints
+│   │   │   ├── products/          # Product management
+│   │   │   ├── recommend/         # AI recommendations
+│   │   │   ├── generate-image/    # DALL-E integration
+│   │   │   ├── tryon/             # Virtual try-on
+│   │   │   ├── cost-stats/        # Cost tracking
+│   │   │   ├── upload/            # S3 upload
+│   │   │   └── health/            # Health check
+│   │   ├── components/            # React components
+│   │   │   ├── Layout.tsx         # Main layout
+│   │   │   ├── ThemeToggle.tsx    # Theme switcher
+│   │   │   └── ui/                # UI components
+│   │   ├── (pages)/
+│   │   │   ├── login/             # Login page
+│   │   │   ├── register/          # Register page
+│   │   │   ├── profile/           # User profile
+│   │   │   ├── dashboard/         # Analytics dashboard
+│   │   │   ├── products/          # Product catalog
+│   │   │   ├── recommend/         # AI recommendations
+│   │   │   ├── generate-image/    # Image generation
+│   │   │   └── page.tsx           # Homepage (Try-On)
+│   │   ├── layout.tsx             # Root layout
+│   │   └── globals.css            # Global styles
+│   ├── lib/
+│   │   ├── auth.ts                # Auth helpers
+│   │   ├── auth-context.tsx       # Auth provider
+│   │   ├── prisma.ts              # Prisma client
+│   │   ├── cache.ts               # LRU cache
+│   │   ├── cost-optimizer.ts      # Cost tracking
+│   │   ├── openai-ai.ts           # OpenAI integrations
+│   │   ├── s3.ts                  # AWS S3 utils
+│   │   ├── theme.tsx              # Theme provider
+│   │   └── db-check.ts            # Database utils
+│   ├── types/
+│   │   └── index.ts               # TypeScript types
+│   └── middleware.ts              # Auth middleware
+├── prisma/
+│   ├── schema.prisma              # Database schema
+│   └── seed.ts                    # Database seeding
+├── public/
+│   ├── models/                    # Example model images
+│   └── garments/                  # Example garment images
+├── .env.local                     # Environment variables (create this)
+├── .env.example                   # Environment template
+├── package.json
+├── tsconfig.json
+├── tailwind.config.js
+└── README.md
+```
 
-## Best Practices for Better Results
+## 🎯 API Endpoints
 
-- **Image Ratio**: Use 2:3 aspect ratio for best results
-- **Single Subject**: Include only one person per model image
-- **Framing**: Focus/zoom on the subject to fill most of the frame
-- **Pose Consistency**: Use similar poses between model and garment images
-- **Image Quality**: Higher resolution and clear lighting improve output quality
+### Authentication
+```
+POST   /api/auth/register    # Đăng ký tài khoản
+POST   /api/auth/login       # Đăng nhập
+GET    /api/auth/me          # Lấy thông tin user
+POST   /api/auth/logout      # Đăng xuất
+```
 
-## Deployment
+### Products & Fashion
+```
+GET    /api/products         # Danh sách sản phẩm
+POST   /api/recommend        # AI recommendations
+POST   /api/generate-image   # Tạo ảnh với DALL-E
+POST   /api/tryon            # Virtual try-on
+```
 
-You can deploy this application to any hosting platform that supports Next.js applications. Make sure to set up your environment variables (`FASHN_API_KEY`) on your hosting platform.
+### Utilities
+```
+GET    /api/cost-stats       # Thống kê chi phí
+POST   /api/upload           # Upload ảnh lên S3
+GET    /api/health           # Health check
+```
 
-## Helpful Guides and Documentation
-To get the most out of the FASHN API, we recommend to read the following guides to better understand all node features and parameters:
+## 💡 Usage Guide
 
-- [API Parameters Guide](https://docs.fashn.ai/guides/api-parameters-guide?utm_source=nextjs-tryon-app&utm_medium=readme&utm_campaign=documentation)
-- [Official API Docs](https://docs.fashn.ai/fashn-api/endpoints#request?utm_source=nextjs-tryon-app&utm_medium=readme&utm_campaign=documentation)
+### 1. Virtual Try-On
+1. Đăng nhập vào tài khoản (hoặc dùng không cần đăng nhập)
+2. Upload ảnh model (người mẫu)
+3. Upload ảnh garment (trang phục)
+4. Chọn category và settings
+5. Click "Run Try-On"
 
-## Features
+### 2. AI Recommendations
+1. Vào trang `/recommend`
+2. Nhập mô tả phong cách (VD: "casual summer beach style")
+3. AI sẽ gợi ý outfit phù hợp từ database
 
-- **Virtual Try-On**: Apply clothing items to model photos using FASHN AI's advanced VITON technology
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Client-side Image Preprocessing**: Automatic resizing and optimization for API best practices
-- **Example Images**: Built-in examples to explore capabilities without uploading files
-- **Advanced Controls**: Multiple generation modes, seed control, and batch processing
+### 3. AI Image Generation
+1. Vào trang `/generate-image`
+2. Nhập text prompt mô tả ảnh
+3. DALL-E sẽ tạo ảnh thời trang chất lượng cao
 
-## Technical Overview
+### 4. Product Management
+1. Vào trang `/products`
+2. Xem danh sách sản phẩm
+3. Click vào sản phẩm để xem chi tiết
 
-**Frontend Stack**: React with Next.js App Router, TypeScript, TailwindCSS, and Framer Motion for animations
+### 5. Dashboard
+1. Vào trang `/dashboard`
+2. Xem thống kê chi phí API
+3. Monitor usage theo thời gian
 
-**Key Components**:
-- Animated UI with smooth transitions and micro-interactions
-- Custom form elements with visual feedback
-- Three-column modular layout (model, garment, controls)
-- Full-screen results modal with navigation
-- Interactive tips and help system
+## 🗄️ Database Schema
 
-**Backend**: Serverless API routes with secure FASHN API integration, client-side image preprocessing using Canvas API, and error handling
+```prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String   // Hashed
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-## Contributing
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  imageUrl  String
+  price     Float
+  styleTags String   // JSON array
+  shopId    Int
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  outfits   Outfit[] @relation("OutfitProducts")
+}
 
-We welcome contributions to improve this application! Feel free to submit issues or pull requests.
+model Shop {
+  id        Int       @id @default(autoincrement())
+  name      String
+  url       String
+  products  Product[]
+}
 
-## License
+model Outfit {
+  id        Int       @id @default(autoincrement())
+  style     String
+  imageUrl  String?
+  products  Product[] @relation("OutfitProducts")
+}
 
-This project is open source and available under the MIT License.# tryonstylehub
+model TryOnHistory {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  modelImageUrl   String
+  garmentImageUrl String
+  resultImageUrl  String
+  modelVersion    String
+  createdAt       DateTime @default(now())
+}
+
+model CostTracking {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  service   String   // "openai", "fashn", "aws-s3"
+  operation String   // "image-generation", "try-on", "upload"
+  cost      Float
+  details   String?  // JSON
+  createdAt DateTime @default(now())
+}
+```
+
+## 🔧 Development
+
+```bash
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Start production
+npm start
+
+# Database commands
+npm run prisma:generate    # Generate Prisma Client
+npm run db:push            # Push schema to database
+npm run db:seed            # Seed sample data
+
+# Open Prisma Studio
+npx prisma studio
+```
+
+## 🚢 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Set environment variables in Vercel Dashboard
+# vercel.com/your-project/settings/environment-variables
+```
+
+### Docker
+
+```bash
+# Build image
+docker build -t aistylehub .
+
+# Run container
+docker run -p 3000:3000 --env-file .env.local aistylehub
+```
+
+### Environment Variables Setup on Hosting
+- `DATABASE_URL` - MySQL connection string
+- `JWT_SECRET` - Random secret key (min 32 chars)
+- `OPENAI_API_KEY` - OpenAI API key
+- `FASHN_API_KEY` - FASHN API key
+- `AWS_*` - AWS credentials (optional)
+
+## 🛠️ Troubleshooting
+
+### Database Connection Issues
+```bash
+# Check MySQL is running
+mysql.server status  # macOS
+sudo systemctl status mysql  # Linux
+
+# Test connection
+mysql -u username -p database_name
+```
+
+### API Key Issues
+- Verify keys in `.env.local`
+- Check OpenAI billing: https://platform.openai.com/account/billing
+- Check FASHN dashboard: https://app.fashn.ai
+
+### Build Errors
+```bash
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+## 📊 Performance & Optimization
+
+- **Image Preprocessing**: Auto resize to max 2000px height
+- **LRU Cache**: Reduce API costs for repeated requests
+- **Base64 Encoding**: Optimized for demo (use CDN in production)
+- **Cost Tracking**: Real-time monitoring of API usage
+- **Lazy Loading**: Components loaded on demand
+
+## 🎨 Design System
+
+- **Colors**: Tailwind CSS custom palette
+- **Typography**: Geist Sans & Geist Mono fonts
+- **Animations**: Framer Motion for smooth transitions
+- **Icons**: Lucide React icon library
+- **Components**: Radix UI primitives
+
+## 🔒 Security
+
+- ✅ JWT authentication with httpOnly cookies
+- ✅ Password hashing with bcrypt
+- ✅ Protected routes with middleware
+- ✅ Environment variables for secrets
+- ✅ SQL injection protection with Prisma
+- ✅ CORS configuration
+- ✅ Rate limiting ready
+
+## 📚 Documentation
+
+- [Setup Guide](./SETUP_GUIDE.md) - Chi tiết cài đặt
+- [API Documentation](./API_DOCS.md) - API reference
+- [FASHN API Docs](https://docs.fashn.ai) - FASHN official docs
+- [OpenAI API Docs](https://platform.openai.com/docs) - OpenAI docs
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 Changelog
+
+### Version 2.0.0 (Latest)
+- ✅ Full authentication system with JWT
+- ✅ AI Recommendations with GPT-4
+- ✅ AI Image Generation with DALL-E 3
+- ✅ Product management with Prisma
+- ✅ Cost tracking dashboard
+- ✅ AWS S3 integration
+- ✅ Dark mode support
+- ✅ Responsive design
+- ✅ Database integration
+
+### Version 1.0.0
+- Virtual Try-On with FASHN AI
+- Basic UI components
+- Example images
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+**AIStyleHub Team**
+
+- Virtual Try-On powered by [FASHN AI](https://fashn.ai)
+- AI Features powered by [OpenAI](https://openai.com)
+- Built with [Next.js](https://nextjs.org)
+
+## 🙏 Acknowledgments
+
+- FASHN AI for virtual try-on technology
+- OpenAI for GPT-4 and DALL-E 3
+- Next.js team for the amazing framework
+- Vercel for hosting and deployment
+- Prisma for excellent ORM
+- Tailwind CSS for styling system
+
+## 📞 Support
+
+- 📧 Email: support@aistylehub.com
+- 💬 Discord: [Join our community](https://discord.gg/aistylehub)
+- 🐛 Issues: [GitHub Issues](https://github.com/YOUR_USERNAME/tryonstylehub/issues)
+- 📖 Docs: [Documentation](https://docs.aistylehub.com)
+
+---
+
+⭐ Star this repo if you find it useful!
+
+Made with ❤️ by AIStyleHub Team
+
