@@ -49,7 +49,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     setResolvedTheme(isDark ? 'dark' : 'light')
     
-    // Force a small delay to ensure DOM updates
+    // Force a small delay to ensure DOM updates  
     setTimeout(() => {
       applyTheme(newTheme)
     }, 10)

@@ -14,7 +14,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const id = React.useId();
     
     const colorStyles = {
-      default: 'border-gray-300 dark:border-gray-700 data-[checked]:bg-gray-900 data-[checked]:border-gray-900 dark:data-[checked]:bg-gray-100 dark:data-[checked]:border-gray-100 focus-visible:ring-gray-500',
+      default: 'border-gray-300 dark:border-gray-600 data-[checked]:bg-blue-600 data-[checked]:border-blue-600 dark:data-[checked]:bg-blue-500 dark:data-[checked]:border-blue-500 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400',
     };
 
     return (
@@ -29,7 +29,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           />
           <motion.div
             className={cn(
-              "h-4 w-4 shrink-0 rounded border border-gray-300 dark:border-gray-700 ring-offset-white transition-all peer-disabled:cursor-not-allowed peer-disabled:opacity-50 dark:ring-offset-gray-950 cursor-pointer",
+              "h-4 w-4 shrink-0 rounded border ring-offset-white dark:ring-offset-gray-950 transition-all peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer",
               colorStyles[colorScheme],
               "peer-checked:data-[checked]:border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2",
               className
@@ -53,7 +53,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 transition={{ duration: 0.1 }}
                 className="flex h-full w-full items-center justify-center"
               >
-                <Check className="h-3 w-3 text-white dark:text-gray-900" />
+                <Check className="h-3 w-3 text-white" />
               </motion.div>
             )}
           </motion.div>
@@ -63,13 +63,13 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {label && (
               <label
                 htmlFor={props.id || id}
-                className="cursor-pointer text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-open-sans"
+                className="cursor-pointer text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-open-sans text-gray-900 dark:text-gray-100"
               >
                 {label}
               </label>
             )}
             {description && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-open-sans">
+              <p className="text-xs text-gray-600 dark:text-gray-300 font-open-sans">
                 {description}
               </p>
             )}

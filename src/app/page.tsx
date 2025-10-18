@@ -1,13 +1,16 @@
 'use client';
 
+import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, X, Zap } from 'lucide-react';
+import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, Users, X, Zap } from 'lucide-react';
 import Image from 'next/image';
 import pica from 'pica';
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
 import { ReactCompareSlider, ReactCompareSliderImage, useReactCompareSliderRef } from 'react-compare-slider';
 import ApiKeyModal from './components/ApiKeyModal';
 import TipsModal from './components/TipsModal';
+import VirtualModelForm from './components/VirtualModelForm';
+import VirtualModelSelector from './components/VirtualModelSelector';
 import Button from './components/ui/button';
 import Checkbox from './components/ui/checkbox';
 import { Dropdown } from './components/ui/dropdown';
@@ -98,6 +101,14 @@ export default function Home() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
 
+  // Virtual Model states
+  const [isVirtualModelSelectorOpen, setIsVirtualModelSelectorOpen] = useState(false);
+  const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
+  const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
+  const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
+  const [virtualModels, setVirtualModels] = useState<VirtualModel[]>([]);
+  const [isLoadingVirtualModels, setIsLoadingVirtualModels] = useState(false);
+
   // Load API key from localStorage on mount
   useEffect(() => {
     const savedApiKey = localStorage.getItem('fashn_api_key');
@@ -105,6 +116,26 @@ export default function Home() {
       setApiKey(savedApiKey);
     }
   }, []);
+
+  // Load virtual models on mount
+  useEffect(() => {
+    fetchVirtualModels();
+  }, []);
+
+  const fetchVirtualModels = async () => {
+    try {
+      setIsLoadingVirtualModels(true);
+      const response = await fetch('/api/virtual-models');
+      if (response.ok) {
+        const data = await response.json();
+        setVirtualModels(data.virtualModels || []);
+      }
+    } catch (error) {
+      console.error('Error fetching virtual models:', error);
+    } finally {
+      setIsLoadingVirtualModels(false);
+    }
+  };
 
   // Handle navigating results in modal
   const navigateResult = useCallback((direction: 'prev' | 'next') => {
@@ -145,6 +176,87 @@ export default function Home() {
     setApiKey(newApiKey);
     localStorage.setItem('fashn_api_key', newApiKey);
     setIsApiKeyModalOpen(false);
+  };
+
+  // Virtual Model handlers
+  const handleOpenVirtualModelSelector = () => {
+    setIsVirtualModelSelectorOpen(true);
+  };
+
+  const handleCloseVirtualModelSelector = () => {
+    setIsVirtualModelSelectorOpen(false);
+  };
+
+  const handleOpenVirtualModelForm = () => {
+    setEditingVirtualModel(null);
+    setIsVirtualModelFormOpen(true);
+    setIsVirtualModelSelectorOpen(false);
+  };
+
+  const handleCloseVirtualModelForm = () => {
+    setIsVirtualModelFormOpen(false);
+    setEditingVirtualModel(null);
+  };
+
+  const handleEditVirtualModel = (model: VirtualModel) => {
+    setEditingVirtualModel(model);
+    setIsVirtualModelFormOpen(true);
+    setIsVirtualModelSelectorOpen(false);
+  };
+
+  const handleSelectVirtualModel = (model: VirtualModel) => {
+    setSelectedVirtualModel(model);
+    setIsVirtualModelSelectorOpen(false);
+    // Refresh the list after selection
+    fetchVirtualModels();
+  };
+
+  const handleQuickSelectVirtualModel = (modelId: string) => {
+    if (modelId === '') {
+      setSelectedVirtualModel(null);
+      return;
+    }
+    const model = virtualModels.find(m => m.id === parseInt(modelId));
+    if (model) {
+      setSelectedVirtualModel(model);
+    }
+  };
+
+  const handleSaveVirtualModel = async (modelData: CreateVirtualModelInput) => {
+    try {
+      const method = editingVirtualModel ? 'PUT' : 'POST';
+      const url = editingVirtualModel
+        ? `/api/virtual-models?id=${editingVirtualModel.id}`
+        : '/api/virtual-models';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(modelData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save virtual model');
+      }
+
+      const data = await response.json();
+
+      // If we just edited, update the selected model if it was selected
+      if (editingVirtualModel && selectedVirtualModel?.id === editingVirtualModel.id) {
+        setSelectedVirtualModel(data.virtualModel);
+      }
+
+      // Refresh virtual models list
+      await fetchVirtualModels();
+
+      handleCloseVirtualModelForm();
+    } catch (err: unknown) {
+      const error = err as Error;
+      throw new Error(error.message || 'Có lỗi xảy ra khi lưu người mẫu ảo');
+    }
   };
 
   // Automated comparison slider animation
@@ -520,7 +632,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mb-0 text-body-lg md:text-title-lg lg:text-headline-sm text-gray-700 dark:text-gray-300 max-w-5xl mx-auto font-light vietnamese-text"
+          className="mb-0 text-body-lg md:text-title-lg lg:text-headline-sm text-gray-700 dark:text-gray-200 max-w-5xl mx-auto font-light vietnamese-text"
         >
           Trải nghiệm công nghệ thử đồ ảo tiên tiến nhất với AI - Xem ngay kết quả trang phục trên người bạn
         </motion.p>
@@ -531,15 +643,15 @@ export default function Home() {
           transition={{ delay: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-6 pt-8"
         >
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
             <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">AI-Powered</span>
           </div>
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
             <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Chất Lượng Cao</span>
           </div>
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg">
+          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
             <Shirt className="h-6 w-6 text-green-600 dark:text-green-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Thời Trang Hiện Đại</span>
           </div>
@@ -561,7 +673,7 @@ export default function Home() {
             <h2 className="text-headline-sm sm:text-headline-md font-semibold text-gray-900 dark:text-gray-100 vietnamese-heading">
               Mẹo để có kết quả tốt nhất
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Khám phá các mẹo và thủ thuật để tối ưu hóa trải nghiệm thử đồ ảo
             </p>
           </div>
@@ -573,7 +685,7 @@ export default function Home() {
           onClick={() => setIsTipsModalOpen(true)}
           className="modern-button bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-700"
         >
-          <Lightbulb className="h-4 w-4 mr-2" />
+          <Lightbulb className="h-4 w-4 mr-2 text-yellow-600 dark:text-yellow-400" />
           Xem Mẹo
         </Button>
 
@@ -594,26 +706,95 @@ export default function Home() {
         <div className="modern-grid grid-cols-1 lg:grid-cols-2">
           {/* Model Image Card */}
           <div className="modern-card group">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <UserRound className="h-6 w-6 text-white" />
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                  <UserRound className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-headline-sm md:text-headline-md font-semibold modern-gradient-text vietnamese-heading">
+                    Ảnh Người Mẫu
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Tải lên ảnh người mẫu hoặc chọn từ ví dụ
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-headline-sm md:text-headline-md font-semibold modern-gradient-text vietnamese-heading">
-                  Ảnh Người Mẫu
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Tải lên ảnh người mẫu hoặc chọn từ ví dụ
-                </p>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <FileInput
-                onChange={(e) => handleImageChange(e, setModelImageFile, setModelImagePreview)}
-                accept="image/*"
-                label="Tải lên ảnh người mẫu"
-              />
 
+              {/* Virtual Model Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleOpenVirtualModelSelector}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
+                title="Quản lý người mẫu ảo"
+              >
+                <Users className="h-5 w-5" />
+                <span className="text-sm font-medium hidden md:inline">Quản lý</span>
+              </motion.button>
+            </div>
+
+            {/* Virtual Model Quick Select */}
+            {!isLoadingVirtualModels && virtualModels.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
+                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+                      Chưa có người mẫu ảo
+                    </h4>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                      Tạo người mẫu ảo với thông số cơ thể của bạn để dễ dàng thử đồ
+                    </p>
+                    <button
+                      onClick={handleOpenVirtualModelForm}
+                      className="text-xs font-medium text-purple-600 dark:text-purple-400 hover:underline"
+                    >
+                      Tạo ngay →
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+
+            {/* Selected Virtual Model Info */}
+            {selectedVirtualModel && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-500 rounded-lg">
+                      <UserRound className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                        {selectedVirtualModel.avatarName}
+                      </p>
+                      <p className="text-xs text-purple-700 dark:text-purple-300">
+                        {selectedVirtualModel.height} cm • {selectedVirtualModel.weight} kg • {selectedVirtualModel.gender}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedVirtualModel(null)}
+                    className="p-1.5 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+            <div className="space-y-6">
               <AnimatePresence mode="wait">
                 {modelImagePreview ? (
                   <motion.div
@@ -698,8 +879,8 @@ export default function Home() {
                           />
 
                           {/* Swipe hint overlay */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div className="bg-black/80 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm">
+                          <div className="absolute inset-0 bg-black/40 dark:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="bg-black/90 dark:bg-gray-900/95 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
                               👆 Nhấn để sử dụng • Vuốt để xem thêm
                             </div>
                           </div>
@@ -714,7 +895,7 @@ export default function Home() {
                               handleModelSwipe('left');
                             }}
                             disabled={modelExampleIndex === 0}
-                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-full bg-black/70 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-white/30 dark:border-gray-600/50 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -740,7 +921,7 @@ export default function Home() {
                               handleModelSwipe('right');
                             }}
                             disabled={modelExampleIndex === modelExamples.length - 1}
-                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-full bg-black/70 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-white/30 dark:border-gray-600/50 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -760,6 +941,37 @@ export default function Home() {
                 )}
               </AnimatePresence>
 
+              <FileInput
+                onChange={(e) => handleImageChange(e, setModelImageFile, setModelImagePreview)}
+                accept="image/*"
+                label="Tải lên ảnh người mẫu"
+              />
+
+              {virtualModels.length > 0 && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Chọn người mẫu ảo của bạn
+                  </label>
+                  <select
+                    value={selectedVirtualModel?.id.toString() || ''}
+                    onChange={(e) => handleQuickSelectVirtualModel(e.target.value)}
+                    disabled={isLoadingVirtualModels}
+                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">-- Không chọn --</option>
+                    {virtualModels.map(model => (
+                      <option key={model.id} value={model.id.toString()}>
+                        {model.avatarName} ({model.gender === 'male' ? 'Nam' : model.gender === 'female' ? 'Nữ' : 'Phi nhị giới'}, {model.height}cm, {model.weight}kg)
+                      </option>
+                    ))}
+                  </select>
+                  {isLoadingVirtualModels && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Đang tải danh sách...
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="pt-4">
                 <Checkbox
                   checked={segmentationFree}
@@ -768,6 +980,8 @@ export default function Home() {
                   description="Để AI tự động xử lý phân đoạn hình ảnh"
                 />
               </div>
+
+
             </div>
           </div>
 
@@ -781,17 +995,12 @@ export default function Home() {
                 <h3 className="text-headline-sm md:text-headline-md font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent vietnamese-heading">
                   Ảnh Trang Phục
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Tải lên ảnh trang phục hoặc chọn từ ví dụ
                 </p>
               </div>
             </div>
             <div className="space-y-6">
-              <FileInput
-                onChange={(e) => handleImageChange(e, setGarmentImageFile, setGarmentImagePreview)}
-                accept="image/*"
-                label="Tải lên ảnh trang phục"
-              />
 
               <AnimatePresence mode="wait">
                 {garmentImagePreview ? (
@@ -877,8 +1086,8 @@ export default function Home() {
                           />
 
                           {/* Swipe hint overlay */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div className="bg-black/80 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm">
+                          <div className="absolute inset-0 bg-black/40 dark:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="bg-black/90 dark:bg-gray-900/95 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
                               👆 Nhấn để sử dụng • Vuốt để xem thêm
                             </div>
                           </div>
@@ -893,7 +1102,7 @@ export default function Home() {
                               handleGarmentSwipe('left');
                             }}
                             disabled={garmentExampleIndex === 0}
-                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-full bg-black/70 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-white/30 dark:border-gray-600/50 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -919,7 +1128,7 @@ export default function Home() {
                               handleGarmentSwipe('right');
                             }}
                             disabled={garmentExampleIndex === garmentExamples.length - 1}
-                            className="w-10 h-10 rounded-full bg-black/70 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-full bg-black/70 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-white/30 dark:border-gray-600/50 flex items-center justify-center disabled:opacity-30 text-white cursor-pointer disabled:cursor-not-allowed"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -938,6 +1147,12 @@ export default function Home() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <FileInput
+                onChange={(e) => handleImageChange(e, setGarmentImageFile, setGarmentImagePreview)}
+                accept="image/*"
+                label="Tải lên ảnh trang phục"
+              />
 
               <div className="pt-2">
                 <Dropdown
@@ -982,10 +1197,10 @@ export default function Home() {
         <div className="modern-card-enhanced relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 gradient-bg-subtle opacity-30"></div>
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-tl from-purple-500 to-pink-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute inset-0 opacity-10 dark:opacity-20">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-tl from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-pink-500 to-blue-500 dark:from-pink-400 dark:to-blue-400 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
           </div>
 
           <div className="relative z-10">
@@ -1020,7 +1235,7 @@ export default function Home() {
                   type="submit"
                   disabled={isLoading || !modelImageFile || !garmentImageFile}
                   loading={isLoading}
-                  className="modern-button-enhanced"
+                  className="modern-button-enhanced bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-4">
@@ -1044,10 +1259,10 @@ export default function Home() {
                   type="button"
                   variant="outline"
                   onClick={handleReset}
-                  className="px-10 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg"
+                  className="px-10 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg text-gray-700 dark:text-gray-300"
                   title="Đặt lại tất cả"
                 >
-                  <RefreshCw className="h-5 w-5" />
+                  <RefreshCw className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                   <span className="ml-2">Đặt lại</span>
                 </Button>
 
@@ -1055,9 +1270,9 @@ export default function Home() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsTipsModalOpen(true)}
-                  className="px-10 py-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg"
+                  className="px-10 py-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg text-blue-700 dark:text-blue-300"
                 >
-                  <Lightbulb className="h-5 w-5" />
+                  <Lightbulb className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                   <span className="ml-2">Mẹo sử dụng</span>
                 </Button>
               </div>
@@ -1129,7 +1344,7 @@ export default function Home() {
                     <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold modern-gradient-text">
                       Kết Quả Thử Đồ
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                       Xem kết quả thử đồ ảo của bạn
                     </p>
                   </div>
@@ -1180,7 +1395,7 @@ export default function Home() {
                         <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                           Đang tạo kết quả thử đồ ảo...
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
+                        <p className="text-sm text-gray-500 dark:text-gray-300 animate-pulse">
                           Vui lòng chờ trong giây lát
                         </p>
                       </div>
@@ -1247,8 +1462,8 @@ export default function Home() {
 
                             {/* Hover overlay */}
                             {!isComparisonMode && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
-                                <div className="bg-blue-600/90 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm">
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 dark:from-white/30 to-transparent">
+                                <div className="bg-blue-600/90 dark:bg-blue-500/90 text-white dark:text-gray-900 py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-800/20">
                                   <Zap className="h-4 w-4" />
                                   Nhấn để xem toàn màn hình
                                 </div>
@@ -1257,8 +1472,8 @@ export default function Home() {
 
                             {/* Comparison mode overlay */}
                             {isComparisonMode && canSelect && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-purple-900/60 to-transparent">
-                                <div className="bg-purple-600/90 text-white py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm">
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-purple-900/60 dark:from-purple-100/30 to-transparent">
+                                <div className="bg-purple-600/90 dark:bg-purple-500/90 text-white dark:text-gray-900 py-2 px-4 rounded-full text-sm flex items-center gap-2 shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-800/20">
                                   ⚖️
                                   {isSelected ? 'Bỏ chọn' : 'Chọn để so sánh'}
                                 </div>
@@ -1556,6 +1771,30 @@ export default function Home() {
         onClose={() => setIsApiKeyModalOpen(false)}
         onSave={handleSaveApiKey}
       />
+
+      {/* Virtual Model Selector Modal */}
+      <AnimatePresence>
+        {isVirtualModelSelectorOpen && (
+          <VirtualModelSelector
+            onClose={handleCloseVirtualModelSelector}
+            onSelect={handleSelectVirtualModel}
+            onCreateNew={handleOpenVirtualModelForm}
+            onEdit={handleEditVirtualModel}
+            selectedModelId={selectedVirtualModel?.id}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Virtual Model Form Modal */}
+      <AnimatePresence>
+        {isVirtualModelFormOpen && (
+          <VirtualModelForm
+            onClose={handleCloseVirtualModelForm}
+            onSave={handleSaveVirtualModel}
+            editModel={editingVirtualModel}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

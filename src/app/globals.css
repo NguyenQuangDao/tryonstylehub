@@ -228,20 +228,20 @@
 
 /* Dark Mode Colors */
 .dark {
-  --background: #000000;
-  --foreground: #FFFFFF;
+  --background: #0A0A0B;
+  --foreground: #FAFAFA;
   --muted: #A1A1AA;
   --border: #27272A;
   
-  /* Additional dark mode colors */
-  --bg-primary: #000000;
-  --bg-secondary: #09090B;
-  --bg-tertiary: #18181B;
-  --bg-card: #09090B;
-  --bg-input: #09090B;
-  --bg-button: #18181B;
+  /* Enhanced dark mode colors */
+  --bg-primary: #0A0A0B;
+  --bg-secondary: #111113;
+  --bg-tertiary: #1A1A1D;
+  --bg-card: #111113;
+  --bg-input: #1A1A1D;
+  --bg-button: #1A1A1D;
   
-  --text-primary: #FFFFFF;
+  --text-primary: #FAFAFA;
   --text-secondary: #E4E4E7;
   --text-muted: #A1A1AA;
   --text-disabled: #71717A;
@@ -255,6 +255,11 @@
   --accent-success: #10B981;
   --accent-warning: #F59E0B;
   --accent-error: #EF4444;
+  
+  /* Enhanced gradients for dark mode */
+  --gradient-primary: linear-gradient(135deg, #1E3A8A 0%, #7C3AED 100%);
+  --gradient-secondary: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  --gradient-card: linear-gradient(135deg, rgba(17, 17, 19, 0.95) 0%, rgba(26, 26, 29, 0.95) 100%);
 }
 
 /* Ensure body and html also get theme classes */
@@ -850,6 +855,14 @@ html.dark body.dark aside {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Enhanced glass effect for dark mode */
+.dark .glass-effect {
+  background: rgba(17, 17, 19, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 .modern-card {
   background: white;
   border-radius: 24px;
@@ -862,6 +875,20 @@ html.dark body.dark aside {
 .modern-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Enhanced dark mode card */
+.dark .modern-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark .modern-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .modern-card-dark {
@@ -885,6 +912,17 @@ html.dark body.dark aside {
 .modern-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.4);
+}
+
+/* Enhanced dark mode button */
+.dark .modern-button {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
+}
+
+.dark .modern-button:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  box-shadow: 0 8px 25px 0 rgba(59, 130, 246, 0.5);
 }
 
 .modern-gradient-bg {
@@ -915,6 +953,18 @@ html.dark body.dark aside {
   bottom: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23667eea' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   opacity: 0.5;
+}
+
+/* Enhanced dark mode hero section */
+.dark .hero-section {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark .hero-section::before {
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233B82F6' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.6;
 }
 
 .floating-element {
@@ -1180,6 +1230,15 @@ html.dark body.dark aside {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 50%, rgba(240, 147, 251, 0.1) 100%);
 }
 
+/* Enhanced dark mode gradients */
+.dark .gradient-bg-modern {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
+}
+
+.dark .gradient-bg-subtle {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%);
+}
+
 /* Enhanced button styles */
 .modern-button-enhanced {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1220,6 +1279,17 @@ html.dark body.dark aside {
   transform: translateY(-1px) scale(1.01);
 }
 
+/* Enhanced dark mode button enhanced */
+.dark .modern-button-enhanced {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+}
+
+.dark .modern-button-enhanced:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.6);
+}
+
 /* Modern card enhanced */
 .modern-card-enhanced {
   background: rgba(255, 255, 255, 0.95);
@@ -1246,6 +1316,24 @@ html.dark body.dark aside {
 .modern-card-enhanced:hover {
   transform: translateY(-8px);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced dark mode card enhanced */
+.dark .modern-card-enhanced {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark .modern-card-enhanced::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.dark .modern-card-enhanced:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 15px 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* Dark mode enhancements */

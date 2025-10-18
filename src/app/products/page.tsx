@@ -161,7 +161,7 @@ export default function ProductsPage() {
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 vietnamese-heading">🛒 Mua Sản Phẩm</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 font-open-sans">
-                    Click "Mua ngay" để truy cập trực tiếp vào cửa hàng. Chúng tôi liên kết với các cửa hàng uy tín.
+                    Click &quot;Mua ngay&quot; để truy cập trực tiếp vào cửa hàng. Chúng tôi liên kết với các cửa hàng uy tín.
                   </p>
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
