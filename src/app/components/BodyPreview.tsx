@@ -53,1151 +53,757 @@ export default function BodyPreview({
   ageAppearance,
   bodyProportionPreset,
 }: BodyPreviewProps) {
-  // Calculate body proportions
+  // Proportions calculation
   const bmi = weight / Math.pow(height / 100, 2);
   
-  // Determine body width factor
   const getBodyWidthFactor = () => {
     let factor = 1;
-    
-    if (bodyShape === 'slim') factor = 0.75;
+    if (bodyShape === 'slim') factor = 0.8;
     else if (bodyShape === 'athletic') factor = 1.05;
-    else if (bodyShape === 'muscular') factor = 1.25;
-    else if (bodyShape === 'curvy') factor = 1.2;
-    else if (bodyShape === 'plus-size') factor = 1.5;
-    else if (bmi < 18.5) factor = 0.8;
-    else if (bmi > 25) factor = 1.25;
-    else if (bmi > 30) factor = 1.5;
+    else if (bodyShape === 'balanced') factor = 1;
+    else if (bodyShape === 'muscular') factor = 1.2;
+    else if (bodyShape === 'curvy') factor = 1.15;
+    else if (bodyShape === 'plus-size') factor = 1.45;
+    else if (bmi < 18.5) factor = 0.85;
+    else if (bmi >= 25 && bmi < 30) factor = 1.2;
+    else if (bmi >= 30) factor = 1.4;
     
-    if (fatLevel) {
-      factor += (fatLevel - 3) * 0.08;
-    }
-    
-    return Math.max(0.6, Math.min(2, factor));
+    if (fatLevel) factor += (fatLevel - 3) * 0.06;
+    return Math.max(0.7, Math.min(1.8, factor));
   };
 
-  const bodyWidthFactor = getBodyWidthFactor();
+  const bodyFactor = getBodyWidthFactor();
+  const muscleFactor = muscleLevel ? 0.9 + (muscleLevel * 0.05) : 1;
 
-  // Get skin color
-  const getSkinColor = () => {
-    const colors: Record<string, string> = {
-      'very-light': '#FFDFC4',
-      'light': '#F0D5BE',
-      'medium': '#D1A684',
-      'tan': '#C68642',
-      'brown': '#8D5524',
-      'dark': '#5D4037',
-    };
-    return colors[skinTone] || colors['medium'];
+  // Colors
+  const skinColors: Record<string, string> = {
+    'very-light': '#FFDFC4',
+    'light': '#F0D5BE',
+    'medium': '#D1A684',
+    'tan': '#C68642',
+    'brown': '#8D5524',
+    'dark': '#5D4037',
   };
+  const skinColor = skinColors[skinTone] || skinColors['medium'];
+  const skinShadow = `${skinColor}99`;
 
-  // Get hair color
-  const getHairColor = () => {
-    const colors: Record<string, string> = {
-      'black': '#2C2C2C',
-      'brown': '#6F4E37',
-      'blonde': '#F4DCA8',
-      'red': '#C1440E',
-      'white': '#F5F5F5',
-      'gray': '#9E9E9E',
-      'purple': '#8B4789',
-      'blue': '#4A7C9E',
-      'green': '#5A7C4E',
-      'pink': '#FFB6C1',
-      'other': '#FF6B9D',
-    };
-    return colors[hairColor] || colors['black'];
+  const hairColors: Record<string, string> = {
+    'black': '#2C2C2C', 'brown': '#6F4E37', 'blonde': '#F4DCA8',
+    'red': '#C1440E', 'white': '#F5F5F5', 'gray': '#9E9E9E',
+    'purple': '#8B4789', 'blue': '#4A7C9E', 'green': '#5A7C4E',
+    'pink': '#FFB6C1', 'other': '#FF6B9D',
   };
+  const hairColor1 = hairColors[hairColor] || hairColors['black'];
 
-  // Get eye color
-  const getEyeColor = () => {
-    const colors: Record<string, string> = {
-      'brown': '#6F4E37',
-      'black': '#1A1A1A',
-      'blue': '#5B9BD5',
-      'green': '#70AD47',
-      'gray': '#A0A0A0',
-      'amber': '#D97706',
-      'hazel': '#8B7355',
-    };
-    return colors[eyeColor] || colors['brown'];
+  const eyeColors: Record<string, string> = {
+    'brown': '#8B6F47', 'black': '#1A1A1A', 'blue': '#5B9BD5',
+    'green': '#70AD47', 'gray': '#A0A0A0', 'amber': '#D97706', 'hazel': '#8B7355',
   };
+  const eyeColor1 = eyeColors[eyeColor] || eyeColors['brown'];
 
-  // Get clothing color
-  const getClothingColor = () => {
-    if (colorPalette && colorPalette.length > 0) {
-      return colorPalette[0];
-    }
-    
-    const colors: Record<string, string> = {
-      'sport': '#3B82F6',
-      'elegant': '#1F2937',
-      'street': '#EF4444',
-      'gothic': '#000000',
-      'casual': '#6B7280',
-      'business': '#1E3A8A',
-      'formal': '#0F172A',
-      'bohemian': '#D97706',
-      'vintage': '#92400E',
-      'preppy': '#DC2626',
-      'minimalist': '#374151',
-    };
-    return colors[clothingStyle] || colors['casual'];
-  };
-
-  // Get pants color (darker shade)
-  const getPantsColor = () => {
-    if (colorPalette && colorPalette.length > 1) {
-      return colorPalette[1];
-    }
-    return '#2C3E50';
-  };
-
-  // Get footwear color
-  const getFootwearColor = () => {
-    const colors: Record<string, string> = {
-      'sneaker': '#FFFFFF',
-      'heels': '#000000',
-      'sandals': '#8B6F47',
-      'boots': '#2C3E50',
-      'formal': '#000000',
-      'loafers': '#8B6F47',
-      'flats': '#C19A6B',
-      'slippers': '#9E9E9E',
-    };
-    return colors[footwearType || ''] || '#2C3E50';
-  };
-
-  const skinColor = getSkinColor();
-  const hairColorValue = getHairColor();
-  const eyeColorValue = getEyeColor();
-  const topColor = getClothingColor();
-  const pantsColor = getPantsColor();
-  const footwearColor = getFootwearColor();
-
-  // Calculate muscle definition
-  const muscleFactor = muscleLevel ? 0.85 + (muscleLevel * 0.08) : 1;
+  const topColor = (colorPalette && colorPalette[0]) || 
+    { sport: '#60A5FA', elegant: '#374151', street: '#F87171', gothic: '#18181B',
+      casual: '#94A3B8', business: '#3B82F6', formal: '#1E293B', bohemian: '#F59E0B',
+      vintage: '#92400E', preppy: '#EF4444', minimalist: '#6B7280' }[clothingStyle] || '#94A3B8';
   
+  const pantsColor = (colorPalette && colorPalette[1]) || '#334155';
+  
+  const shoeColor = {
+    sneaker: '#F5F5F5', heels: '#1A1A1A', boots: '#2C3E50',
+    sandals: '#8B6F47', formal: '#000000', loafers: '#8B6F47',
+    flats: '#C19A6B', slippers: '#BDBDBD'
+  }[footwearType || ''] || '#334155';
+
   // SVG dimensions
-  const W = 300;
-  const H = 600;
-  const centerX = W / 2;
+  const W = 400;
+  const H = 700;
+  const cx = W / 2;
   
-  // Proportions based on human anatomy (8 heads rule)
-  const headSize = H / 8.5;
+  // Anatomical proportions (8-head canon)
+  const unit = H / 9;
+  const headR = unit * 0.65;
   
-  // Calculate body parts Y positions
-  const headY = headSize * 0.6;
-  const neckY = headSize * 1.2;
-  const shouldersY = headSize * 1.5;
-  const chestY = headSize * 2.5;
-  const waistY = headSize * 3.5;
-  const hipsY = headSize * 4.5;
-  const crotchY = headSize * 4.8;
-  const kneeY = headSize * 6.2;
-  const ankleY = headSize * 7.8;
-  const feetY = headSize * 8.2;
-  
-  // Calculate widths (use custom or auto-calculate)
-  const baseBodyWidth = headSize * 2.2 * bodyWidthFactor;
-  
-  const shouldersWidth = shoulderWidth 
-    ? (shoulderWidth / height) * W * 3.5
-    : baseBodyWidth * 1.8 * muscleFactor;
-    
-  const chestWidth = baseBodyWidth * 1.6 * muscleFactor;
-  
-  const waistWidth = waistSize
-    ? (waistSize / height) * W * 2.8
-    : baseBodyWidth * 1.1;
-    
-  const hipsWidth = hipSize
-    ? (hipSize / height) * W * 3
-    : gender === 'female' ? baseBodyWidth * 1.4 : baseBodyWidth * 1.2;
-    
-  const thighWidth = baseBodyWidth * 0.55;
-  const calfWidth = baseBodyWidth * 0.45;
-  const ankleWidth = baseBodyWidth * 0.3;
+  // Y positions
+  const y = {
+    head: unit * 0.75,
+    neck: unit * 1.15,
+    shoulders: unit * 1.55,
+    chest: unit * 2.6,
+    waist: unit * 3.6,
+    hips: unit * 4.6,
+    crotch: unit * 5,
+    knee: unit * 6.5,
+    ankle: unit * 8.1,
+    feet: unit * 8.5,
+  };
 
-  // Skin darker shade for shading
-  const darkerSkin = `${skinColor}DD`;
+  // Widths
+  const base = unit * 1.1 * bodyFactor;
+  const shoulderW = shoulderWidth ? (shoulderWidth / height) * W * 2.5 : base * 1.65 * muscleFactor;
+  const chestW = base * 1.4 * muscleFactor;
+  const waistW = waistSize ? (waistSize / height) * W * 2.2 : base * 1;
+  const hipW = hipSize ? (hipSize / height) * W * 2.3 : gender === 'female' ? base * 1.35 : base * 1.15;
+  const thighW = base * 0.5;
+  const kneeW = base * 0.42;
+  const ankleW = base * 0.32;
 
   return (
-    <svg
-      width="100%"
-      height="100%"
-      viewBox={`0 0 ${W} ${H}`}
-      className="w-full h-full"
-      preserveAspectRatio="xMidYMid meet"
-    >
+    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
       <defs>
-        {/* Gradients */}
-        <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={skinColor} stopOpacity="0.9" />
+        {/* Advanced Gradients */}
+        <radialGradient id="skinRadial" cx="40%" cy="40%">
+          <stop offset="0%" stopColor={skinColor} stopOpacity="1" />
+          <stop offset="70%" stopColor={skinColor} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={skinShadow} />
+        </radialGradient>
+
+        <linearGradient id="skinLinear" x1="0%" x2="100%">
+          <stop offset="0%" stopColor={skinShadow} />
           <stop offset="50%" stopColor={skinColor} />
-          <stop offset="100%" stopColor={darkerSkin} />
+          <stop offset="100%" stopColor={skinShadow} />
         </linearGradient>
 
         <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={topColor} />
-          <stop offset="100%" stopColor={topColor} stopOpacity="0.8" />
+          <stop offset="50%" stopColor={topColor} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={topColor} stopOpacity="0.85" />
         </linearGradient>
 
         <linearGradient id="pantsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={pantsColor} />
-          <stop offset="100%" stopColor={pantsColor} stopOpacity="0.85" />
+          <stop offset="0%" stopColor={pantsColor} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={pantsColor} stopOpacity="0.8" />
         </linearGradient>
 
-        <radialGradient id="shadow">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.2" />
+        <radialGradient id="floorShadow">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.15" />
           <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </radialGradient>
 
-        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FAFBFC" />
-          <stop offset="100%" stopColor="#E8EEF2" />
+        <linearGradient id="hairGrad" x1="30%" y1="0%" x2="70%" y2="100%">
+          <stop offset="0%" stopColor={hairColor1} stopOpacity="1" />
+          <stop offset="100%" stopColor={hairColor1} stopOpacity="0.9" />
         </linearGradient>
 
-        {/* Hair gradient */}
-        <linearGradient id="hairGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={hairColorValue} />
-          <stop offset="100%" stopColor={hairColorValue} stopOpacity="0.85" />
-        </linearGradient>
+        <filter id="softGlow">
+          <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
       </defs>
 
       {/* Background */}
-      <rect width={W} height={H} fill="url(#bgGrad)" />
+      <rect width={W} height={H} fill="#FAFBFC" />
+      
+      {/* Floor Shadow */}
+      <ellipse cx={cx} cy={y.feet + 20} rx={base * 2.5} ry="15" fill="url(#floorShadow)" />
 
-      {/* Floor shadow */}
-      <ellipse cx={centerX} cy={feetY + 15} rx={baseBodyWidth * 2} ry="12" fill="url(#shadow)" />
-
-      {/* === BODY PARTS (Back to Front Order) === */}
-
-      {/* LEGS - Pants */}
-      {/* Left Leg */}
+      {/* === LEGS (Back) === */}
+      {/* Left Leg - Pants */}
       <path
-        d={`
-          M ${centerX - hipsWidth / 2 + 5} ${hipsY}
-          Q ${centerX - thighWidth} ${crotchY + 10} ${centerX - thighWidth} ${kneeY}
-          Q ${centerX - calfWidth} ${kneeY + 20} ${centerX - calfWidth} ${ankleY}
-          L ${centerX - ankleWidth} ${ankleY}
-          Q ${centerX - ankleWidth} ${kneeY + 30} ${centerX - thighWidth * 0.7} ${kneeY}
-          Q ${centerX - thighWidth * 0.7} ${crotchY + 20} ${centerX - 5} ${hipsY}
-          Z
-        `}
+        d={`M ${cx - hipW / 2 + 8} ${y.hips}
+            C ${cx - thighW - 5} ${y.crotch + 20}, ${cx - thighW} ${y.knee - 30}, ${cx - thighW} ${y.knee}
+            C ${cx - kneeW - 2} ${y.knee + 15}, ${cx - kneeW} ${y.ankle - 15}, ${cx - ankleW - 3} ${y.ankle}
+            L ${cx - ankleW + 5} ${y.ankle}
+            C ${cx - kneeW + 5} ${y.ankle - 15}, ${cx - kneeW + 8} ${y.knee + 15}, ${cx - thighW + 15} ${y.knee}
+            C ${cx - thighW + 15} ${y.knee - 30}, ${cx - thighW + 18} ${y.crotch + 20}, ${cx - 3} ${y.hips}
+            Z`}
         fill="url(#pantsGrad)"
         stroke="#1A1A1A"
         strokeWidth="1.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
 
-      {/* Right Leg */}
+      {/* Right Leg - Pants */}
       <path
-        d={`
-          M ${centerX + hipsWidth / 2 - 5} ${hipsY}
-          Q ${centerX + thighWidth} ${crotchY + 10} ${centerX + thighWidth} ${kneeY}
-          Q ${centerX + calfWidth} ${kneeY + 20} ${centerX + calfWidth} ${ankleY}
-          L ${centerX + ankleWidth} ${ankleY}
-          Q ${centerX + ankleWidth} ${kneeY + 30} ${centerX + thighWidth * 0.7} ${kneeY}
-          Q ${centerX + thighWidth * 0.7} ${crotchY + 20} ${centerX + 5} ${hipsY}
-          Z
-        `}
+        d={`M ${cx + hipW / 2 - 8} ${y.hips}
+            C ${cx + thighW + 5} ${y.crotch + 20}, ${cx + thighW} ${y.knee - 30}, ${cx + thighW} ${y.knee}
+            C ${cx + kneeW + 2} ${y.knee + 15}, ${cx + kneeW} ${y.ankle - 15}, ${cx + ankleW + 3} ${y.ankle}
+            L ${cx + ankleW - 5} ${y.ankle}
+            C ${cx + kneeW - 5} ${y.ankle - 15}, ${cx + kneeW - 8} ${y.knee + 15}, ${cx + thighW - 15} ${y.knee}
+            C ${cx + thighW - 15} ${y.knee - 30}, ${cx + thighW - 18} ${y.crotch + 20}, ${cx + 3} ${y.hips}
+            Z`}
         fill="url(#pantsGrad)"
         stroke="#1A1A1A"
         strokeWidth="1.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
 
-      {/* Knee shading */}
-      <ellipse cx={centerX - thighWidth * 0.85} cy={kneeY} rx="8" ry="4" fill="#000" opacity="0.1" />
-      <ellipse cx={centerX + thighWidth * 0.85} cy={kneeY} rx="8" ry="4" fill="#000" opacity="0.1" />
+      {/* Knee highlights */}
+      <ellipse cx={cx - thighW + 8} cy={y.knee} rx="10" ry="6" fill="#fff" opacity="0.08" />
+      <ellipse cx={cx + thighW - 8} cy={y.knee} rx="10" ry="6" fill="#fff" opacity="0.08" />
 
-      {/* SHOES */}
+      {/* === SHOES === */}
       {footwearType === 'heels' ? (
         <>
-          {/* Left Heel */}
-          <g>
-            <ellipse cx={centerX - calfWidth + 5} cy={feetY - 2} rx="12" ry="5" fill={footwearColor} stroke="#000" strokeWidth="1" />
-            <rect x={centerX - calfWidth + 3} y={feetY - 2} width="3" height="12" rx="1" fill={footwearColor} stroke="#000" strokeWidth="0.8" />
+          <g filter="url(#softGlow)">
+            <ellipse cx={cx - ankleW} cy={y.feet - 5} rx="16" ry="7" fill={shoeColor} stroke="#000" strokeWidth="1.2" />
+            <path d={`M ${cx - ankleW} ${y.feet - 5} L ${cx - ankleW + 2} ${y.feet + 15}`} stroke={shoeColor} strokeWidth="4" strokeLinecap="round" />
           </g>
-          {/* Right Heel */}
-          <g>
-            <ellipse cx={centerX + calfWidth - 5} cy={feetY - 2} rx="12" ry="5" fill={footwearColor} stroke="#000" strokeWidth="1" />
-            <rect x={centerX + calfWidth - 6} y={feetY - 2} width="3" height="12" rx="1" fill={footwearColor} stroke="#000" strokeWidth="0.8" />
+          <g filter="url(#softGlow)">
+            <ellipse cx={cx + ankleW} cy={y.feet - 5} rx="16" ry="7" fill={shoeColor} stroke="#000" strokeWidth="1.2" />
+            <path d={`M ${cx + ankleW} ${y.feet - 5} L ${cx + ankleW - 2} ${y.feet + 15}`} stroke={shoeColor} strokeWidth="4" strokeLinecap="round" />
           </g>
         </>
       ) : footwearType === 'boots' ? (
         <>
-          {/* Left Boot */}
-          <path
-            d={`M ${centerX - calfWidth - 3} ${ankleY - 25} L ${centerX - calfWidth - 3} ${feetY} 
-                Q ${centerX - calfWidth + 8} ${feetY + 5} ${centerX - calfWidth + 15} ${feetY}
-                L ${centerX - calfWidth + 15} ${ankleY - 25} Z`}
-            fill={footwearColor}
-            stroke="#000"
-            strokeWidth="1.2"
-          />
-          {/* Right Boot */}
-          <path
-            d={`M ${centerX + calfWidth + 3} ${ankleY - 25} L ${centerX + calfWidth + 3} ${feetY} 
-                Q ${centerX + calfWidth - 8} ${feetY + 5} ${centerX + calfWidth - 15} ${feetY}
-                L ${centerX + calfWidth - 15} ${ankleY - 25} Z`}
-            fill={footwearColor}
-            stroke="#000"
-            strokeWidth="1.2"
-          />
+          <rect x={cx - ankleW - 10} y={y.ankle - 35} width="24" height="42" rx="4" fill={shoeColor} stroke="#000" strokeWidth="1.2" filter="url(#softGlow)" />
+          <rect x={cx + ankleW - 14} y={y.ankle - 35} width="24" height="42" rx="4" fill={shoeColor} stroke="#000" strokeWidth="1.2" filter="url(#softGlow)" />
         </>
       ) : (
         <>
-          {/* Left Shoe */}
-          <ellipse cx={centerX - calfWidth} cy={feetY} rx="14" ry="6" fill={footwearColor} stroke="#000" strokeWidth="1.2" />
-          <ellipse cx={centerX - calfWidth} cy={feetY - 1} rx="10" ry="3" fill={footwearColor} opacity="0.5" />
-          
-          {/* Right Shoe */}
-          <ellipse cx={centerX + calfWidth} cy={feetY} rx="14" ry="6" fill={footwearColor} stroke="#000" strokeWidth="1.2" />
-          <ellipse cx={centerX + calfWidth} cy={feetY - 1} rx="10" ry="3" fill={footwearColor} opacity="0.5" />
+          <ellipse cx={cx - ankleW} cy={y.feet} rx="17" ry="8" fill={shoeColor} stroke="#000" strokeWidth="1.2" filter="url(#softGlow)" />
+          <ellipse cx={cx + ankleW} cy={y.feet} rx="17" ry="8" fill={shoeColor} stroke="#000" strokeWidth="1.2" filter="url(#softGlow)" />
         </>
       )}
 
-      {/* TORSO - Shirt/Top */}
+      {/* === TORSO === */}
       <path
-        d={`
-          M ${centerX - shouldersWidth / 2} ${shouldersY}
-          Q ${centerX - chestWidth / 2} ${chestY - 15} ${centerX - chestWidth / 2} ${chestY}
-          Q ${centerX - waistWidth / 2 - 5} ${waistY - 10} ${centerX - waistWidth / 2} ${waistY}
-          Q ${centerX - hipsWidth / 2} ${hipsY - 15} ${centerX - hipsWidth / 2} ${hipsY}
-          L ${centerX + hipsWidth / 2} ${hipsY}
-          Q ${centerX + hipsWidth / 2} ${hipsY - 15} ${centerX + waistWidth / 2} ${waistY}
-          Q ${centerX + waistWidth / 2 + 5} ${waistY - 10} ${centerX + chestWidth / 2} ${chestY}
-          Q ${centerX + chestWidth / 2} ${chestY - 15} ${centerX + shouldersWidth / 2} ${shouldersY}
-          L ${centerX + shouldersWidth / 2 - 8} ${shouldersY + 5}
-          Q ${centerX + chestWidth / 2 - 5} ${chestY - 10} ${centerX + waistWidth / 2 - 5} ${waistY + 5}
-          Q ${centerX + hipsWidth / 2 - 8} ${hipsY - 10} ${centerX + hipsWidth / 2 - 8} ${hipsY - 5}
-          L ${centerX - hipsWidth / 2 + 8} ${hipsY - 5}
-          Q ${centerX - hipsWidth / 2 + 8} ${hipsY - 10} ${centerX - waistWidth / 2 + 5} ${waistY + 5}
-          Q ${centerX - chestWidth / 2 + 5} ${chestY - 10} ${centerX - shouldersWidth / 2 + 8} ${shouldersY + 5}
-          Z
-        `}
+        d={`M ${cx - shoulderW / 2} ${y.shoulders}
+            C ${cx - chestW / 2 - 3} ${y.shoulders + 25}, ${cx - chestW / 2} ${y.chest - 15}, ${cx - chestW / 2} ${y.chest}
+            C ${cx - waistW / 2 - 4} ${y.chest + 20}, ${cx - waistW / 2} ${y.waist - 10}, ${cx - waistW / 2} ${y.waist}
+            C ${cx - hipW / 2 - 2} ${y.waist + 18}, ${cx - hipW / 2} ${y.hips - 10}, ${cx - hipW / 2} ${y.hips}
+            L ${cx + hipW / 2} ${y.hips}
+            C ${cx + hipW / 2} ${y.hips - 10}, ${cx + hipW / 2 + 2} ${y.waist + 18}, ${cx + waistW / 2} ${y.waist}
+            C ${cx + waistW / 2} ${y.waist - 10}, ${cx + waistW / 2 + 4} ${y.chest + 20}, ${cx + chestW / 2} ${y.chest}
+            C ${cx + chestW / 2} ${y.chest - 15}, ${cx + chestW / 2 + 3} ${y.shoulders + 25}, ${cx + shoulderW / 2} ${y.shoulders}
+            Z`}
         fill="url(#topGrad)"
         stroke="#1A1A1A"
         strokeWidth="1.8"
         strokeLinejoin="round"
+        strokeLinecap="round"
+        filter="url(#softGlow)"
       />
 
-      {/* Chest/Waist definition lines */}
-      <path
-        d={`M ${centerX - chestWidth / 2 + 10} ${chestY} Q ${centerX} ${chestY + 2} ${centerX + chestWidth / 2 - 10} ${chestY}`}
-        stroke="#000"
-        strokeWidth="0.5"
-        opacity="0.2"
-        fill="none"
-      />
+      {/* Torso shading for depth */}
+      <ellipse cx={cx - chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.06" />
+      <ellipse cx={cx + chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.06" />
+      <ellipse cx={cx} cy={y.waist} rx={waistW / 3} ry="15" fill="#000" opacity="0.04" />
 
-      {/* ARMS */}
+      {/* === ARMS === */}
       {/* Left Arm */}
       <path
-        d={`
-          M ${centerX - shouldersWidth / 2 + 5} ${shouldersY + 8}
-          Q ${centerX - shouldersWidth / 2 - 12} ${shouldersY + 40} ${centerX - shouldersWidth / 2 - 15} ${shouldersY + 90}
-          L ${centerX - shouldersWidth / 2 - 10} ${shouldersY + 95}
-          Q ${centerX - shouldersWidth / 2 - 8} ${shouldersY + 50} ${centerX - shouldersWidth / 2 + 3} ${shouldersY + 15}
-          Z
-        `}
+        d={`M ${cx - shoulderW / 2 + 5} ${y.shoulders + 8}
+            C ${cx - shoulderW / 2 - 8} ${y.shoulders + 35}, ${cx - shoulderW / 2 - 12} ${y.chest}, ${cx - shoulderW / 2 - 14} ${y.chest + 30}
+            C ${cx - shoulderW / 2 - 15} ${y.chest + 55}, ${cx - shoulderW / 2 - 14} ${y.waist - 10}, ${cx - shoulderW / 2 - 12} ${y.waist + 15}
+            L ${cx - shoulderW / 2 - 8} ${y.waist + 15}
+            C ${cx - shoulderW / 2 - 10} ${y.waist - 10}, ${cx - shoulderW / 2 - 11} ${y.chest + 55}, ${cx - shoulderW / 2 - 10} ${y.chest + 30}
+            C ${cx - shoulderW / 2 - 8} ${y.chest}, ${cx - shoulderW / 2 - 4} ${y.shoulders + 35}, ${cx - shoulderW / 2 + 3} ${y.shoulders + 12}
+            Z`}
         fill="url(#topGrad)"
         stroke="#1A1A1A"
         strokeWidth="1.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
+        filter="url(#softGlow)"
       />
-      
+
       {/* Left Forearm (skin) */}
       <path
-        d={`
-          M ${centerX - shouldersWidth / 2 - 12} ${shouldersY + 95}
-          Q ${centerX - shouldersWidth / 2 - 10} ${waistY} ${centerX - shouldersWidth / 2 - 8} ${waistY + 35}
-          L ${centerX - shouldersWidth / 2 - 5} ${waistY + 35}
-          Q ${centerX - shouldersWidth / 2 - 7} ${waistY} ${centerX - shouldersWidth / 2 - 10} ${shouldersY + 95}
-          Z
-        `}
-        fill="url(#skinGrad)"
+        d={`M ${cx - shoulderW / 2 - 12} ${y.waist + 20}
+            C ${cx - shoulderW / 2 - 10} ${y.waist + 55}, ${cx - shoulderW / 2 - 9} ${y.hips - 5}, ${cx - shoulderW / 2 - 8} ${y.hips + 25}
+            L ${cx - shoulderW / 2 - 5} ${y.hips + 25}
+            C ${cx - shoulderW / 2 - 6} ${y.hips - 5}, ${cx - shoulderW / 2 - 7} ${y.waist + 55}, ${cx - shoulderW / 2 - 9} ${y.waist + 20}
+            Z`}
+        fill="url(#skinLinear)"
         stroke="#1A1A1A"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinejoin="round"
+        filter="url(#softGlow)"
       />
 
       {/* Left Hand */}
-      <ellipse
-        cx={centerX - shouldersWidth / 2 - 6.5}
-        cy={waistY + 42}
-        rx="7"
-        ry="9"
-        fill={skinColor}
-        stroke="#1A1A1A"
-        strokeWidth="1"
-      />
-      <path
-        d={`M ${centerX - shouldersWidth / 2 - 10} ${waistY + 42} L ${centerX - shouldersWidth / 2 - 12} ${waistY + 48}`}
-        stroke="#1A1A1A"
-        strokeWidth="0.8"
-      />
-      <path
-        d={`M ${centerX - shouldersWidth / 2 - 6} ${waistY + 42} L ${centerX - shouldersWidth / 2 - 6} ${waistY + 48}`}
-        stroke="#1A1A1A"
-        strokeWidth="0.8"
-      />
+      <g filter="url(#softGlow)">
+        <ellipse cx={cx - shoulderW / 2 - 6.5} cy={y.hips + 32} rx="9" ry="11" fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="1.2" />
+        <path d={`M ${cx - shoulderW / 2 - 10} ${y.hips + 32} L ${cx - shoulderW / 2 - 11} ${y.hips + 40}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+        <path d={`M ${cx - shoulderW / 2 - 6} ${y.hips + 32} L ${cx - shoulderW / 2 - 6} ${y.hips + 40}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+        <path d={`M ${cx - shoulderW / 2 - 2} ${y.hips + 32} L ${cx - shoulderW / 2 - 1} ${y.hips + 39}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+      </g>
 
       {/* Right Arm */}
       <path
-        d={`
-          M ${centerX + shouldersWidth / 2 - 5} ${shouldersY + 8}
-          Q ${centerX + shouldersWidth / 2 + 12} ${shouldersY + 40} ${centerX + shouldersWidth / 2 + 15} ${shouldersY + 90}
-          L ${centerX + shouldersWidth / 2 + 10} ${shouldersY + 95}
-          Q ${centerX + shouldersWidth / 2 + 8} ${shouldersY + 50} ${centerX + shouldersWidth / 2 - 3} ${shouldersY + 15}
-          Z
-        `}
+        d={`M ${cx + shoulderW / 2 - 5} ${y.shoulders + 8}
+            C ${cx + shoulderW / 2 + 8} ${y.shoulders + 35}, ${cx + shoulderW / 2 + 12} ${y.chest}, ${cx + shoulderW / 2 + 14} ${y.chest + 30}
+            C ${cx + shoulderW / 2 + 15} ${y.chest + 55}, ${cx + shoulderW / 2 + 14} ${y.waist - 10}, ${cx + shoulderW / 2 + 12} ${y.waist + 15}
+            L ${cx + shoulderW / 2 + 8} ${y.waist + 15}
+            C ${cx + shoulderW / 2 + 10} ${y.waist - 10}, ${cx + shoulderW / 2 + 11} ${y.chest + 55}, ${cx + shoulderW / 2 + 10} ${y.chest + 30}
+            C ${cx + shoulderW / 2 + 8} ${y.chest}, ${cx + shoulderW / 2 + 4} ${y.shoulders + 35}, ${cx + shoulderW / 2 - 3} ${y.shoulders + 12}
+            Z`}
         fill="url(#topGrad)"
         stroke="#1A1A1A"
         strokeWidth="1.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
+        filter="url(#softGlow)"
       />
-      
+
       {/* Right Forearm (skin) */}
       <path
-        d={`
-          M ${centerX + shouldersWidth / 2 + 12} ${shouldersY + 95}
-          Q ${centerX + shouldersWidth / 2 + 10} ${waistY} ${centerX + shouldersWidth / 2 + 8} ${waistY + 35}
-          L ${centerX + shouldersWidth / 2 + 5} ${waistY + 35}
-          Q ${centerX + shouldersWidth / 2 + 7} ${waistY} ${centerX + shouldersWidth / 2 + 10} ${shouldersY + 95}
-          Z
-        `}
-        fill="url(#skinGrad)"
+        d={`M ${cx + shoulderW / 2 + 12} ${y.waist + 20}
+            C ${cx + shoulderW / 2 + 10} ${y.waist + 55}, ${cx + shoulderW / 2 + 9} ${y.hips - 5}, ${cx + shoulderW / 2 + 8} ${y.hips + 25}
+            L ${cx + shoulderW / 2 + 5} ${y.hips + 25}
+            C ${cx + shoulderW / 2 + 6} ${y.hips - 5}, ${cx + shoulderW / 2 + 7} ${y.waist + 55}, ${cx + shoulderW / 2 + 9} ${y.waist + 20}
+            Z`}
+        fill="url(#skinLinear)"
         stroke="#1A1A1A"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinejoin="round"
+        filter="url(#softGlow)"
       />
 
       {/* Right Hand */}
-      <ellipse
-        cx={centerX + shouldersWidth / 2 + 6.5}
-        cy={waistY + 42}
-        rx="7"
-        ry="9"
-        fill={skinColor}
-        stroke="#1A1A1A"
-        strokeWidth="1"
-      />
-      <path
-        d={`M ${centerX + shouldersWidth / 2 + 10} ${waistY + 42} L ${centerX + shouldersWidth / 2 + 12} ${waistY + 48}`}
-        stroke="#1A1A1A"
-        strokeWidth="0.8"
-      />
-      <path
-        d={`M ${centerX + shouldersWidth / 2 + 6} ${waistY + 42} L ${centerX + shouldersWidth / 2 + 6} ${waistY + 48}`}
-        stroke="#1A1A1A"
-        strokeWidth="0.8"
-      />
+      <g filter="url(#softGlow)">
+        <ellipse cx={cx + shoulderW / 2 + 6.5} cy={y.hips + 32} rx="9" ry="11" fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="1.2" />
+        <path d={`M ${cx + shoulderW / 2 + 10} ${y.hips + 32} L ${cx + shoulderW / 2 + 11} ${y.hips + 40}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+        <path d={`M ${cx + shoulderW / 2 + 6} ${y.hips + 32} L ${cx + shoulderW / 2 + 6} ${y.hips + 40}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+        <path d={`M ${cx + shoulderW / 2 + 2} ${y.hips + 32} L ${cx + shoulderW / 2 + 1} ${y.hips + 39}`} stroke="#1A1A1A" strokeWidth="1" opacity="0.6" />
+      </g>
 
-      {/* NECK */}
+      {/* === NECK === */}
       <path
-        d={`
-          M ${centerX - headSize * 0.25} ${neckY}
-          L ${centerX - headSize * 0.3} ${shouldersY}
-          L ${centerX + headSize * 0.3} ${shouldersY}
-          L ${centerX + headSize * 0.25} ${neckY}
-          Z
-        `}
-        fill="url(#skinGrad)"
+        d={`M ${cx - headR * 0.35} ${y.neck - 5}
+            C ${cx - headR * 0.4} ${y.neck + 8}, ${cx - headR * 0.42} ${y.shoulders - 5}, ${cx - headR * 0.45} ${y.shoulders}
+            L ${cx + headR * 0.45} ${y.shoulders}
+            C ${cx + headR * 0.42} ${y.shoulders - 5}, ${cx + headR * 0.4} ${y.neck + 8}, ${cx + headR * 0.35} ${y.neck - 5}
+            Z`}
+        fill="url(#skinLinear)"
         stroke="#1A1A1A"
         strokeWidth="1.2"
+        strokeLinejoin="round"
+        filter="url(#softGlow)"
       />
 
-      {/* HEAD */}
+      {/* === HEAD === */}
       {faceShape === 'round' ? (
-        <circle cx={centerX} cy={headY} r={headSize * 0.6} fill="url(#skinGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+        <circle cx={cx} cy={y.head} r={headR} fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="2" filter="url(#softGlow)" />
       ) : faceShape === 'square' ? (
-        <rect x={centerX - headSize * 0.55} y={headY - headSize * 0.6} width={headSize * 1.1} height={headSize * 1.2} rx="8" fill="url(#skinGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+        <rect x={cx - headR * 0.9} y={y.head - headR} width={headR * 1.8} height={headR * 2} rx="12" fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="2" filter="url(#softGlow)" />
       ) : faceShape === 'long' ? (
-        <ellipse cx={centerX} cy={headY} rx={headSize * 0.5} ry={headSize * 0.68} fill="url(#skinGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+        <ellipse cx={cx} cy={y.head} rx={headR * 0.8} ry={headR * 1.15} fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="2" filter="url(#softGlow)" />
       ) : faceShape === 'heart' ? (
         <path
-          d={`
-            M ${centerX - headSize * 0.45} ${headY - headSize * 0.4}
-            Q ${centerX - headSize * 0.6} ${headY - headSize * 0.1} ${centerX - headSize * 0.5} ${headY + headSize * 0.2}
-            Q ${centerX - headSize * 0.3} ${headY + headSize * 0.5} ${centerX} ${headSize + headY * 0.6}
-            Q ${centerX + headSize * 0.3} ${headY + headSize * 0.5} ${centerX + headSize * 0.5} ${headY + headSize * 0.2}
-            Q ${centerX + headSize * 0.6} ${headY - headSize * 0.1} ${centerX + headSize * 0.45} ${headY - headSize * 0.4}
-            Q ${centerX} ${headY - headSize * 0.65} ${centerX - headSize * 0.45} ${headY - headSize * 0.4}
-            Z
-          `}
-          fill="url(#skinGrad)"
+          d={`M ${cx} ${y.head - headR * 0.95}
+              C ${cx - headR * 0.7} ${y.head - headR * 0.6}, ${cx - headR * 0.85} ${y.head - headR * 0.2}, ${cx - headR * 0.75} ${y.head + headR * 0.3}
+              Q ${cx - headR * 0.4} ${y.head + headR * 0.85}, ${cx} ${y.head + headR}
+              Q ${cx + headR * 0.4} ${y.head + headR * 0.85}, ${cx + headR * 0.75} ${y.head + headR * 0.3}
+              C ${cx + headR * 0.85} ${y.head - headR * 0.2}, ${cx + headR * 0.7} ${y.head - headR * 0.6}, ${cx} ${y.head - headR * 0.95}
+              Z`}
+          fill="url(#skinRadial)"
           stroke="#1A1A1A"
-          strokeWidth="1.8"
-        />
-      ) : faceShape === 'triangle' ? (
-        <path
-          d={`
-            M ${centerX} ${headY - headSize * 0.6}
-            L ${centerX - headSize * 0.5} ${headY + headSize * 0.5}
-            Q ${centerX} ${headY + headSize * 0.6} ${centerX + headSize * 0.5} ${headY + headSize * 0.5}
-            Z
-          `}
-          fill="url(#skinGrad)"
-          stroke="#1A1A1A"
-          strokeWidth="1.8"
+          strokeWidth="2"
+          filter="url(#softGlow)"
         />
       ) : (
-        <ellipse cx={centerX} cy={headY} rx={headSize * 0.55} ry={headSize * 0.62} fill="url(#skinGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+        <ellipse cx={cx} cy={y.head} rx={headR * 0.88} ry={headR} fill="url(#skinRadial)" stroke="#1A1A1A" strokeWidth="2" filter="url(#softGlow)" />
       )}
 
-      {/* EARS */}
-      <g>
-        <path
-          d={`M ${centerX - headSize * 0.6} ${headY - 5} 
-              Q ${centerX - headSize * 0.65} ${headY} ${centerX - headSize * 0.6} ${headY + 15}
-              Q ${centerX - headSize * 0.55} ${headY + 10} ${centerX - headSize * 0.58} ${headY}
-              Z`}
-          fill={skinColor}
-          stroke="#1A1A1A"
-          strokeWidth="1"
-        />
-        <ellipse cx={centerX - headSize * 0.61} cy={headY + 3} rx="2" ry="3" fill={skinColor} opacity="0.7" />
-      </g>
-      <g>
-        <path
-          d={`M ${centerX + headSize * 0.6} ${headY - 5} 
-              Q ${centerX + headSize * 0.65} ${headY} ${centerX + headSize * 0.6} ${headY + 15}
-              Q ${centerX + headSize * 0.55} ${headY + 10} ${centerX + headSize * 0.58} ${headY}
-              Z`}
-          fill={skinColor}
-          stroke="#1A1A1A"
-          strokeWidth="1"
-        />
-        <ellipse cx={centerX + headSize * 0.61} cy={headY + 3} rx="2" ry="3" fill={skinColor} opacity="0.7" />
+      {/* Neck shadow */}
+      <ellipse cx={cx} cy={y.neck} rx={headR * 0.35} ry="5" fill="#000" opacity="0.08" />
+
+      {/* === EARS === */}
+      <g filter="url(#softGlow)">
+        <ellipse cx={cx - headR * 0.88} cy={y.head + 3} rx="7" ry="12" fill={skinColor} stroke="#1A1A1A" strokeWidth="1.2" />
+        <ellipse cx={cx - headR * 0.88} cy={y.head + 5} rx="3" ry="5" fill={skinShadow} opacity="0.4" />
+        
+        <ellipse cx={cx + headR * 0.88} cy={y.head + 3} rx="7" ry="12" fill={skinColor} stroke="#1A1A1A" strokeWidth="1.2" />
+        <ellipse cx={cx + headR * 0.88} cy={y.head + 5} rx="3" ry="5" fill={skinShadow} opacity="0.4" />
       </g>
 
-      {/* HAIR */}
-      {hairStyle === 'long' && (
-        <g>
-          {/* Hair mass on head */}
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.65} ry={headSize * 0.5} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          {/* Long hair flowing down */}
-          <path
-            d={`M ${centerX - headSize * 0.6} ${headY}
-                Q ${centerX - headSize * 0.65} ${shouldersY + 30} ${centerX - headSize * 0.6} ${chestY + 40}
-                L ${centerX - headSize * 0.5} ${chestY + 40}
-                Q ${centerX - headSize * 0.55} ${shouldersY + 30} ${centerX - headSize * 0.5} ${headY}`}
-            fill="url(#hairGrad)"
-            stroke="#1A1A1A"
-            strokeWidth="1.2"
-          />
-          <path
-            d={`M ${centerX + headSize * 0.6} ${headY}
-                Q ${centerX + headSize * 0.65} ${shouldersY + 30} ${centerX + headSize * 0.6} ${chestY + 40}
-                L ${centerX + headSize * 0.5} ${chestY + 40}
-                Q ${centerX + headSize * 0.55} ${shouldersY + 30} ${centerX + headSize * 0.5} ${headY}`}
-            fill="url(#hairGrad)"
-            stroke="#1A1A1A"
-            strokeWidth="1.2"
-          />
-        </g>
-      )}
+      {/* === HAIR === */}
+      <g filter="url(#softGlow)">
+        {hairStyle === 'long' && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 1.05} ry={headR * 0.75} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            <path
+              d={`M ${cx - headR * 0.85} ${y.head - headR * 0.1}
+                  C ${cx - headR * 0.9} ${y.shoulders + 30}, ${cx - headR * 0.88} ${y.chest + 10}, ${cx - headR * 0.82} ${y.chest + 50}
+                  L ${cx - headR * 0.68} ${y.chest + 50}
+                  C ${cx - headR * 0.74} ${y.chest + 10}, ${cx - headR * 0.76} ${y.shoulders + 30}, ${cx - headR * 0.72} ${y.head - headR * 0.1}
+                  Z`}
+              fill="url(#hairGrad)"
+              stroke="#1A1A1A"
+              strokeWidth="1.3"
+            />
+            <path
+              d={`M ${cx + headR * 0.85} ${y.head - headR * 0.1}
+                  C ${cx + headR * 0.9} ${y.shoulders + 30}, ${cx + headR * 0.88} ${y.chest + 10}, ${cx + headR * 0.82} ${y.chest + 50}
+                  L ${cx + headR * 0.68} ${y.chest + 50}
+                  C ${cx + headR * 0.74} ${y.chest + 10}, ${cx + headR * 0.76} ${y.shoulders + 30}, ${cx + headR * 0.72} ${y.head - headR * 0.1}
+                  Z`}
+              fill="url(#hairGrad)"
+              stroke="#1A1A1A"
+              strokeWidth="1.3"
+            />
+          </g>
+        )}
 
-      {hairStyle === 'short' && (
+        {(hairStyle === 'short' || hairStyle === 'buzz-cut') && (
+          <path
+            d={`M ${cx - headR * 0.85} ${y.head - headR * 0.4}
+                Q ${cx} ${y.head - headR * 1.05} ${cx + headR * 0.85} ${y.head - headR * 0.4}
+                Q ${cx + headR * 0.92} ${y.head - headR * 0.2}, ${cx + headR * 0.92} ${y.head + headR * 0.05}
+                Q ${cx + headR * 0.85} ${y.head + headR * 0.25}, ${cx + headR * 0.7} ${y.head + headR * 0.35}
+                L ${cx - headR * 0.7} ${y.head + headR * 0.35}
+                Q ${cx - headR * 0.85} ${y.head + headR * 0.25}, ${cx - headR * 0.92} ${y.head + headR * 0.05}
+                Q ${cx - headR * 0.92} ${y.head - headR * 0.2}, ${cx - headR * 0.85} ${y.head - headR * 0.4}
+                Z`}
+            fill="url(#hairGrad)"
+            stroke="#1A1A1A"
+            strokeWidth={hairStyle === 'buzz-cut' ? "1" : "1.6"}
+            opacity={hairStyle === 'buzz-cut' ? "0.85" : "1"}
+          />
+        )}
+
+        {hairStyle === 'medium' && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 1.02} ry={headR * 0.72} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            <path d={`M ${cx - headR * 0.82} ${y.head} L ${cx - headR * 0.78} ${y.shoulders - 15} L ${cx - headR * 0.68} ${y.shoulders - 15} L ${cx - headR * 0.7} ${y.head} Z`} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.2" />
+            <path d={`M ${cx + headR * 0.82} ${y.head} L ${cx + headR * 0.78} ${y.shoulders - 15} L ${cx + headR * 0.68} ${y.shoulders - 15} L ${cx + headR * 0.7} ${y.head} Z`} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.2" />
+          </g>
+        )}
+
+        {(hairStyle === 'curly' || hairStyle === 'wavy') && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 1.1} ry={headR * 0.78} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            {[...Array(8)].map((_, i) => (
+              <circle key={i} cx={cx - headR * 0.7 + i * (headR * 0.2)} cy={y.head - headR * 0.65 + (i % 2) * 8} r="6" fill={hairColor1} opacity="0.5" />
+            ))}
+          </g>
+        )}
+
+        {hairStyle === 'ponytail' && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 0.95} ry={headR * 0.65} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            <ellipse cx={cx} cy={y.head - headR * 0.85} rx="13" ry="18" fill={hairColor1} stroke="#1A1A1A" strokeWidth="1.5" />
+            <ellipse cx={cx} cy={y.head - headR * 1.15} rx="10" ry="25" fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.3" />
+          </g>
+        )}
+
+        {hairStyle === 'bun' && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 0.95} ry={headR * 0.65} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            <circle cx={cx} cy={y.head - headR * 1.05} r="18" fill={hairColor1} stroke="#1A1A1A" strokeWidth="1.8" />
+            <circle cx={cx} cy={y.head - headR * 1.05} r="12" fill={hairColor1} opacity="0.6" />
+          </g>
+        )}
+
+        {hairStyle === 'straight' && (
+          <g>
+            <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 1.02} ry={headR * 0.72} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+            <rect x={cx - headR * 0.82} y={y.head - headR * 0.05} width={headR * 0.15} height={y.shoulders - y.head + 5} rx="2" fill={hairColor1} stroke="#1A1A1A" strokeWidth="0.8" />
+            <rect x={cx + headR * 0.67} y={y.head - headR * 0.05} width={headR * 0.15} height={y.shoulders - y.head + 5} rx="2" fill={hairColor1} stroke="#1A1A1A" strokeWidth="0.8" />
+          </g>
+        )}
+
+        {!['long', 'short', 'medium', 'curly', 'wavy', 'ponytail', 'bun', 'buzz-cut', 'straight', 'bald'].includes(hairStyle) && (
+          <ellipse cx={cx} cy={y.head - headR * 0.7} rx={headR * 0.98} ry={headR * 0.68} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.8" />
+        )}
+      </g>
+
+      {/* === FACIAL FEATURES === */}
+      <g filter="url(#softGlow)">
+        {/* Eyebrows */}
+        <path d={`M ${cx - headR * 0.42} ${y.head - headR * 0.28} Q ${cx - headR * 0.25} ${y.head - headR * 0.33} ${cx - headR * 0.12} ${y.head - headR * 0.28}`} 
+          stroke="#3E2723" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d={`M ${cx + headR * 0.42} ${y.head - headR * 0.28} Q ${cx + headR * 0.25} ${y.head - headR * 0.33} ${cx + headR * 0.12} ${y.head - headR * 0.28}`} 
+          stroke="#3E2723" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+
+        {/* Eyes */}
+        {/* Left Eye */}
+        <ellipse cx={cx - headR * 0.3} cy={y.head - headR * 0.15} rx="10" ry="12" fill="white" stroke="#1A1A1A" strokeWidth="1.2" />
+        <circle cx={cx - headR * 0.3} cy={y.head - headR * 0.15} r="7" fill={eyeColor1} />
+        <circle cx={cx - headR * 0.3} cy={y.head - headR * 0.15} r="4" fill="#000" />
+        <circle cx={cx - headR * 0.27} cy={y.head - headR * 0.2} r="2" fill="white" opacity="0.95" />
+        <ellipse cx={cx - headR * 0.3} cy={y.head - headR * 0.08} rx="9" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="1" opacity="0.3" />
+
+        {/* Right Eye */}
+        <ellipse cx={cx + headR * 0.3} cy={y.head - headR * 0.15} rx="10" ry="12" fill="white" stroke="#1A1A1A" strokeWidth="1.2" />
+        <circle cx={cx + headR * 0.3} cy={y.head - headR * 0.15} r="7" fill={eyeColor1} />
+        <circle cx={cx + headR * 0.3} cy={y.head - headR * 0.15} r="4" fill="#000" />
+        <circle cx={cx + headR * 0.33} cy={y.head - headR * 0.2} r="2" fill="white" opacity="0.95" />
+        <ellipse cx={cx + headR * 0.3} cy={y.head - headR * 0.08} rx="9" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="1" opacity="0.3" />
+
+        {/* Eyelashes */}
+        <path d={`M ${cx - headR * 0.38} ${y.head - headR * 0.2} L ${cx - headR * 0.4} ${y.head - headR * 0.23}`} stroke="#000" strokeWidth="1" strokeLinecap="round" />
+        <path d={`M ${cx + headR * 0.38} ${y.head - headR * 0.2} L ${cx + headR * 0.4} ${y.head - headR * 0.23}`} stroke="#000" strokeWidth="1" strokeLinecap="round" />
+
+        {/* Nose */}
         <path
-          d={`M ${centerX - headSize * 0.55} ${headY - headSize * 0.3}
-              Q ${centerX} ${headY - headSize * 0.7} ${centerX + headSize * 0.55} ${headY - headSize * 0.3}
-              Q ${centerX + headSize * 0.6} ${headY - headSize * 0.2} ${centerX + headSize * 0.6} ${headY}
-              Q ${centerX + headSize * 0.55} ${headY + headSize * 0.15} ${centerX + headSize * 0.5} ${headY + headSize * 0.2}
-              L ${centerX - headSize * 0.5} ${headY + headSize * 0.2}
-              Q ${centerX - headSize * 0.55} ${headY + headSize * 0.15} ${centerX - headSize * 0.6} ${headY}
-              Q ${centerX - headSize * 0.6} ${headY - headSize * 0.2} ${centerX - headSize * 0.55} ${headY - headSize * 0.3}
-              Z`}
-          fill="url(#hairGrad)"
+          d={`M ${cx} ${y.head - headR * 0.18}
+              L ${cx - 3} ${y.head + headR * 0.05}
+              M ${cx} ${y.head - headR * 0.18}
+              L ${cx + 3} ${y.head + headR * 0.05}`}
           stroke="#1A1A1A"
           strokeWidth="1.5"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.5"
         />
-      )}
+        <ellipse cx={cx - 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.35" />
+        <ellipse cx={cx + 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.35" />
 
-      {hairStyle === 'medium' && (
-        <g>
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.65} ry={headSize * 0.5} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          <path
-            d={`M ${centerX - headSize * 0.6} ${headY}
-                L ${centerX - headSize * 0.58} ${shouldersY - 10}
-                L ${centerX - headSize * 0.48} ${shouldersY - 10}
-                L ${centerX - headSize * 0.5} ${headY}
-                Z`}
-            fill="url(#hairGrad)"
-            stroke="#1A1A1A"
-            strokeWidth="1"
-          />
-          <path
-            d={`M ${centerX + headSize * 0.6} ${headY}
-                L ${centerX + headSize * 0.58} ${shouldersY - 10}
-                L ${centerX + headSize * 0.48} ${shouldersY - 10}
-                L ${centerX + headSize * 0.5} ${headY}
-                Z`}
-            fill="url(#hairGrad)"
-            stroke="#1A1A1A"
-            strokeWidth="1"
-          />
-        </g>
-      )}
+        {/* Lips */}
+        <path
+          d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
+              Q ${cx} ${y.head + headR * 0.48} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
+          stroke="#C85A54"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.85"
+        />
+        <path
+          d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
+              Q ${cx} ${y.head + headR * 0.43} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
+          stroke="#FFFFFF"
+          strokeWidth="1.5"
+          opacity="0.4"
+          fill="none"
+          strokeLinecap="round"
+        />
 
-      {(hairStyle === 'curly' || hairStyle === 'wavy') && (
-        <g>
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.7} ry={headSize * 0.55} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          {/* Curly strands */}
-          {[...Array(5)].map((_, i) => (
-            <circle
-              key={i}
-              cx={centerX - headSize * 0.5 + (i * headSize * 0.25)}
-              cy={headY - headSize * 0.45 + (i % 2) * 5}
-              r="4"
-              fill={hairColorValue}
-              opacity="0.6"
-            />
-          ))}
-        </g>
-      )}
+        {/* Cheek blush */}
+        <ellipse cx={cx - headR * 0.5} cy={y.head + headR * 0.15} rx="12" ry="8" fill="#FF69B4" opacity="0.12" />
+        <ellipse cx={cx + headR * 0.5} cy={y.head + headR * 0.15} rx="12" ry="8" fill="#FF69B4" opacity="0.12" />
+      </g>
 
-      {hairStyle === 'ponytail' && (
-        <g>
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.6} ry={headSize * 0.45} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          {/* Ponytail */}
-          <ellipse cx={centerX} cy={headY - headSize * 0.55} rx="8" ry="12" fill={hairColorValue} stroke="#1A1A1A" strokeWidth="1" />
-          <path
-            d={`M ${centerX - 5} ${headY - headSize * 0.45}
-                Q ${centerX} ${headY - headSize * 0.9} ${centerX + 5} ${headY - headSize * 0.45}`}
-            fill={hairColorValue}
-            stroke="#1A1A1A"
-            strokeWidth="1.2"
-          />
-        </g>
-      )}
-
-      {hairStyle === 'bun' && (
-        <g>
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.6} ry={headSize * 0.45} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          {/* Bun on top */}
-          <circle cx={centerX} cy={headY - headSize * 0.7} r="12" fill={hairColorValue} stroke="#1A1A1A" strokeWidth="1.5" />
-          <circle cx={centerX} cy={headY - headSize * 0.7} r="8" fill={hairColorValue} opacity="0.7" />
-        </g>
-      )}
-
-      {hairStyle === 'buzz-cut' && (
-        <ellipse cx={centerX} cy={headY - headSize * 0.4} rx={headSize * 0.57} ry={headSize * 0.35} fill={hairColorValue} stroke="#1A1A1A" strokeWidth="1.2" opacity="0.8" />
-      )}
-
-      {hairStyle === 'straight' && (
-        <g>
-          <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.65} ry={headSize * 0.5} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-          <rect x={centerX - headSize * 0.6} y={headY} width={headSize * 0.12} height={shouldersY - headY - 5} fill={hairColorValue} stroke="#1A1A1A" strokeWidth="0.8" />
-          <rect x={centerX + headSize * 0.48} y={headY} width={headSize * 0.12} height={shouldersY - headY - 5} fill={hairColorValue} stroke="#1A1A1A" strokeWidth="0.8" />
-        </g>
-      )}
-
-      {hairStyle === 'bald' && (
-        <circle cx={centerX} cy={headY - headSize * 0.3} r="3" fill={skinColor} opacity="0.3" />
-      )}
-
-      {/* Default hair if not specified */}
-      {!['long', 'short', 'medium', 'curly', 'wavy', 'ponytail', 'bun', 'buzz-cut', 'straight', 'bald'].includes(hairStyle) && (
-        <ellipse cx={centerX} cy={headY - headSize * 0.5} rx={headSize * 0.6} ry={headSize * 0.48} fill="url(#hairGrad)" stroke="#1A1A1A" strokeWidth="1.5" />
-      )}
-
-      {/* FACIAL FEATURES */}
-      {/* Eyebrows */}
-      <path
-        d={`M ${centerX - headSize * 0.28} ${headY - headSize * 0.2} 
-            Q ${centerX - headSize * 0.15} ${headY - headSize * 0.24} ${centerX - headSize * 0.08} ${headY - headSize * 0.2}`}
-        stroke="#2C3E50"
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d={`M ${centerX + headSize * 0.28} ${headY - headSize * 0.2} 
-            Q ${centerX + headSize * 0.15} ${headY - headSize * 0.24} ${centerX + headSize * 0.08} ${headY - headSize * 0.2}`}
-        stroke="#2C3E50"
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      {/* Eyes */}
-      {/* Left Eye */}
-      <ellipse cx={centerX - headSize * 0.2} cy={headY - headSize * 0.1} rx="7" ry="9" fill="white" stroke="#1A1A1A" strokeWidth="1" />
-      <circle cx={centerX - headSize * 0.2} cy={headY - headSize * 0.1} r="5" fill={eyeColorValue} />
-      <circle cx={centerX - headSize * 0.2} cy={headY - headSize * 0.1} r="2.5" fill="#000" />
-      <circle cx={centerX - headSize * 0.18} cy={headY - headSize * 0.13} r="1.5" fill="white" opacity="0.9" />
-      <path
-        d={`M ${centerX - headSize * 0.27} ${headY - headSize * 0.15} 
-            Q ${centerX - headSize * 0.2} ${headY - headSize * 0.17} ${centerX - headSize * 0.13} ${headY - headSize * 0.15}`}
-        stroke="#1A1A1A"
-        strokeWidth="1"
-        fill="none"
-      />
-
-      {/* Right Eye */}
-      <ellipse cx={centerX + headSize * 0.2} cy={headY - headSize * 0.1} rx="7" ry="9" fill="white" stroke="#1A1A1A" strokeWidth="1" />
-      <circle cx={centerX + headSize * 0.2} cy={headY - headSize * 0.1} r="5" fill={eyeColorValue} />
-      <circle cx={centerX + headSize * 0.2} cy={headY - headSize * 0.1} r="2.5" fill="#000" />
-      <circle cx={centerX + headSize * 0.22} cy={headY - headSize * 0.13} r="1.5" fill="white" opacity="0.9" />
-      <path
-        d={`M ${centerX + headSize * 0.27} ${headY - headSize * 0.15} 
-            Q ${centerX + headSize * 0.2} ${headY - headSize * 0.17} ${centerX + headSize * 0.13} ${headY - headSize * 0.15}`}
-        stroke="#1A1A1A"
-        strokeWidth="1"
-        fill="none"
-      />
-
-      {/* Nose */}
-      <path
-        d={`M ${centerX} ${headY - headSize * 0.12} 
-            Q ${centerX - 2} ${headY + headSize * 0.02} ${centerX - 4} ${headY + headSize * 0.08}
-            M ${centerX} ${headY - headSize * 0.12}
-            Q ${centerX + 2} ${headY + headSize * 0.02} ${centerX + 4} ${headY + headSize * 0.08}`}
-        stroke="#1A1A1A"
-        strokeWidth="1.2"
-        fill="none"
-        opacity="0.6"
-      />
-      <ellipse cx={centerX - 4} cy={headY + headSize * 0.08} rx="2" ry="2.5" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.4" />
-      <ellipse cx={centerX + 4} cy={headY + headSize * 0.08} rx="2" ry="2.5" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.4" />
-
-      {/* Mouth */}
-      <path
-        d={`M ${centerX - headSize * 0.18} ${headY + headSize * 0.25} 
-            Q ${centerX} ${headY + headSize * 0.32} ${centerX + headSize * 0.18} ${headY + headSize * 0.25}`}
-        stroke="#C1440E"
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d={`M ${centerX - headSize * 0.18} ${headY + headSize * 0.25} 
-            Q ${centerX} ${headY + headSize * 0.28} ${centerX + headSize * 0.18} ${headY + headSize * 0.25}`}
-        stroke="white"
-        strokeWidth="1"
-        opacity="0.6"
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      {/* BEARD */}
+      {/* === BEARD === */}
       {beardStyle && beardStyle !== 'none' && (
-        <>
+        <g filter="url(#softGlow)">
           {beardStyle === 'full' && (
             <path
-              d={`
-                M ${centerX - headSize * 0.45} ${headY + headSize * 0.15}
-                Q ${centerX - headSize * 0.4} ${headY + headSize * 0.5} ${centerX} ${headY + headSize * 0.62}
-                Q ${centerX + headSize * 0.4} ${headY + headSize * 0.5} ${centerX + headSize * 0.45} ${headY + headSize * 0.15}
-                L ${centerX + headSize * 0.35} ${headY + headSize * 0.1}
-                L ${centerX - headSize * 0.35} ${headY + headSize * 0.1}
-                Z
-              `}
+              d={`M ${cx - headR * 0.6} ${y.head + headR * 0.2}
+                  Q ${cx - headR * 0.5} ${y.head + headR * 0.65}, ${cx} ${y.head + headR * 0.85}
+                  Q ${cx + headR * 0.5} ${y.head + headR * 0.65}, ${cx + headR * 0.6} ${y.head + headR * 0.2}
+                  L ${cx + headR * 0.45} ${y.head + headR * 0.15}
+                  L ${cx - headR * 0.45} ${y.head + headR * 0.15}
+                  Z`}
               fill="#3E2723"
-              opacity="0.85"
               stroke="#1A1A1A"
-              strokeWidth="1"
+              strokeWidth="1.2"
+              opacity="0.9"
             />
           )}
           {beardStyle === 'goatee' && (
-            <ellipse
-              cx={centerX}
-              cy={headY + headSize * 0.45}
-              rx={headSize * 0.15}
-              ry={headSize * 0.12}
-              fill="#3E2723"
-              opacity="0.8"
-            />
+            <ellipse cx={cx} cy={y.head + headR * 0.6} rx={headR * 0.22} ry={headR * 0.18} fill="#3E2723" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.85" />
           )}
           {beardStyle === 'stubble' && (
             <path
-              d={`M ${centerX - headSize * 0.4} ${headY + headSize * 0.2}
-                  Q ${centerX} ${headY + headSize * 0.5} ${centerX + headSize * 0.4} ${headY + headSize * 0.2}`}
+              d={`M ${cx - headR * 0.55} ${y.head + headR * 0.25}
+                  Q ${cx} ${y.head + headR * 0.65} ${cx + headR * 0.55} ${y.head + headR * 0.25}`}
               fill="#3E2723"
-              opacity="0.3"
+              opacity="0.25"
             />
           )}
           {beardStyle === 'mustache' && (
             <g>
-              <path
-                d={`M ${centerX - headSize * 0.2} ${headY + headSize * 0.2}
-                    Q ${centerX - headSize * 0.1} ${headY + headSize * 0.17} ${centerX} ${headY + headSize * 0.2}`}
-                stroke="#3E2723"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <path
-                d={`M ${centerX + headSize * 0.2} ${headY + headSize * 0.2}
-                    Q ${centerX + headSize * 0.1} ${headY + headSize * 0.17} ${centerX} ${headY + headSize * 0.2}`}
-                stroke="#3E2723"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
+              <path d={`M ${cx - headR * 0.28} ${y.head + headR * 0.32} Q ${cx - headR * 0.15} ${y.head + headR * 0.28} ${cx - headR * 0.02} ${y.head + headR * 0.32}`} 
+                stroke="#3E2723" strokeWidth="5" strokeLinecap="round" />
+              <path d={`M ${cx + headR * 0.28} ${y.head + headR * 0.32} Q ${cx + headR * 0.15} ${y.head + headR * 0.28} ${cx + headR * 0.02} ${y.head + headR * 0.32}`} 
+                stroke="#3E2723" strokeWidth="5" strokeLinecap="round" />
             </g>
           )}
-        </>
+        </g>
       )}
 
-      {/* PIERCINGS */}
+      {/* === PIERCINGS === */}
       {piercings && (
-        <>
-          {/* Ear piercings (both ears) */}
-          <circle cx={centerX - headSize * 0.61} cy={headY + 5} r="2.5" fill="#FFD700" stroke="#DAA520" strokeWidth="0.8" />
-          <circle cx={centerX + headSize * 0.61} cy={headY + 5} r="2.5" fill="#FFD700" stroke="#DAA520" strokeWidth="0.8" />
-          
-          {/* Nose piercing */}
+        <g filter="url(#softGlow)">
+          <circle cx={cx - headR * 0.88} cy={y.head + 8} r="3.5" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
+          <circle cx={cx + headR * 0.88} cy={y.head + 8} r="3.5" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
           {piercings.toLowerCase().includes('mũi') && (
-            <circle cx={centerX + 5} cy={headY + headSize * 0.08} r="2" fill="#C0C0C0" stroke="#A0A0A0" strokeWidth="0.6" />
+            <circle cx={cx + 6} cy={y.head + headR * 0.06} r="2.5" fill="#E0E0E0" stroke="#B0B0B0" strokeWidth="0.8" />
           )}
-        </>
+        </g>
       )}
 
-      {/* ACCESSORIES */}
+      {/* === ACCESSORIES === */}
       {accessories && accessories.length > 0 && (
-        <>
-          {/* Glasses */}
+        <g>
           {accessories.some(a => a.toLowerCase().includes('kính')) && (
-            <g opacity="0.9">
-              <rect
-                x={centerX - headSize * 0.32}
-                y={headY - headSize * 0.15}
-                width={headSize * 0.24}
-                height={headSize * 0.18}
-                rx="3"
-                fill="none"
-                stroke="#2C3E50"
-                strokeWidth="2"
-              />
-              <rect
-                x={centerX + headSize * 0.08}
-                y={headY - headSize * 0.15}
-                width={headSize * 0.24}
-                height={headSize * 0.18}
-                rx="3"
-                fill="none"
-                stroke="#2C3E50"
-                strokeWidth="2"
-              />
-              <line 
-                x1={centerX - headSize * 0.08} 
-                y1={headY - headSize * 0.06} 
-                x2={centerX + headSize * 0.08} 
-                y2={headY - headSize * 0.06} 
-                stroke="#2C3E50" 
-                strokeWidth="2" 
-              />
-              <line 
-                x1={centerX - headSize * 0.32} 
-                y1={headY - headSize * 0.06} 
-                x2={centerX - headSize * 0.55} 
-                y2={headY - headSize * 0.02} 
-                stroke="#2C3E50" 
-                strokeWidth="1.5" 
-              />
-              <line 
-                x1={centerX + headSize * 0.32} 
-                y1={headY - headSize * 0.06} 
-                x2={centerX + headSize * 0.55} 
-                y2={headY - headSize * 0.02} 
-                stroke="#2C3E50" 
-                strokeWidth="1.5" 
-              />
+            <g opacity="0.95" filter="url(#softGlow)">
+              <rect x={cx - headR * 0.45} y={y.head - headR * 0.22} width={headR * 0.35} height={headR * 0.25} rx="4" fill="none" stroke="#2C3E50" strokeWidth="2.5" />
+              <rect x={cx + headR * 0.1} y={y.head - headR * 0.22} width={headR * 0.35} height={headR * 0.25} rx="4" fill="none" stroke="#2C3E50" strokeWidth="2.5" />
+              <path d={`M ${cx - headR * 0.1} ${y.head - headR * 0.095} L ${cx + headR * 0.1} ${y.head - headR * 0.095}`} stroke="#2C3E50" strokeWidth="2.5" strokeLinecap="round" />
+              <path d={`M ${cx - headR * 0.45} ${y.head - headR * 0.095} L ${cx - headR * 0.78} ${y.head - headR * 0.05}`} stroke="#2C3E50" strokeWidth="2" />
+              <path d={`M ${cx + headR * 0.45} ${y.head - headR * 0.095} L ${cx + headR * 0.78} ${y.head - headR * 0.05}`} stroke="#2C3E50" strokeWidth="2" />
+              {/* Lens reflection */}
+              <ellipse cx={cx - headR * 0.27} cy={y.head - headR * 0.12} rx="8" ry="10" fill="white" opacity="0.2" />
+              <ellipse cx={cx + headR * 0.27} cy={y.head - headR * 0.12} rx="8" ry="10" fill="white" opacity="0.2" />
             </g>
           )}
           
-          {/* Necklace */}
           {accessories.some(a => a.toLowerCase().includes('vòng cổ') || a.toLowerCase().includes('dây chuyền')) && (
-            <g>
-              <ellipse
-                cx={centerX}
-                cy={neckY + 5}
-                rx={headSize * 0.35}
-                ry="5"
-                fill="none"
-                stroke="#FFD700"
-                strokeWidth="2.5"
-              />
-              <circle cx={centerX} cy={neckY + 8} r="4" fill="#FFD700" stroke="#DAA520" strokeWidth="0.8" />
+            <g filter="url(#softGlow)">
+              <ellipse cx={cx} cy={y.neck + 12} rx={headR * 0.48} ry="6" fill="none" stroke="#FFD700" strokeWidth="3.5" />
+              <circle cx={cx} cy={y.neck + 18} r="5" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
+              <circle cx={cx} cy={y.neck + 18} r="3" fill="#FFF8DC" opacity="0.7" />
             </g>
           )}
           
-          {/* Watch */}
           {accessories.some(a => a.toLowerCase().includes('đồng hồ')) && (
-            <g>
-              <rect
-                x={centerX - shouldersWidth / 2 - 12}
-                y={shouldersY + 95}
-                width="12"
-                height="10"
-                rx="2"
-                fill="#2C3E50"
-                stroke="#1A1A1A"
-                strokeWidth="0.8"
-              />
-              <circle cx={centerX - shouldersWidth / 2 - 6} cy={shouldersY + 100} r="3" fill="#E0E0E0" stroke="#000" strokeWidth="0.3" />
+            <g filter="url(#softGlow)">
+              <rect x={cx - shoulderW / 2 - 16} y={y.waist + 20} width="16" height="13" rx="3" fill="#2C3E50" stroke="#1A1A1A" strokeWidth="1" />
+              <circle cx={cx - shoulderW / 2 - 8} cy={y.waist + 26.5} r="5" fill="#E8E8E8" stroke="#000" strokeWidth="0.5" />
+              <path d={`M ${cx - shoulderW / 2 - 8} ${y.waist + 26.5} L ${cx - shoulderW / 2 - 8} ${y.waist + 23}`} stroke="#000" strokeWidth="0.8" strokeLinecap="round" />
+              <path d={`M ${cx - shoulderW / 2 - 8} ${y.waist + 26.5} L ${cx - shoulderW / 2 - 6} ${y.waist + 26.5}`} stroke="#000" strokeWidth="0.8" strokeLinecap="round" />
             </g>
           )}
 
-          {/* Hat/Cap */}
           {accessories.some(a => a.toLowerCase().includes('mũ') || a.toLowerCase().includes('nón')) && (
-            <ellipse
-              cx={centerX}
-              cy={headY - headSize * 0.7}
-              rx={headSize * 0.7}
-              ry={headSize * 0.2}
-              fill="#DC2626"
-              stroke="#1A1A1A"
-              strokeWidth="1.5"
-            />
+            <ellipse cx={cx} cy={y.head - headR * 1.05} rx={headR * 1.1} ry={headR * 0.28} fill="#DC2626" stroke="#1A1A1A" strokeWidth="1.8" filter="url(#softGlow)" />
           )}
-        </>
+        </g>
       )}
 
-      {/* TATTOOS */}
+      {/* === TATTOOS === */}
       {tattoos && (
-        <>
-          {/* Arm tattoos */}
+        <g opacity="0.75">
           {(tattoos.toLowerCase().includes('tay') || tattoos.toLowerCase().includes('cánh tay')) && (
             <g>
-              {/* Right arm tattoo */}
+              <circle cx={cx + shoulderW / 2 + 10} cy={y.waist} r="8" fill="#8B4513" opacity="0.4" />
               <path
-                d={`M ${centerX + shouldersWidth / 2 + 8} ${shouldersY + 100}
-                    Q ${centerX + shouldersWidth / 2 + 12} ${shouldersY + 115} ${centerX + shouldersWidth / 2 + 8} ${shouldersY + 130}
-                    M ${centerX + shouldersWidth / 2 + 6} ${shouldersY + 105}
-                    L ${centerX + shouldersWidth / 2 + 10} ${shouldersY + 125}`}
+                d={`M ${cx + shoulderW / 2 + 8} ${y.waist + 15}
+                    Q ${cx + shoulderW / 2 + 12} ${y.waist + 22} ${cx + shoulderW / 2 + 8} ${y.waist + 30}
+                    M ${cx + shoulderW / 2 + 6} ${y.waist + 18}
+                    Q ${cx + shoulderW / 2 + 13} ${y.waist + 24} ${cx + shoulderW / 2 + 10} ${y.waist + 28}`}
                 stroke="#1A1A1A"
                 strokeWidth="2.5"
                 fill="none"
-                opacity="0.7"
                 strokeLinecap="round"
               />
-              <circle cx={centerX + shouldersWidth / 2 + 8} cy={shouldersY + 110} r="3" fill="#C1440E" opacity="0.5" />
             </g>
           )}
-          
-          {/* Back tattoo indicator */}
           {tattoos.toLowerCase().includes('lưng') && (
-            <text x={centerX} y={waistY - 15} fontSize="18" textAnchor="middle" opacity="0.6">🎨</text>
+            <text x={cx} y={y.waist - 25} fontSize="24" textAnchor="middle" opacity="0.6">🦋</text>
           )}
-        </>
+        </g>
       )}
 
-      {/* MUSCLE DEFINITION */}
+      {/* === MUSCLE DEFINITION === */}
       {muscleLevel && muscleLevel >= 4 && (
-        <g opacity="0.25">
-          {/* Pecs */}
-          <ellipse cx={centerX - chestWidth / 4} cy={chestY} rx="15" ry="18" fill="#000" />
-          <ellipse cx={centerX + chestWidth / 4} cy={chestY} rx="15" ry="18" fill="#000" />
-          {/* Abs */}
-          <rect x={centerX - 8} y={chestY + 20} width="6" height="10" rx="2" fill="#000" />
-          <rect x={centerX + 2} y={chestY + 20} width="6" height="10" rx="2" fill="#000" />
-          <rect x={centerX - 8} y={waistY - 25} width="6" height="10" rx="2" fill="#000" />
-          <rect x={centerX + 2} y={waistY - 25} width="6" height="10" rx="2" fill="#000" />
+        <g opacity="0.15">
+          <ellipse cx={cx - chestW / 3.5} cy={y.chest} rx="22" ry="26" fill="#000" />
+          <ellipse cx={cx + chestW / 3.5} cy={y.chest} rx="22" ry="26" fill="#000" />
+          <rect x={cx - 12} y={y.chest + 28} width="10" height="14" rx="3" fill="#000" />
+          <rect x={cx + 2} y={y.chest + 28} width="10" height="14" rx="3" fill="#000" />
+          <rect x={cx - 12} y={y.waist - 35} width="10" height="14" rx="3" fill="#000" />
+          <rect x={cx + 2} y={y.waist - 35} width="10" height="14" rx="3" fill="#000" />
+        </g>
+      )}
+
+      {muscleLevel && muscleLevel >= 4 && (
+        <g>
+          <text x={cx - 45} y={y.shoulders + 35} fontSize="22" opacity="0.85">💪</text>
+          <text x={cx + 25} y={y.shoulders + 35} fontSize="22" opacity="0.85">💪</text>
         </g>
       )}
 
       {/* === INFO PANELS === */}
       
-      {/* Top Left Panel - Body Metrics */}
-      <g>
-        <rect 
-          x="8" 
-          y="8" 
-          width="90" 
-          height={shoulderWidth || waistSize ? "90" : "65"} 
-          rx="6" 
-          fill="white" 
-          opacity="0.95" 
-          stroke="#CBD5E1" 
-          strokeWidth="1.5"
-          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-        />
-        <text x="15" y="25" fontSize="11" fill="#1F2937" fontWeight="700">📏 {height} cm</text>
-        <text x="15" y="41" fontSize="11" fill="#1F2937" fontWeight="700">⚖️ {weight} kg</text>
-        <text x="15" y="57" fontSize="11" fill="#1F2937" fontWeight="700">
-          🧮 BMI: {bmi.toFixed(1)}
-        </text>
-        {shoulderWidth && (
-          <text x="15" y="73" fontSize="9" fill="#6B7280" fontWeight="600">👐 Vai: {shoulderWidth}cm</text>
-        )}
-        {waistSize && (
-          <text x="15" y="87" fontSize="9" fill="#6B7280" fontWeight="600">⭕ Eo: {waistSize}cm</text>
-        )}
+      {/* Top Left - Metrics */}
+      <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+        <rect x="12" y="12" width="110" height={shoulderWidth || waistSize ? "105" : "75"} rx="10" fill="white" opacity="0.98" stroke="#E2E8F0" strokeWidth="2" />
+        <text x="22" y="32" fontSize="13" fill="#1E293B" fontWeight="700">📏 {height} cm</text>
+        <text x="22" y="50" fontSize="13" fill="#1E293B" fontWeight="700">⚖️ {weight} kg</text>
+        <text x="22" y="68" fontSize="13" fill="#1E293B" fontWeight="700">🧮 {bmi.toFixed(1)}</text>
+        {shoulderWidth && <text x="22" y="86" fontSize="11" fill="#64748B" fontWeight="600">👐 {shoulderWidth}cm</text>}
+        {waistSize && <text x="22" y="101" fontSize="11" fill="#64748B" fontWeight="600">⭕ {waistSize}cm</text>}
       </g>
 
-      {/* Top Right Panel - Personal Info */}
-      <g>
-        <rect 
-          x={W - 98} 
-          y="8" 
-          width="90" 
-          height={ageAppearance || hipSize || bodyProportionPreset ? "100" : "65"} 
-          rx="6" 
-          fill="white" 
-          opacity="0.95" 
-          stroke="#CBD5E1" 
-          strokeWidth="1.5"
-          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-        />
-        <text x={W - 90} y="25" fontSize="11" fill="#1F2937" fontWeight="700">
+      {/* Top Right - Personal */}
+      <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+        <rect x={W - 122} y="12" width="110" height={ageAppearance || hipSize || bodyProportionPreset ? "120" : "75"} rx="10" fill="white" opacity="0.98" stroke="#E2E8F0" strokeWidth="2" />
+        <text x={W - 108} y="32" fontSize="13" fill="#1E293B" fontWeight="700">
           {gender === 'male' ? '♂️ Nam' : gender === 'female' ? '♀️ Nữ' : '⚥ Phi nhị giới'}
         </text>
-        {ageAppearance && (
-          <text x={W - 90} y="41" fontSize="10" fill="#6B7280" fontWeight="600">
-            🎂 {ageAppearance} tuổi
-          </text>
-        )}
+        {ageAppearance && <text x={W - 108} y="50" fontSize="12" fill="#64748B" fontWeight="600">🎂 {ageAppearance} tuổi</text>}
         {bodyShape && (
-          <text x={W - 90} y={ageAppearance ? "57" : "41"} fontSize="9" fill="#6B7280" fontWeight="600">
-            {bodyShape === 'slim' ? '📐 Gầy' : 
-             bodyShape === 'athletic' ? '🏃 Thể thao' :
-             bodyShape === 'balanced' ? '⚖️ Cân đối' :
-             bodyShape === 'muscular' ? '💪 Vạm vỡ' : 
-             bodyShape === 'curvy' ? '🌟 Đẫy đà' : 
-             bodyShape === 'plus-size' ? '⭕ Mập mạp' : '👤 Cân đối'}
+          <text x={W - 108} y={ageAppearance ? "68" : "50"} fontSize="11" fill="#64748B" fontWeight="600">
+            {bodyShape === 'slim' ? '📐 Gầy' : bodyShape === 'athletic' ? '🏃 Thể thao' :
+             bodyShape === 'balanced' ? '⚖️ Cân đối' : bodyShape === 'muscular' ? '💪 Vạm vỡ' : 
+             bodyShape === 'curvy' ? '🌟 Đẫy đà' : bodyShape === 'plus-size' ? '⭕ Mập' : '👤'}
           </text>
         )}
-        {hipSize && (
-          <text x={W - 90} y={ageAppearance ? "73" : "57"} fontSize="9" fill="#6B7280" fontWeight="600">
-            🍑 Mông: {hipSize}cm
-          </text>
-        )}
+        {hipSize && <text x={W - 108} y={ageAppearance ? "86" : "68"} fontSize="11" fill="#64748B" fontWeight="600">🍑 {hipSize}cm</text>}
         {bodyProportionPreset && (
-          <text x={W - 90} y={ageAppearance ? "89" : "73"} fontSize="8" fill="#9CA3AF" fontWeight="500">
-            {bodyProportionPreset === 'supermodel' ? '⭐ Siêu mẫu' :
-             bodyProportionPreset === 'athletic' ? '🏋️ Thể hình' :
-             bodyProportionPreset === 'realistic' ? '👤 Thực tế' :
-             bodyProportionPreset === 'petite' ? '🧸 Nhỏ nhắn' :
-             bodyProportionPreset === 'tall' ? '🦒 Cao lớn' : '📏 Trung bình'}
+          <text x={W - 108} y={ageAppearance ? "104" : "86"} fontSize="10" fill="#94A3B8" fontWeight="500">
+            {bodyProportionPreset === 'supermodel' ? '⭐ Siêu mẫu' : bodyProportionPreset === 'athletic' ? '🏋️ Thể hình' :
+             bodyProportionPreset === 'realistic' ? '👤 Thực tế' : bodyProportionPreset === 'petite' ? '🧸 Nhỏ' :
+             bodyProportionPreset === 'tall' ? '🦒 Cao' : '📏 TB'}
           </text>
         )}
       </g>
 
-      {/* Bottom Left Panel - Style */}
+      {/* Bottom Left - Style */}
       {(clothingStyle || footwearType) && (
-        <g>
-          <rect 
-            x="8" 
-            y={H - (footwearType ? 50 : 32)} 
-            width="100" 
-            height={footwearType ? "42" : "24"} 
-            rx="6" 
-            fill="white" 
-            opacity="0.95" 
-            stroke="#CBD5E1" 
-            strokeWidth="1.5"
-            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-          />
+        <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+          <rect x="12" y={H - (footwearType ? 60 : 38)} width="120" height={footwearType ? "48" : "26"} rx="10" fill="white" opacity="0.98" stroke="#E2E8F0" strokeWidth="2" />
           {clothingStyle && (
-            <text x="15" y={H - (footwearType ? 32 : 15)} fontSize="9" fill="#6B7280" fontWeight="600">
-              👕 {clothingStyle === 'sport' ? 'Thể thao' :
-                  clothingStyle === 'elegant' ? 'Thanh lịch' :
-                  clothingStyle === 'street' ? 'Đường phố' :
-                  clothingStyle === 'business' ? 'Công sở' :
-                  clothingStyle === 'formal' ? 'Chính thức' :
-                  clothingStyle === 'gothic' ? 'Gothic' :
-                  clothingStyle === 'bohemian' ? 'Bohemian' :
-                  clothingStyle === 'vintage' ? 'Cổ điển' : 'Thoải mái'}
+            <text x="22" y={H - (footwearType ? 38 : 18)} fontSize="11" fill="#64748B" fontWeight="600">
+              👕 {clothingStyle === 'sport' ? 'Thể thao' : clothingStyle === 'elegant' ? 'Thanh lịch' :
+                  clothingStyle === 'street' ? 'Đường phố' : clothingStyle === 'business' ? 'Công sở' :
+                  clothingStyle === 'formal' ? 'Chính thức' : clothingStyle === 'gothic' ? 'Gothic' : 'Casual'}
             </text>
           )}
           {footwearType && (
-            <text x="15" y={H - 15} fontSize="9" fill="#6B7280" fontWeight="600">
-              👞 {footwearType === 'sneaker' ? 'Thể thao' :
-                  footwearType === 'heels' ? 'Cao gót' :
-                  footwearType === 'boots' ? 'Bốt' :
-                  footwearType === 'sandals' ? 'Dép' :
-                  footwearType === 'formal' ? 'Tây' :
-                  footwearType === 'loafers' ? 'Lười' :
-                  footwearType === 'flats' ? 'Bệt' : 'Giày'}
+            <text x="22" y={H - 18} fontSize="11" fill="#64748B" fontWeight="600">
+              👞 {footwearType === 'sneaker' ? 'Thể thao' : footwearType === 'heels' ? 'Cao gót' :
+                  footwearType === 'boots' ? 'Bốt' : footwearType === 'sandals' ? 'Dép' :
+                  footwearType === 'formal' ? 'Tây' : 'Giày'}
             </text>
           )}
         </g>
       )}
 
-      {/* Bottom Right Panel - Accessories */}
-      {(accessories && accessories.length > 0) && (
-        <g>
-          <rect 
-            x={W - 108} 
-            y={H - 32} 
-            width="100" 
-            height="24" 
-            rx="6" 
-            fill="white" 
-            opacity="0.95" 
-            stroke="#CBD5E1" 
-            strokeWidth="1.5"
-            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-          />
-          <text x={W - 100} y={H - 15} fontSize="8" fill="#6B7280" fontWeight="600">
+      {/* Bottom Right - Accessories */}
+      {accessories && accessories.length > 0 && (
+        <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+          <rect x={W - 132} y={H - 38} width="120" height="26" rx="10" fill="white" opacity="0.98" stroke="#E2E8F0" strokeWidth="2" />
+          <text x={W - 120} y={H - 18} fontSize="10" fill="#64748B" fontWeight="600">
             💎 {accessories.slice(0, 3).join(', ')}
           </text>
         </g>
       )}
 
-      {/* Color Palette Preview */}
+      {/* Color Palette */}
       {colorPalette && colorPalette.length > 0 && (
-        <g>
-          <rect x="8" y={H - (clothingStyle ? 70 : 50)} width="60" height="16" rx="4" fill="white" opacity="0.9" stroke="#CBD5E1" strokeWidth="1" />
+        <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+          <rect x="12" y={H - (clothingStyle || footwearType ? 88 : 68)} width="75" height="22" rx="6" fill="white" opacity="0.95" stroke="#E2E8F0" strokeWidth="1.5" />
           {colorPalette.slice(0, 4).map((color, i) => (
-            <g key={i}>
-              <circle
-                cx={14 + i * 14}
-                cy={H - (clothingStyle ? 62 : 42)}
-                r="5"
-                fill={color}
-                stroke="#1A1A1A"
-                strokeWidth="1"
-              />
-            </g>
+            <circle key={i} cx={20 + i * 17} cy={H - (clothingStyle || footwearType ? 77 : 57)} r="7" fill={color} stroke="#1A1A1A" strokeWidth="1.2" />
           ))}
         </g>
       )}
 
-      {/* Measurement Lines */}
+      {/* Leg Length Measurement */}
       {legLength && (
-        <g opacity="0.5">
-          <line 
-            x1={centerX + hipsWidth / 2 + 15} 
-            y1={hipsY} 
-            x2={centerX + hipsWidth / 2 + 15} 
-            y2={feetY} 
-            stroke="#8B5CF6" 
-            strokeWidth="2" 
-            strokeDasharray="4,3" 
-          />
-          <line x1={centerX + hipsWidth / 2 + 12} y1={hipsY} x2={centerX + hipsWidth / 2 + 18} y2={hipsY} stroke="#8B5CF6" strokeWidth="2" />
-          <line x1={centerX + hipsWidth / 2 + 12} y1={feetY} x2={centerX + hipsWidth / 2 + 18} y2={feetY} stroke="#8B5CF6" strokeWidth="2" />
-          <text x={centerX + hipsWidth / 2 + 22} y={(hipsY + feetY) / 2} fontSize="9" fill="#8B5CF6" fontWeight="600">
-            {legLength}cm
-          </text>
+        <g opacity="0.6">
+          <line x1={cx + hipW / 2 + 25} y1={y.hips} x2={cx + hipW / 2 + 25} y2={y.feet} stroke="#8B5CF6" strokeWidth="2.5" strokeDasharray="6,4" strokeLinecap="round" />
+          <circle cx={cx + hipW / 2 + 25} cy={y.hips} r="4" fill="#8B5CF6" />
+          <circle cx={cx + hipW / 2 + 25} cy={y.feet} r="4" fill="#8B5CF6" />
+          <text x={cx + hipW / 2 + 35} y={(y.hips + y.feet) / 2 + 5} fontSize="12" fill="#8B5CF6" fontWeight="700">{legLength}cm</text>
         </g>
       )}
 
-      {/* Muscle/Strength Indicators */}
-      {muscleLevel && muscleLevel >= 4 && (
-        <>
-          <text x={centerX + 25} y={shouldersY + 20} fontSize="16" opacity="0.8">💪</text>
-          <text x={centerX - 40} y={shouldersY + 20} fontSize="16" opacity="0.8">💪</text>
-        </>
-      )}
-
-      {/* Skin Tone Indicator */}
-      <g>
-        <rect x={W - 25} y={H - 60} width="17" height="52" rx="3" fill="white" opacity="0.9" stroke="#CBD5E1" strokeWidth="1" />
-        <text x={W - 17} y={H - 45} fontSize="8" fill="#6B7280" transform={`rotate(90, ${W - 17}, ${H - 45})`}>
-          {skinTone === 'very-light' ? 'Rất sáng' :
-           skinTone === 'light' ? 'Sáng' :
-           skinTone === 'medium' ? 'Trung bình' :
-           skinTone === 'tan' ? 'Ngăm' :
-           skinTone === 'brown' ? 'Nâu' :
-           skinTone === 'dark' ? 'Tối' : 'Trung bình'}
+      {/* Skin Tone Label */}
+      <g filter="drop-shadow(0 2px 8px rgba(0,0,0,0.12))">
+        <rect x={W - 28} y={H - 100} width="20" height="85" rx="6" fill="white" opacity="0.95" stroke="#E2E8F0" strokeWidth="1.5" />
+        <text x={W - 18} y={H - 50} fontSize="10" fill="#64748B" fontWeight="600" transform={`rotate(90, ${W - 18}, ${H - 50})`}>
+          {skinTone === 'very-light' ? '◻️ Rất sáng' : skinTone === 'light' ? '⬜ Sáng' :
+           skinTone === 'medium' ? '🟫 TB' : skinTone === 'tan' ? '🟤 Ngăm' :
+           skinTone === 'brown' ? '🟫 Nâu' : skinTone === 'dark' ? '⬛ Tối' : '🟫'}
         </text>
       </g>
+
+      {/* Watermark */}
+      <text x={cx} y={H - 8} fontSize="10" fill="#CBD5E1" textAnchor="middle" fontWeight="500">
+        AIStyleHub Virtual Model
+      </text>
     </svg>
   );
 }
