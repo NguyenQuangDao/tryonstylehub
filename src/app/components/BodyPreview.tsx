@@ -1,5 +1,28 @@
 'use client';
 
+import {
+    BODY_PROPORTIONS,
+    CANVAS_DIMENSIONS,
+    CLOTHING_STYLES,
+    EYE_COLORS,
+    FOOTWEAR_TYPES,
+    HAIR_COLORS,
+    SKIN_TONES,
+    type EyeColor,
+    type HairColor,
+    type SkinTone,
+} from '@/constants/body-preview';
+import {
+    calculateBMI,
+    calculateBodyWidthFactor,
+    calculateMuscleFactor,
+    validateFatLevel,
+    validateHeight,
+    validateMuscleLevel,
+    validateWeight,
+} from '@/utils/body-calculations';
+import { memo, useMemo } from 'react';
+
 interface BodyPreviewProps {
   height: number;
   weight: number;
@@ -27,7 +50,12 @@ interface BodyPreviewProps {
   bodyProportionPreset?: string;
 }
 
-export default function BodyPreview({
+/**
+ * BodyPreview Component
+ * Renders a customizable SVG representation of a virtual human body model
+ * Uses memoization for performance optimization
+ */
+function BodyPreview({
   height,
   weight,
   gender,
@@ -53,99 +81,121 @@ export default function BodyPreview({
   ageAppearance,
   bodyProportionPreset,
 }: BodyPreviewProps) {
-  // Proportions calculation
-  const bmi = weight / Math.pow(height / 100, 2);
+  // Validate and memoize input values
+  const validatedHeight = useMemo(() => validateHeight(height), [height]);
+  const validatedWeight = useMemo(() => validateWeight(weight), [weight]);
+  const validatedMuscleLevel = useMemo(() => validateMuscleLevel(muscleLevel), [muscleLevel]);
+  const validatedFatLevel = useMemo(() => validateFatLevel(fatLevel), [fatLevel]);
+
+  // Memoize expensive calculations
+  const bmi = useMemo(
+    () => calculateBMI(validatedWeight, validatedHeight),
+    [validatedWeight, validatedHeight]
+  );
+
+  const bodyFactor = useMemo(
+    () => calculateBodyWidthFactor(bodyShape, bmi, validatedFatLevel),
+    [bodyShape, bmi, validatedFatLevel]
+  );
+
+  const muscleFactor = useMemo(
+    () => calculateMuscleFactor(validatedMuscleLevel),
+    [validatedMuscleLevel]
+  );
+
+  // Memoize color lookups
+  const skinColor = useMemo(
+    () => SKIN_TONES[skinTone as SkinTone] || SKIN_TONES['medium'],
+    [skinTone]
+  );
   
-  const getBodyWidthFactor = () => {
-    let factor = 1;
-    if (bodyShape === 'slim') factor = 0.8;
-    else if (bodyShape === 'athletic') factor = 1.05;
-    else if (bodyShape === 'balanced') factor = 1;
-    else if (bodyShape === 'muscular') factor = 1.2;
-    else if (bodyShape === 'curvy') factor = 1.15;
-    else if (bodyShape === 'plus-size') factor = 1.45;
-    else if (bmi < 18.5) factor = 0.85;
-    else if (bmi >= 25 && bmi < 30) factor = 1.2;
-    else if (bmi >= 30) factor = 1.4;
-    
-    if (fatLevel) factor += (fatLevel - 3) * 0.06;
-    return Math.max(0.7, Math.min(1.8, factor));
-  };
+  const skinShadow = useMemo(() => `${skinColor}99`, [skinColor]);
 
-  const bodyFactor = getBodyWidthFactor();
-  const muscleFactor = muscleLevel ? 0.9 + (muscleLevel * 0.05) : 1;
+  const hairColor1 = useMemo(
+    () => HAIR_COLORS[hairColor as HairColor] || HAIR_COLORS['black'],
+    [hairColor]
+  );
 
-  // Colors
-  const skinColors: Record<string, string> = {
-    'very-light': '#FFDFC4',
-    'light': '#F0D5BE',
-    'medium': '#D1A684',
-    'tan': '#C68642',
-    'brown': '#8D5524',
-    'dark': '#5D4037',
-  };
-  const skinColor = skinColors[skinTone] || skinColors['medium'];
-  const skinShadow = `${skinColor}99`;
+  const eyeColor1 = useMemo(
+    () => EYE_COLORS[eyeColor as EyeColor] || EYE_COLORS['brown'],
+    [eyeColor]
+  );
 
-  const hairColors: Record<string, string> = {
-    'black': '#2C2C2C', 'brown': '#6F4E37', 'blonde': '#F4DCA8',
-    'red': '#C1440E', 'white': '#F5F5F5', 'gray': '#9E9E9E',
-    'purple': '#8B4789', 'blue': '#4A7C9E', 'green': '#5A7C4E',
-    'pink': '#FFB6C1', 'other': '#FF6B9D',
-  };
-  const hairColor1 = hairColors[hairColor] || hairColors['black'];
+  // Memoize clothing colors
+  const topColor = useMemo(
+    () =>
+      (colorPalette && colorPalette[0]) ||
+      (CLOTHING_STYLES[clothingStyle as keyof typeof CLOTHING_STYLES] ||
+        CLOTHING_STYLES['casual']),
+    [colorPalette, clothingStyle]
+  );
 
-  const eyeColors: Record<string, string> = {
-    'brown': '#8B6F47', 'black': '#1A1A1A', 'blue': '#5B9BD5',
-    'green': '#70AD47', 'gray': '#A0A0A0', 'amber': '#D97706', 'hazel': '#8B7355',
-  };
-  const eyeColor1 = eyeColors[eyeColor] || eyeColors['brown'];
+  const pantsColor = useMemo(
+    () => (colorPalette && colorPalette[1]) || '#334155',
+    [colorPalette]
+  );
 
-  const topColor = (colorPalette && colorPalette[0]) || 
-    { sport: '#60A5FA', elegant: '#374151', street: '#F87171', gothic: '#18181B',
-      casual: '#94A3B8', business: '#3B82F6', formal: '#1E293B', bohemian: '#F59E0B',
-      vintage: '#92400E', preppy: '#EF4444', minimalist: '#6B7280' }[clothingStyle] || '#94A3B8';
-  
-  const pantsColor = (colorPalette && colorPalette[1]) || '#334155';
-  
-  const shoeColor = {
-    sneaker: '#F5F5F5', heels: '#1A1A1A', boots: '#2C3E50',
-    sandals: '#8B6F47', formal: '#000000', loafers: '#8B6F47',
-    flats: '#C19A6B', slippers: '#BDBDBD'
-  }[footwearType || ''] || '#334155';
+  const shoeColor = useMemo(
+    () =>
+      (footwearType &&
+        FOOTWEAR_TYPES[footwearType as keyof typeof FOOTWEAR_TYPES]) ||
+      '#334155',
+    [footwearType]
+  );
 
-  // SVG dimensions
-  const W = 400;
-  const H = 700;
+  // SVG dimensions from constants
+  const W = CANVAS_DIMENSIONS.WIDTH;
+  const H = CANVAS_DIMENSIONS.HEIGHT;
   const cx = W / 2;
-  
-  // Anatomical proportions (8-head canon)
-  const unit = H / 9;
-  const headR = unit * 0.65;
-  
-  // Y positions
-  const y = {
-    head: unit * 0.75,
-    neck: unit * 1.15,
-    shoulders: unit * 1.55,
-    chest: unit * 2.6,
-    waist: unit * 3.6,
-    hips: unit * 4.6,
-    crotch: unit * 5,
-    knee: unit * 6.5,
-    ankle: unit * 8.1,
-    feet: unit * 8.5,
-  };
 
-  // Widths
-  const base = unit * 1.1 * bodyFactor;
-  const shoulderW = shoulderWidth ? (shoulderWidth / height) * W * 2.5 : base * 1.65 * muscleFactor;
-  const chestW = base * 1.4 * muscleFactor;
-  const waistW = waistSize ? (waistSize / height) * W * 2.2 : base * 1;
-  const hipW = hipSize ? (hipSize / height) * W * 2.3 : gender === 'female' ? base * 1.35 : base * 1.15;
-  const thighW = base * 0.5;
-  const kneeW = base * 0.42;
-  const ankleW = base * 0.32;
+  // Memoize anatomical proportions (8-head canon)
+  const { headR, y, base, shoulderW, chestW, waistW, hipW, thighW, kneeW, ankleW } =
+    useMemo(() => {
+      const unit = H / 9;
+      const headR = unit * BODY_PROPORTIONS.HEAD_RATIO;
+
+      // Y positions using constants
+      const y = {
+        head: unit * BODY_PROPORTIONS.HEAD_Y,
+        neck: unit * BODY_PROPORTIONS.NECK_Y,
+        shoulders: unit * BODY_PROPORTIONS.SHOULDERS_Y,
+        chest: unit * BODY_PROPORTIONS.CHEST_Y,
+        waist: unit * BODY_PROPORTIONS.WAIST_Y,
+        hips: unit * BODY_PROPORTIONS.HIPS_Y,
+        crotch: unit * BODY_PROPORTIONS.CROTCH_Y,
+        knee: unit * BODY_PROPORTIONS.KNEE_Y,
+        ankle: unit * BODY_PROPORTIONS.ANKLE_Y,
+        feet: unit * BODY_PROPORTIONS.FEET_Y,
+      };
+
+      // Widths
+      const base = unit * BODY_PROPORTIONS.BASE_MULTIPLIER * bodyFactor;
+      const shoulderW = shoulderWidth
+        ? (shoulderWidth / validatedHeight) * W * 2.5
+        : base * BODY_PROPORTIONS.SHOULDER_MULTIPLIER * muscleFactor;
+      const chestW = base * BODY_PROPORTIONS.CHEST_MULTIPLIER * muscleFactor;
+      const waistW = waistSize ? (waistSize / validatedHeight) * W * 2.2 : base * 1;
+      const hipW = hipSize
+        ? (hipSize / validatedHeight) * W * 2.3
+        : gender === 'female'
+        ? base * 1.35
+        : base * 1.15;
+      const thighW = base * BODY_PROPORTIONS.THIGH_MULTIPLIER;
+      const kneeW = base * BODY_PROPORTIONS.KNEE_MULTIPLIER;
+      const ankleW = base * BODY_PROPORTIONS.ANKLE_MULTIPLIER;
+
+      return { headR, y, base, shoulderW, chestW, waistW, hipW, thighW, kneeW, ankleW };
+    }, [
+      H,
+      bodyFactor,
+      muscleFactor,
+      shoulderWidth,
+      waistSize,
+      hipSize,
+      gender,
+      validatedHeight,
+      W,
+    ]);
 
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
@@ -807,3 +857,30 @@ export default function BodyPreview({
     </svg>
   );
 }
+
+/**
+ * Memoized BodyPreview Component
+ * Only re-renders when essential props change
+ */
+export default memo(BodyPreview, (prevProps, nextProps) => {
+  // Custom comparison for performance
+  return (
+    prevProps.height === nextProps.height &&
+    prevProps.weight === nextProps.weight &&
+    prevProps.gender === nextProps.gender &&
+    prevProps.bodyShape === nextProps.bodyShape &&
+    prevProps.skinTone === nextProps.skinTone &&
+    prevProps.hairColor === nextProps.hairColor &&
+    prevProps.hairStyle === nextProps.hairStyle &&
+    prevProps.muscleLevel === nextProps.muscleLevel &&
+    prevProps.fatLevel === nextProps.fatLevel &&
+    prevProps.shoulderWidth === nextProps.shoulderWidth &&
+    prevProps.waistSize === nextProps.waistSize &&
+    prevProps.hipSize === nextProps.hipSize &&
+    prevProps.eyeColor === nextProps.eyeColor &&
+    prevProps.faceShape === nextProps.faceShape &&
+    prevProps.beardStyle === nextProps.beardStyle &&
+    prevProps.clothingStyle === nextProps.clothingStyle &&
+    prevProps.footwearType === nextProps.footwearType
+  );
+});
