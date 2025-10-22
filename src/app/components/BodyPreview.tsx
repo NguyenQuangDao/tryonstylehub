@@ -1,25 +1,25 @@
 'use client';
 
 import {
-    BODY_PROPORTIONS,
-    CANVAS_DIMENSIONS,
-    CLOTHING_STYLES,
-    EYE_COLORS,
-    FOOTWEAR_TYPES,
-    HAIR_COLORS,
-    SKIN_TONES,
-    type EyeColor,
-    type HairColor,
-    type SkinTone,
+  BODY_PROPORTIONS,
+  CANVAS_DIMENSIONS,
+  CLOTHING_STYLES,
+  EYE_COLORS,
+  FOOTWEAR_TYPES,
+  HAIR_COLORS,
+  SKIN_TONES,
+  type EyeColor,
+  type HairColor,
+  type SkinTone,
 } from '@/constants/body-preview';
 import {
-    calculateBMI,
-    calculateBodyWidthFactor,
-    calculateMuscleFactor,
-    validateFatLevel,
-    validateHeight,
-    validateMuscleLevel,
-    validateWeight,
+  calculateBMI,
+  calculateBodyWidthFactor,
+  calculateMuscleFactor,
+  validateFatLevel,
+  validateHeight,
+  validateMuscleLevel,
+  validateWeight,
 } from '@/utils/body-calculations';
 import { memo, useMemo } from 'react';
 
@@ -200,11 +200,25 @@ function BodyPreview({
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
       <defs>
-        {/* Advanced Gradients */}
-        <radialGradient id="skinRadial" cx="40%" cy="40%">
-          <stop offset="0%" stopColor={skinColor} stopOpacity="1" />
-          <stop offset="70%" stopColor={skinColor} stopOpacity="0.95" />
-          <stop offset="100%" stopColor={skinShadow} />
+        {/* Enhanced Realistic Gradients */}
+        <linearGradient id="studioBg" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#F8FAFC" />
+          <stop offset="50%" stopColor="#F1F5F9" />
+          <stop offset="100%" stopColor="#E2E8F0" />
+        </linearGradient>
+
+        <radialGradient id="vignette">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0" />
+          <stop offset="60%" stopColor="#000000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.12" />
+        </radialGradient>
+
+        {/* Realistic skin gradient with highlights */}
+        <radialGradient id="skinRadial" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.2" />
+          <stop offset="20%" stopColor={skinColor} stopOpacity="1" />
+          <stop offset="70%" stopColor={skinColor} stopOpacity="0.98" />
+          <stop offset="100%" stopColor={skinShadow} stopOpacity="0.95" />
         </radialGradient>
 
         <linearGradient id="skinLinear" x1="0%" x2="100%">
@@ -213,38 +227,67 @@ function BodyPreview({
           <stop offset="100%" stopColor={skinShadow} />
         </linearGradient>
 
+        {/* Enhanced clothing gradients */}
         <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={topColor} />
-          <stop offset="50%" stopColor={topColor} stopOpacity="0.95" />
+          <stop offset="30%" stopColor={topColor} stopOpacity="1" />
+          <stop offset="60%" stopColor={topColor} stopOpacity="0.95" />
           <stop offset="100%" stopColor={topColor} stopOpacity="0.85" />
         </linearGradient>
 
         <linearGradient id="pantsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={pantsColor} stopOpacity="0.95" />
-          <stop offset="100%" stopColor={pantsColor} stopOpacity="0.8" />
+          <stop offset="0%" stopColor={pantsColor} stopOpacity="0.98" />
+          <stop offset="50%" stopColor={pantsColor} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={pantsColor} stopOpacity="0.85" />
         </linearGradient>
 
+        {/* Better floor shadow */}
         <radialGradient id="floorShadow">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.15" />
+          <stop offset="0%" stopColor="#000" stopOpacity="0.2" />
+          <stop offset="50%" stopColor="#000" stopOpacity="0.1" />
           <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </radialGradient>
 
+        {/* Hair with depth */}
         <linearGradient id="hairGrad" x1="30%" y1="0%" x2="70%" y2="100%">
           <stop offset="0%" stopColor={hairColor1} stopOpacity="1" />
+          <stop offset="40%" stopColor={hairColor1} stopOpacity="0.98" />
           <stop offset="100%" stopColor={hairColor1} stopOpacity="0.9" />
         </linearGradient>
 
+        {/* Enhanced filters */}
         <filter id="softGlow">
-          <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
           <feMerge>
             <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
+
+        <filter id="ambientOcclusion">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="1" dy="2" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.25"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+
+        <filter id="fabricTexture">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" />
+          <feColorMatrix type="saturate" values="0"/>
+          <feBlend in="SourceGraphic" mode="multiply" />
+        </filter>
       </defs>
 
-      {/* Background */}
-      <rect width={W} height={H} fill="#FAFBFC" />
+      {/* Studio Background */}
+      <rect width={W} height={H} fill="url(#studioBg)" />
+      
+      {/* Vignette effect */}
+      <rect width={W} height={H} fill="url(#vignette)" />
       
       {/* Floor Shadow */}
       <ellipse cx={cx} cy={y.feet + 20} rx={base * 2.5} ry="15" fill="url(#floorShadow)" />
@@ -329,10 +372,22 @@ function BodyPreview({
         filter="url(#softGlow)"
       />
 
-      {/* Torso shading for depth */}
-      <ellipse cx={cx - chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.06" />
-      <ellipse cx={cx + chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.06" />
-      <ellipse cx={cx} cy={y.waist} rx={waistW / 3} ry="15" fill="#000" opacity="0.04" />
+      {/* Enhanced Torso shading for depth */}
+      <ellipse cx={cx - chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.08" />
+      <ellipse cx={cx + chestW / 4} cy={y.chest} rx="18" ry="22" fill="#000" opacity="0.08" />
+      <ellipse cx={cx} cy={y.waist} rx={waistW / 3} ry="15" fill="#000" opacity="0.06" />
+      
+      {/* Shirt collar detail */}
+      <ellipse cx={cx} cy={y.neck + 8} rx={headR * 0.35} ry={headR * 0.12} fill="none" stroke={topColor} strokeWidth="2.5" opacity="0.7" filter="url(#softGlow)" />
+      
+      {/* Shirt center seam */}
+      <line x1={cx} y1={y.shoulders + 10} x2={cx} y2={y.waist - 5} stroke="#000" strokeWidth="1" opacity="0.1" strokeDasharray="3,2" />
+      
+      {/* Fabric folds (wrinkles) */}
+      <path d={`M ${cx - chestW * 0.25} ${y.chest} Q ${cx} ${y.chest + 3} ${cx + chestW * 0.25} ${y.chest}`}
+        stroke="#000" strokeWidth="1" opacity="0.12" fill="none" />
+      <path d={`M ${cx - waistW * 0.3} ${y.waist - 8} Q ${cx} ${y.waist - 5} ${cx + waistW * 0.3} ${y.waist - 8}`}
+        stroke="#000" strokeWidth="0.8" opacity="0.1" fill="none" />
 
       {/* === ARMS === */}
       {/* Left Arm */}
@@ -581,44 +636,84 @@ function BodyPreview({
         <path d={`M ${cx - headR * 0.38} ${y.head - headR * 0.2} L ${cx - headR * 0.4} ${y.head - headR * 0.23}`} stroke="#000" strokeWidth="1" strokeLinecap="round" />
         <path d={`M ${cx + headR * 0.38} ${y.head - headR * 0.2} L ${cx + headR * 0.4} ${y.head - headR * 0.23}`} stroke="#000" strokeWidth="1" strokeLinecap="round" />
 
-        {/* Nose */}
-        <path
-          d={`M ${cx} ${y.head - headR * 0.18}
-              L ${cx - 3} ${y.head + headR * 0.05}
-              M ${cx} ${y.head - headR * 0.18}
-              L ${cx + 3} ${y.head + headR * 0.05}`}
-          stroke="#1A1A1A"
-          strokeWidth="1.5"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-        <ellipse cx={cx - 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.35" />
-        <ellipse cx={cx + 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.35" />
+        {/* Enhanced Nose với 3D effect */}
+        <g id="nose">
+          {/* Nose bridge shadow */}
+          <path
+            d={`M ${cx - 2} ${y.head - headR * 0.18}
+                L ${cx - 3} ${y.head + headR * 0.05}`}
+            stroke={skinShadow}
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.15"
+          />
+          <path
+            d={`M ${cx + 2} ${y.head - headR * 0.18}
+                L ${cx + 3} ${y.head + headR * 0.05}`}
+            stroke={skinShadow}
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.15"
+          />
+          {/* Nose tip highlight */}
+          <ellipse cx={cx} cy={y.head + headR * 0.02} rx="4" ry="5" fill="#FFFFFF" opacity="0.15" />
+          {/* Nostrils - more defined */}
+          <ellipse cx={cx - 5} cy={y.head + headR * 0.06} rx="2.8" ry="3.5" fill={skinShadow} opacity="0.3" />
+          <ellipse cx={cx + 5} cy={y.head + headR * 0.06} rx="2.8" ry="3.5" fill={skinShadow} opacity="0.3" />
+          <ellipse cx={cx - 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.4" />
+          <ellipse cx={cx + 5} cy={y.head + headR * 0.06} rx="2.5" ry="3" fill="none" stroke="#1A1A1A" strokeWidth="0.8" opacity="0.4" />
+        </g>
 
-        {/* Lips */}
-        <path
-          d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
-              Q ${cx} ${y.head + headR * 0.48} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
-          stroke="#C85A54"
-          strokeWidth="4"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
-        <path
-          d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
-              Q ${cx} ${y.head + headR * 0.43} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
-          stroke="#FFFFFF"
-          strokeWidth="1.5"
-          opacity="0.4"
-          fill="none"
-          strokeLinecap="round"
-        />
+        {/* Enhanced Realistic Lips */}
+        <g id="lips">
+          {/* Upper lip */}
+          <path
+            d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
+                Q ${cx - headR * 0.1} ${y.head + headR * 0.38} ${cx} ${y.head + headR * 0.39}
+                Q ${cx + headR * 0.1} ${y.head + headR * 0.38} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
+            fill="#D8868B"
+            stroke="#B8565B"
+            strokeWidth="1"
+            opacity="0.9"
+          />
+          {/* Lower lip */}
+          <path
+            d={`M ${cx - headR * 0.25} ${y.head + headR * 0.4}
+                Q ${cx} ${y.head + headR * 0.47} ${cx + headR * 0.25} ${y.head + headR * 0.4}`}
+            fill="#C76D72"
+            stroke="#B8565B"
+            strokeWidth="1"
+            opacity="0.9"
+          />
+          {/* Lip highlight */}
+          <path
+            d={`M ${cx - headR * 0.18} ${y.head + headR * 0.42}
+                Q ${cx} ${y.head + headR * 0.43} ${cx + headR * 0.18} ${y.head + headR * 0.42}`}
+            stroke="#FFFFFF"
+            strokeWidth="1.5"
+            opacity="0.5"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* Lip shadow */}
+          <path
+            d={`M ${cx - headR * 0.22} ${y.head + headR * 0.4}
+                Q ${cx} ${y.head + headR * 0.41} ${cx + headR * 0.22} ${y.head + headR * 0.4}`}
+            stroke="#000"
+            strokeWidth="0.8"
+            opacity="0.15"
+            fill="none"
+          />
+        </g>
 
-        {/* Cheek blush */}
-        <ellipse cx={cx - headR * 0.5} cy={y.head + headR * 0.15} rx="12" ry="8" fill="#FF69B4" opacity="0.12" />
-        <ellipse cx={cx + headR * 0.5} cy={y.head + headR * 0.15} rx="12" ry="8" fill="#FF69B4" opacity="0.12" />
+        {/* Cheek blush và contour */}
+        <ellipse cx={cx - headR * 0.5} cy={y.head + headR * 0.15} rx="13" ry="9" fill="#FFB6C1" opacity="0.15" />
+        <ellipse cx={cx + headR * 0.5} cy={y.head + headR * 0.15} rx="13" ry="9" fill="#FFB6C1" opacity="0.15" />
+        
+        {/* Chin contour */}
+        <ellipse cx={cx} cy={y.head + headR * 0.65} rx={headR * 0.3} ry={headR * 0.15} fill={skinShadow} opacity="0.08" />
       </g>
 
       {/* === BEARD === */}

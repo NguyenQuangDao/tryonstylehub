@@ -643,18 +643,27 @@ export default function Home() {
           transition={{ delay: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-6 pt-8"
         >
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
-            <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-indigo-200 dark:border-indigo-700/50"
+          >
+            <Sparkles className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">AI-Powered</span>
-          </div>
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-purple-200 dark:border-purple-700/50"
+          >
             <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Chất Lượng Cao</span>
-          </div>
-          <div className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
-            <Shirt className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-pink-200 dark:border-pink-700/50"
+          >
+            <Shirt className="h-6 w-6 text-pink-600 dark:text-pink-400" />
             <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Thời Trang Hiện Đại</span>
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>
 
@@ -705,12 +714,21 @@ export default function Home() {
         {/* Images Section - 2 Column Layout */}
         <div className="modern-grid grid-cols-1 lg:grid-cols-2">
           {/* Model Image Card */}
-          <div className="modern-card group">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="modern-card group"
+          >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg"
+                >
                   <UserRound className="h-6 w-6 text-white" />
-                </div>
+                </motion.div>
                 <div>
                   <h3 className="text-headline-sm md:text-headline-md font-semibold modern-gradient-text vietnamese-heading">
                     Ảnh Người Mẫu
@@ -880,7 +898,7 @@ export default function Home() {
 
                           {/* Swipe hint overlay */}
                           <div className="absolute inset-0 bg-black/40 dark:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div className="bg-black/90 dark:bg-gray-900/95 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
+                            <div className="bg-white/90 dark:bg-gray-900/95 text-black dark:text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
                               👆 Nhấn để sử dụng • Vuốt để xem thêm
                             </div>
                           </div>
@@ -983,16 +1001,25 @@ export default function Home() {
 
 
             </div>
-          </div>
+          </motion.div>
 
           {/* Garment Image Card */}
-          <div className="modern-card group">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="modern-card group"
+          >
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+              <motion.div
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.6 }}
+                className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 flex items-center justify-center shadow-lg"
+              >
                 <Shirt className="h-6 w-6 text-white" />
-              </div>
+              </motion.div>
               <div>
-                <h3 className="text-headline-sm md:text-headline-md font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent vietnamese-heading">
+                <h3 className="text-headline-sm md:text-headline-md font-semibold bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 bg-clip-text text-transparent vietnamese-heading">
                   Ảnh Trang Phục
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -1087,7 +1114,7 @@ export default function Home() {
 
                           {/* Swipe hint overlay */}
                           <div className="absolute inset-0 bg-black/40 dark:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div className="bg-black/90 dark:bg-gray-900/95 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
+                            <div className="bg-white/90 dark:bg-gray-900/95 text-black dark:text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm border border-white/20 dark:border-gray-600/30 text-white">
                               👆 Nhấn để sử dụng • Vuốt để xem thêm
                             </div>
                           </div>
@@ -1190,7 +1217,7 @@ export default function Home() {
                 </Dropdown>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Controls Section - Full Width Below */}

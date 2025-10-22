@@ -42,14 +42,18 @@ export function Layout({ children }: LayoutProps) {
               transition={{ duration: 0.5 }}
             >
               <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                <motion.div 
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 overflow-hidden"
+                >
                   <img 
                     src="/logo/logo.png" 
                     alt="AIStyleHub Logo" 
                     className="w-10 h-10 object-contain"
                   />
-                </div>
-                <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300 font-open-sans">
+                </motion.div>
+                <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent group-hover:from-indigo-700 group-hover:via-purple-700 group-hover:to-pink-700 transition-all duration-300 font-open-sans">
                   AIStyleHub
                 </span>
               </Link>
@@ -72,14 +76,14 @@ export function Layout({ children }: LayoutProps) {
                       href={link.href}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 relative group font-open-sans ${
                         isActive 
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400'
+                          ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl hover:scale-105' 
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
                       {link.label}
                       {!isActive && (
-                        <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 w-0 group-hover:w-3/4" />
+                        <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 w-0 group-hover:w-3/4" />
                       )}
                     </Link>
                   </motion.div>
@@ -99,7 +103,7 @@ export function Layout({ children }: LayoutProps) {
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
                         className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105"
                       >
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                           <User className="h-5 w-5 text-white" />
                         </div>
                         <span className="hidden lg:inline text-sm font-semibold font-open-sans">{user.name}</span>
@@ -145,7 +149,7 @@ export function Layout({ children }: LayoutProps) {
                       </Link>
                       <Link
                         href="/register"
-                        className="px-6 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl font-open-sans"
+                        className="px-6 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 font-open-sans"
                       >
                         Đăng Ký
                       </Link>
@@ -187,7 +191,7 @@ export function Layout({ children }: LayoutProps) {
                     href={link.href}
                     className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 font-open-sans ${
                       isActive 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
+                        ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg' 
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
@@ -233,7 +237,7 @@ export function Layout({ children }: LayoutProps) {
                       </Link>
                       <Link
                         href="/register"
-                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-open-sans"
+                        className="block px-3 py-2 text-sm font-medium text-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 font-open-sans"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Đăng Ký
@@ -254,9 +258,13 @@ export function Layout({ children }: LayoutProps) {
           <div className="container mx-auto py-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center"
+                >
                   <Sparkles className="h-4 w-4 text-white" />
-                </div>
+                </motion.div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium font-open-sans">
                   © {new Date().getFullYear()} AIStyleHub. Tất cả quyền được bảo lưu.
                 </p>
