@@ -54,17 +54,7 @@ export function applyTheme(theme: Theme): void {
     metaThemeColor.setAttribute('content', isDark ? '#000000' : '#FFFFFF')
   }
   
-  // Debug logging
-  console.log('Theme applied:', {
-    theme,
-    isDark,
-    rootClasses: root.className,
-    bodyClasses: body.className,
-    colorScheme: root.style.colorScheme,
-    computedStyle: getComputedStyle(root).getPropertyValue('--background'),
-    bodyBackground: getComputedStyle(body).backgroundColor,
-    bodyColor: getComputedStyle(body).color
-  })
+  // Theme applied
 }
 
 // Test function to verify dark mode
@@ -74,17 +64,6 @@ export function testDarkMode(): void {
   const root = document.documentElement
   const body = document.body
   
-  console.log('Dark Mode Test:', {
-    hasDarkClass: root.classList.contains('dark'),
-    hasLightClass: root.classList.contains('light'),
-    bodyHasDarkClass: body.classList.contains('dark'),
-    bodyHasLightClass: body.classList.contains('light'),
-    colorScheme: root.style.colorScheme,
-    backgroundVar: getComputedStyle(root).getPropertyValue('--background'),
-    foregroundVar: getComputedStyle(root).getPropertyValue('--foreground'),
-    bodyBackground: getComputedStyle(body).backgroundColor,
-    bodyColor: getComputedStyle(body).color,
-    localStorage: localStorage.getItem('theme-preference')
-  })
+  // Dark mode test completed
 }
 

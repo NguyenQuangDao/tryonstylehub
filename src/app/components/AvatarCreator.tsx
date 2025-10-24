@@ -1,14 +1,23 @@
 "use client";
 
+import {
+  AssetUnlockedEvent,
+  AvatarCreatorConfig,
+  AvatarExportedEvent,
+  AvatarCreator as ReadyPlayerMeAvatarCreator,
+  UserAuthorizedEvent,
+  UserSetEvent,
+} from "@readyplayerme/react-avatar-creator";
 import { motion } from 'framer-motion';
 import {
-    AlertCircle,
-    CheckCircle,
-    Download,
-    RefreshCw,
-    Sparkles,
-    User
+  AlertCircle,
+  CheckCircle,
+  Download,
+  RefreshCw,
+  Sparkles,
+  User
 } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface AvatarCreatorProps {
@@ -33,10 +42,7 @@ export default function AvatarCreator({
   onAvatarCreated, 
   onAvatarExported,
   className = "",
-  gender = 'male',
   bodyType = 'fullbody',
-  quality = 'high',
-  camera = 'front',
   presetGender,
   presetSkinTone,
   presetHairColor,
@@ -48,67 +54,157 @@ export default function AvatarCreator({
   const [error, setError] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [savedAvatars, setSavedAvatars] = useState<Array<{
+    id: number;
+    avatarName: string;
+    readyPlayerMeUrl?: string;
+    updatedAt: string;
+  }>>([]);
+  const [currentAvatarName, setCurrentAvatarName] = useState<string>('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
-  // Build Ready Player Me URL with parameters
-  const buildAvatarUrl = () => {
-    const baseUrl = 'https://demo.readyplayer.me/avatar';
-    const params = new URLSearchParams();
-    
-    // Basic parameters
-    params.append('frameApi', 'true');
-    params.append('gender', gender);
-    params.append('bodyType', bodyType);
-    params.append('quality', quality);
-    params.append('camera', camera);
-    
-    // Pre-filled values (only supported ones)
-    if (presetGender) params.append('gender', presetGender);
-    if (presetSkinTone) params.append('skinTone', presetSkinTone);
-    if (presetHairColor) params.append('hairColor', presetHairColor);
-    if (presetHairStyle) params.append('hairStyle', presetHairStyle);
-    if (presetEyeColor) params.append('eyeColor', presetEyeColor);
-    if (presetClothing) params.append('clothing', presetClothing);
-    
-    const finalUrl = `${baseUrl}?${params.toString()}`;
-    console.log('Ready Player Me URL:', finalUrl);
-    return finalUrl;
+  // Ready Player Me configuration
+  const config: AvatarCreatorConfig = {
+    clearCache: true,
+    bodyType: bodyType as "fullbody" | "halfbody",
+    quickStart: false,
+    language: "en",
+    // Pre-filled values
+    ...(presetGender && { gender: presetGender }),
+    ...(presetSkinTone && { skinTone: presetSkinTone }),
+    ...(presetHairColor && { hairColor: presetHairColor }),
+    ...(presetHairStyle && { hairStyle: presetHairStyle }),
+    ...(presetEyeColor && { eyeColor: presetEyeColor }),
+    ...(presetClothing && { clothing: presetClothing }),
   };
 
-  // Load Ready Player Me iframe
+  // Event handlers
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleOnUserSet = (_event: UserSetEvent) => {
+    // User set event handled
+  };
+
+  const handleOnAvatarExported = (event: AvatarExportedEvent) => {
+    setAvatarUrl(event.data.url);
+    setIsCreating(false);
+    setShowSaveDialog(true);
+    
+    if (onAvatarCreated) {
+      onAvatarCreated(event.data.url);
+    }
+    if (onAvatarExported) {
+      onAvatarExported(event as unknown);
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleUserAuthorized = (_event: UserAuthorizedEvent) => {
+    // User authorized event handled
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleAssetUnlocked = (_event: AssetUnlockedEvent) => {
+    // Asset unlocked event handled
+  };
+
+  // Load saved avatars
+  const loadSavedAvatars = async () => {
+    try {
+      const response = await fetch('/api/avatar/list');
+      const result = await response.json();
+      if (result.success) {
+        setSavedAvatars(result.data);
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // Error loading saved avatars
+    }
+  };
+
+  // Save avatar to database
+  const saveAvatar = async (avatarName: string, avatarData: { id: number }) => {
+    try {
+      const response = await fetch('/api/avatar/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          avatarName,
+          readyPlayerMeUrl: avatarUrl,
+          readyPlayerMeId: avatarData.id,
+          readyPlayerMeData: avatarData,
+          formData: {
+            gender: presetGender || 'male',
+            skinTone: presetSkinTone || 'medium',
+            hairColor: presetHairColor || 'black',
+            hairStyle: presetHairStyle || 'short',
+            eyeColor: presetEyeColor || 'brown',
+            clothingStyle: presetClothing || 'casual',
+            height: 170,
+            weight: 65
+          }
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setShowSaveDialog(false);
+        setCurrentAvatarName('');
+        await loadSavedAvatars(); // Reload the list
+        return true;
+      } else {
+        throw new Error(result.error);
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      setError('Failed to save avatar');
+      return false;
+    }
+  };
+
+  // Load specific avatar
+  const loadAvatar = async (avatarName: string) => {
+    try {
+      const response = await fetch(`/api/avatar/load?avatarName=${encodeURIComponent(avatarName)}`);
+      const result = await response.json();
+      if (result.success) {
+        const avatarData = result.data;
+        setAvatarUrl(avatarData.readyPlayerMeUrl);
+        setCurrentAvatarName(avatarData.avatarName);
+        
+      // Update config with loaded data
+      if (avatarData.readyPlayerMeData) {
+        // This would need to be handled by Ready Player Me component
+      }
+        return true;
+      } else {
+        throw new Error(result.error);
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      setError('Failed to load avatar');
+      return false;
+    }
+  };
+
+  // Initialize component
   useEffect(() => {
     setIsLoading(true);
     setError(null);
     
-    // Listen for Ready Player Me events
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://demo.readyplayer.me') return;
-      
-      if (event.data.type === 'vrm.downloaded') {
-        console.log('Avatar downloaded:', event.data);
-        setAvatarUrl(event.data.url);
-        setIsCreating(false);
-        
-        if (onAvatarCreated) {
-          onAvatarCreated(event.data.url);
-        }
-        if (onAvatarExported) {
-          onAvatarExported(event.data);
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
+    // Load saved avatars
+    loadSavedAvatars();
     
-    // Load Ready Player Me iframe after component mounts
+    // Simulate loading time
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
 
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('message', handleMessage);
     };
-  }, [onAvatarCreated, onAvatarExported]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -122,12 +218,8 @@ export default function AvatarCreator({
         </motion.div>
         
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Đang tải Avatar Creator...
+          Đang tải...
         </h3>
-        
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-          Ready Player Me đang khởi động
-        </p>
         
         <div className="mt-4 flex space-x-1">
           {[0, 1, 2].map((i) => (
@@ -152,7 +244,7 @@ export default function AvatarCreator({
       <div className={`flex flex-col items-center justify-center p-8 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 ${className}`}>
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-2">
-          Lỗi tải Avatar Creator
+          Lỗi tải
         </h3>
         <p className="text-sm text-red-700 dark:text-red-300 text-center mb-4">
           {error}
@@ -181,46 +273,85 @@ export default function AvatarCreator({
         </motion.div>
         
         <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          Tạo Avatar 3D
+          Avatar Creator
         </h2>
-        
-        <p className="text-gray-600 dark:text-gray-400">
-          Sử dụng Ready Player Me để tạo avatar 3D thực tế
-        </p>
       </div>
 
       {/* Avatar Creator Container */}
       <div className="relative">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {/* Ready Player Me iframe */}
-          <iframe
-            src={buildAvatarUrl()}
-            title="Ready Player Me Avatar Creator"
-            className="w-full h-[600px] border-0"
-            allow="camera; microphone"
-            onLoad={() => {
-              console.log('Ready Player Me iframe loaded with params:', buildAvatarUrl());
-              setIsCreating(false);
-            }}
-            onError={() => {
-              console.error('Ready Player Me iframe error');
-              setError('Không thể tải Ready Player Me. Vui lòng kiểm tra kết nối mạng.');
-            }}
-          />
+          {/* Ready Player Me React Component */}
+          <div style={{ width: "100%", height: "600px" }}>
+            <ReadyPlayerMeAvatarCreator
+              subdomain="demo"
+              config={config}
+              style={{ width: "100%", height: "100%", border: "none", margin: 0 }}
+              onAvatarExported={handleOnAvatarExported}
+              onUserAuthorized={handleUserAuthorized}
+              onAssetUnlock={handleAssetUnlocked}
+              onUserSet={handleOnUserSet}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Saved Avatars */}
+      {savedAvatars.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h3 className="text-lg font-semibold mb-4">Avatars đã lưu</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {savedAvatars.map((avatar) => (
+              <div key={avatar.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-sm">{avatar.avatarName}</h4>
+                  <span className="text-xs text-gray-500">
+                    {new Date(avatar.updatedAt).toLocaleDateString()}
+                  </span>
+                </div>
+                {avatar.readyPlayerMeUrl && (
+                  <Image 
+                    src={avatar.readyPlayerMeUrl} 
+                    alt={avatar.avatarName}
+                    width={200}
+                    height={80}
+                    className="w-full h-20 object-cover rounded mb-2"
+                  />
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadAvatar(avatar.avatarName)}
+                    className="flex-1 px-2 py-1 bg-indigo-500 text-white text-xs rounded hover:bg-indigo-600"
+                  >
+                    Load
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm('Bạn có chắc muốn xóa avatar này?')) {
+                        fetch(`/api/avatar/load?avatarName=${encodeURIComponent(avatar.avatarName)}`, {
+                          method: 'DELETE'
+                        }).then(() => loadSavedAvatars());
+                      }
+                    }}
+                    className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Instructions */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
         <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-          📋 Hướng dẫn sử dụng:
+          Hướng dẫn:
         </h4>
         <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-          <li>Chọn giới tính và màu da</li>
-          <li>Tùy chỉnh khuôn mặt, tóc, mắt</li>
-          <li>Chọn trang phục và phụ kiện</li>
-          <li>Click &ldquo;Done&rdquo; để tạo avatar</li>
-          <li>Avatar sẽ được lưu tự động</li>
+          <li>Tùy chỉnh avatar theo ý muốn</li>
+          <li>Click &quot;Done&quot; để tạo avatar</li>
+          <li>Nhập tên để lưu avatar</li>
         </ol>
       </div>
 
@@ -235,6 +366,54 @@ export default function AvatarCreator({
           <span className="text-green-700 dark:text-green-300">
             Đang tạo avatar...
           </span>
+        </motion.div>
+      )}
+
+      {/* Save Dialog */}
+      {showSaveDialog && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md"
+          >
+            <h3 className="text-lg font-semibold mb-4">Lưu Avatar</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Nhập tên để lưu avatar này:
+            </p>
+            
+            <input
+              type="text"
+              value={currentAvatarName}
+              onChange={(e) => setCurrentAvatarName(e.target.value)}
+              placeholder="Tên avatar..."
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSaveDialog(false)}
+                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  if (currentAvatarName.trim()) {
+                    saveAvatar(currentAvatarName.trim(), { id: Date.now() });
+                  }
+                }}
+                disabled={!currentAvatarName.trim()}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
+              >
+                Lưu
+              </button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
 

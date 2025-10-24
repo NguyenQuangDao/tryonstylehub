@@ -27,7 +27,7 @@ export async function generateImageWithDALLE(
   const cached = getCache<string>(cacheKey);
   
   if (cached) {
-    console.log('[OpenAI] Using cached DALL-E image');
+    // Using cached DALL-E image
     return cached;
   }
 
@@ -70,7 +70,7 @@ export async function getRecommendedProductIds(
   const cached = getCache<number[]>(cacheKey);
   
   if (cached) {
-    console.log('[OpenAI] Using cached recommendations');
+    // Using cached recommendations
     return cached;
   }
 

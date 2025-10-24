@@ -51,7 +51,7 @@ export default function RootLayout({
                     if (metaThemeColor) metaThemeColor.setAttribute('content', '#FFFFFF');
                   }
                 } catch (e) {
-                  console.log('Theme initialization error:', e);
+                  // Theme initialization error
                 }
               })();
             `,

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("[Generate Image API] Generating image for prompt:", prompt.substring(0, 100) + "...");
+    // Generating image for prompt
 
     // Extract user ID for cost tracking
     const userId = request.headers.get('x-user-id') || 'anonymous';
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Generate image using optimized DALL-E
     const imageUrl = await generateImageWithDALLE(enhancedPrompt, userId, quality);
 
-    console.log("[Generate Image API] Image generated successfully");
+    // Image generated successfully
 
     // Get cost information
     const costStats = CostTracker.getStats();

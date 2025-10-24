@@ -72,12 +72,17 @@ model CostTracking {
 
 model VirtualModel {
   id                Int      @id @default(autoincrement())
-  userId            Int
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Basic info
   avatarName        String   @db.VarChar(255)
   isPublic          Boolean  @default(false)
+  
+  // Ready Player Me Integration
+  readyPlayerMeUrl  String?  @db.VarChar(1024)  // Avatar URL from Ready Player Me
+  readyPlayerMeId   String?  @db.VarChar(255)   // Ready Player Me avatar ID
+  readyPlayerMeData String?  @db.Text           // JSON: Full avatar configuration data
   
   // Body Metrics (Required)
   height            Float    // cm
@@ -115,9 +120,13 @@ model VirtualModel {
   ageAppearance     Int?     // Age appearance
   bodyProportionPreset String? @db.VarChar(50) // "supermodel", "athletic", "realistic"
   
+  // Session tracking for anonymous users
+  sessionId         String?  @db.VarChar(255)  // For anonymous users
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   
   @@index([userId])
+  @@index([sessionId])
 }
 

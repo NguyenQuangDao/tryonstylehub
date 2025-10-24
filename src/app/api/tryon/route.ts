@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import Fashn from 'fashn';
+import { NextResponse } from 'next/server';
 
 const FASHN_ENDPOINT_URL = process.env.FASHN_ENDPOINT_URL || "https://api.fashn.ai";
 const FASHN_API_KEY = process.env.FASHN_API_KEY;
@@ -57,10 +57,10 @@ export async function POST(request: Request) {
     const baseURL = FASHN_ENDPOINT_URL;
     const client = new Fashn({ apiKey, baseURL });
 
-    console.log(`Sending request to FASHN API: ${baseURL}/run`);
+    // Sending request to FASHN API
     const runResponse = await client.predictions.run(apiPayload);
     const predId = runResponse.id;
-    console.log(`Prediction ID: ${predId}`);
+    // Prediction ID received
     if (!predId) {
       return NextResponse.json({ error: "Failed to get prediction ID from FASHN API" }, { status: 500 });
     }
@@ -71,13 +71,13 @@ export async function POST(request: Request) {
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxPollingTime) {
-      console.log(`Polling status for ID: ${predId}`);
+      // Polling status
       const statusData = await client.predictions.status(predId);
 
-      console.log(`Prediction status: ${statusData.status}`);
+      // Prediction status checked
 
       if (statusData.status === "completed") {
-        console.log("Prediction completed.");
+        // Prediction completed
         return NextResponse.json({ output: statusData.output });
       } else if (statusData.status === "failed") {
         console.error(`Prediction failed with id ${predId}: ${JSON.stringify(statusData.error)}`);
