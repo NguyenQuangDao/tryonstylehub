@@ -3,8 +3,8 @@
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
 import { AlertCircle, Save, Sparkles, User, X } from 'lucide-react';
-import { FormEvent, useState } from 'react';
-import AvatarCreator from './AvatarCreator';
+import React, { FormEvent, useState } from 'react';
+import ReadyPlayerMeAvatarCreator from './ReadyPlayerMeAvatarCreator';
 import Button from './ui/button';
 import Input from './ui/input';
 
@@ -14,6 +14,17 @@ interface VirtualModelFormProps {
   editModel?: VirtualModel | null;
 }
 
+interface AvatarData {
+  id?: string;
+  url?: string;
+  gender?: string;
+  skinTone?: string;
+  hairColor?: string;
+  hairStyle?: string;
+  eyeColor?: string;
+  clothingStyle?: string;
+}
+
 export default function VirtualModelForm({ onClose, onSave, editModel }: VirtualModelFormProps) {
   // Basic Info - chỉ giữ tên
   const [avatarName, setAvatarName] = useState(editModel?.avatarName || '');
@@ -21,10 +32,110 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
   // UI States
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   // Avatar preview state
-  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
-  const [, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [showAvatarPreview, setShowAvatarPreview] = useState(!!editModel?.readyPlayerMeUrl);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(editModel?.readyPlayerMeUrl || null);
+  const [avatarData, setAvatarData] = useState<AvatarData | null>(null);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+
+  // Load avatar data when editing
+  React.useEffect(() => {
+    if (editModel?.readyPlayerMeUrl) {
+      // Parse readyPlayerMeData if available
+      if (editModel.readyPlayerMeData) {
+        try {
+          const parsedData = JSON.parse(editModel.readyPlayerMeData);
+          setAvatarData({
+            id: editModel.readyPlayerMeId || editModel.id?.toString(),
+            url: editModel.readyPlayerMeUrl,
+            gender: editModel.gender,
+            skinTone: editModel.skinTone || undefined,
+            hairColor: editModel.hairColor,
+            hairStyle: editModel.hairStyle,
+            eyeColor: editModel.eyeColor || undefined,
+            clothingStyle: editModel.clothingStyle || undefined,
+            ...parsedData
+          });
+        } catch (error) {
+          console.error('Error parsing readyPlayerMeData:', error);
+          // Fallback to basic data
+          setAvatarData({
+            id: editModel.readyPlayerMeId || editModel.id?.toString(),
+            url: editModel.readyPlayerMeUrl,
+            gender: editModel.gender,
+            skinTone: editModel.skinTone || undefined,
+            hairColor: editModel.hairColor,
+            hairStyle: editModel.hairStyle,
+            eyeColor: editModel.eyeColor || undefined,
+            clothingStyle: editModel.clothingStyle || undefined
+          });
+        }
+      } else {
+        // Use basic model data
+        setAvatarData({
+          id: editModel.readyPlayerMeId || editModel.id?.toString(),
+          url: editModel.readyPlayerMeUrl,
+          gender: editModel.gender,
+          skinTone: editModel.skinTone || undefined,
+          hairColor: editModel.hairColor,
+          hairStyle: editModel.hairStyle,
+          eyeColor: editModel.eyeColor || undefined,
+          clothingStyle: editModel.clothingStyle || undefined
+        });
+      }
+    }
+  }, [editModel]);
+
+  // Save avatar data to database
+  const saveAvatarData = async () => {
+    if (!avatarPreviewUrl || !avatarData) {
+      setError('Chưa có dữ liệu avatar để lưu');
+      return;
+    }
+
+    setIsSavingAvatar(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/avatar/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          avatarName: avatarName.trim() || 'Avatar mặc định',
+          readyPlayerMeUrl: avatarPreviewUrl,
+          readyPlayerMeId: avatarData.id || Date.now().toString(),
+          readyPlayerMeData: avatarData,
+          formData: {
+            gender: avatarData.gender || 'male',
+            skinTone: avatarData.skinTone || 'medium',
+            hairColor: avatarData.hairColor || 'black',
+            hairStyle: avatarData.hairStyle || 'short',
+            eyeColor: avatarData.eyeColor || 'brown',
+            clothingStyle: avatarData.clothingStyle || 'casual',
+            height: 170,
+            weight: 65
+          }
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setError(null);
+        // Show success message
+        alert('Avatar đã được lưu thành công!');
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Có lỗi xảy ra khi lưu avatar');
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -163,15 +274,15 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
                       Avatar Creator
                     </h3>
                     
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
-                    >
-                 <p className="text-xs text-green-700 dark:text-green-300 text-center">
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                      >
+                        <p className="text-xs text-green-700 dark:text-green-300 text-center">
                    Tạo avatar tùy chỉnh miễn phí
-                 </p>
-                    </motion.div>
+                        </p>
+                      </motion.div>
                   </div>
                   
                   
@@ -196,20 +307,60 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
                           </Button>
                         </div>
                       ) : (
-                        <AvatarCreator
+                        <div className="space-y-4">
+                          <ReadyPlayerMeAvatarCreator
                           onAvatarCreated={(avatarUrl) => {
                             setAvatarPreviewUrl(avatarUrl);
                           }}
-                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                          onAvatarExported={(_data) => {
-                            // Avatar exported
+                          onAvatarExported={(data) => {
+                              setAvatarData(data as AvatarData);
                           }}
                           className="w-full"
-                        />
+                          />
+                          
+                          {/* Save Avatar Button */}
+                          {avatarPreviewUrl && avatarData && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                              className="text-center"
+                            >
+                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800 mb-4">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                  <Sparkles className="w-5 h-5 text-green-600" />
+                                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                                    Avatar đã được tạo thành công!
+                        </span>
+                      </div>
+                                <p className="text-xs text-green-700 dark:text-green-300">
+                                  Bạn có thể lưu avatar này vào database
+                                </p>
+                              </div>
+                              
+                              <Button
+                                onClick={saveAvatarData}
+                                disabled={isSavingAvatar}
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto"
+                              >
+                                {isSavingAvatar ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Đang lưu...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="w-4 h-4" />
+                                    <span>Lưu Avatar</span>
+                                  </>
+                                )}
+                              </Button>
+                            </motion.div>
+                          )}
+                        </div>
                       )}
-                    </div>
-                </div>
-                </motion.div>
+                        </div>
+                      </div>
+                      </motion.div>
               </div>
             </div>
 
@@ -234,26 +385,26 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
                 <div className="flex items-center gap-3">
                   <div className="text-purple-600 dark:text-purple-400">
                     <Sparkles className="w-5 h-5" />
-                  </div>
+                      </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     Thông tin cơ bản
                   </h3>
                 </div>
               </div>
               <div className="p-4 bg-white dark:bg-gray-800">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <Input
-                      label="Tên người mẫu ảo *"
-                      value={avatarName}
-                      onChange={(e) => setAvatarName(e.target.value)}
-                      placeholder="VD: Người mẫu của tôi"
-                      required
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Input
+                    label="Tên người mẫu ảo *"
+                    value={avatarName}
+                    onChange={(e) => setAvatarName(e.target.value)}
+                    placeholder="VD: Người mẫu của tôi"
+                    required
+                  />
+                </div>
                 </div>
               </div>
-            </div>
+              </div>
 
               </form>
             </div>

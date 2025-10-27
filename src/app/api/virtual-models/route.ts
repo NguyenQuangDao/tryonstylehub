@@ -1,24 +1,30 @@
 import { verifyToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Helper function to get user ID from request
-async function getUserIdFromRequest(request: NextRequest): Promise<number | null> {
+// Helper function to get user ID and session ID from request
+async function getUserInfoFromRequest(request: NextRequest): Promise<{ userId: number | null; sessionId: string | null }> {
   const token = request.cookies.get('token')?.value;
-  if (!token) {
-    return null;
+  let userId: number | null = null;
+  
+  if (token) {
+    const payload = await verifyToken(token);
+    userId = payload?.userId || null;
   }
   
-  const payload = await verifyToken(token);
-  return payload?.userId || null;
+  // Get session ID from cookies for anonymous users
+  const sessionId = cookies().get('sessionId')?.value || null;
+  
+  return { userId, sessionId };
 }
 
 // GET /api/virtual-models - Get all virtual models for current user
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(request);
+    const { userId, sessionId } = await getUserInfoFromRequest(request);
     
-    if (!userId) {
+    if (!userId && !sessionId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -26,7 +32,9 @@ export async function GET(request: NextRequest) {
     }
 
     const virtualModels = await prisma.virtualModel.findMany({
-      where: { userId },
+      where: {
+        ...(userId ? { userId } : { sessionId })
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -43,9 +51,9 @@ export async function GET(request: NextRequest) {
 // POST /api/virtual-models - Create a new virtual model
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(request);
+    const { userId, sessionId } = await getUserInfoFromRequest(request);
     
-    if (!userId) {
+    if (!userId && !sessionId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -68,7 +76,8 @@ export async function POST(request: NextRequest) {
     // Create the virtual model
     const virtualModel = await prisma.virtualModel.create({
       data: {
-        userId,
+        userId: userId || null,
+        sessionId: userId ? null : sessionId,
         avatarName: body.avatarName,
         isPublic: body.isPublic || false,
         
@@ -118,9 +127,9 @@ export async function POST(request: NextRequest) {
 // DELETE /api/virtual-models?id=123 - Delete a virtual model
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(request);
+    const { userId, sessionId } = await getUserInfoFromRequest(request);
     
-    if (!userId) {
+    if (!userId && !sessionId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -141,7 +150,7 @@ export async function DELETE(request: NextRequest) {
     const virtualModel = await prisma.virtualModel.findFirst({
       where: {
         id: parseInt(id),
-        userId,
+        ...(userId ? { userId } : { sessionId })
       },
     });
 
@@ -172,9 +181,9 @@ export async function DELETE(request: NextRequest) {
 // PUT /api/virtual-models?id=123 - Update a virtual model
 export async function PUT(request: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(request);
+    const { userId, sessionId } = await getUserInfoFromRequest(request);
     
-    if (!userId) {
+    if (!userId && !sessionId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -195,7 +204,7 @@ export async function PUT(request: NextRequest) {
     const existingModel = await prisma.virtualModel.findFirst({
       where: {
         id: parseInt(id),
-        userId,
+        ...(userId ? { userId } : { sessionId })
       },
     });
 

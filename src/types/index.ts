@@ -51,11 +51,16 @@ export interface CostTracking {
 
 export interface VirtualModel {
   id: number;
-  userId: number;
+  userId?: number | null;
   
   // Basic info
   avatarName: string;
   isPublic: boolean;
+  
+  // Ready Player Me Integration
+  readyPlayerMeUrl?: string | null;
+  readyPlayerMeId?: string | null;
+  readyPlayerMeData?: string | null;
   
   // Body Metrics (Required)
   height: number; // cm
@@ -92,6 +97,9 @@ export interface VirtualModel {
   // Additional
   ageAppearance?: number | null;
   bodyProportionPreset?: 'supermodel' | 'athletic' | 'realistic' | null;
+  
+  // Session tracking for anonymous users
+  sessionId?: string | null;
   
   createdAt: string;
   updatedAt: string;
