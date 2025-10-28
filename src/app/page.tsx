@@ -1,22 +1,15 @@
 'use client';
 
+import { cn } from '@/app/lib/utils';
+import { ApiKeyModal, Button, Checkbox, Dropdown, FileInput, RadioGroup, TipsModal, VirtualModelForm, VirtualModelSelector } from '@/components';
+import { useApiKey, useImageUpload, useVirtualModels } from '@/hooks';
+import { imageService, tryOnService } from '@/services';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, Users, X, Zap } from 'lucide-react';
 import Image from 'next/image';
-import pica from 'pica';
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
 import { ReactCompareSlider, ReactCompareSliderImage, useReactCompareSliderRef } from 'react-compare-slider';
-import ApiKeyModal from './components/ApiKeyModal';
-import TipsModal from './components/TipsModal';
-import VirtualModelForm from './components/VirtualModelForm';
-import VirtualModelSelector from './components/VirtualModelSelector';
-import Button from './components/ui/button';
-import Checkbox from './components/ui/checkbox';
-import { Dropdown } from './components/ui/dropdown';
-import FileInput from './components/ui/file-input';
-import RadioGroup from './components/ui/radio-group';
-import { cn } from './lib/utils';
 
 // Map display names to API values
 const CATEGORY_API_MAPPING: { [key: string]: string } = {
@@ -41,17 +34,23 @@ const garmentExamples = [
   '/garments/man-shirt.png',
 ];
 
-const MAX_IMAGE_HEIGHT = 2000;
-const JPEG_QUALITY = 0.95;
 
 
 
 export default function Home() {
-  // Input states
-  const [modelImageFile, setModelImageFile] = useState<File | null>(null);
-  const [modelImagePreview, setModelImagePreview] = useState<string | null>(null);
-  const [garmentImageFile, setGarmentImageFile] = useState<File | null>(null);
-  const [garmentImagePreview, setGarmentImagePreview] = useState<string | null>(null);
+  // Custom hooks
+  const { apiKey, saveApiKey } = useApiKey();
+  const { 
+    virtualModels, 
+    selectedVirtualModel, 
+    isLoading: isLoadingVirtualModels,
+    fetchVirtualModels,
+    selectVirtualModel,
+    saveVirtualModel,
+  } = useVirtualModels();
+  
+  const modelImageUpload = useImageUpload();
+  const garmentImageUpload = useImageUpload();
 
   // API parameter states
   const [segmentationFree, setSegmentationFree] = useState(true);
@@ -69,9 +68,6 @@ export default function Home() {
   const [resultGallery, setResultGallery] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Advanced settings toggle
-  // const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   // Tips modal state
   const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
@@ -99,43 +95,16 @@ export default function Home() {
 
   // API key modal state
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<string>('');
 
   // Virtual Model states
   const [isVirtualModelSelectorOpen, setIsVirtualModelSelectorOpen] = useState(false);
   const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
-  const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
-  const [virtualModels, setVirtualModels] = useState<VirtualModel[]>([]);
-  const [isLoadingVirtualModels, setIsLoadingVirtualModels] = useState(false);
-
-  // Load API key from localStorage on mount
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem('fashn_api_key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    }
-  }, []);
 
   // Load virtual models on mount
   useEffect(() => {
     fetchVirtualModels();
-  }, []);
-
-  const fetchVirtualModels = async () => {
-    try {
-      setIsLoadingVirtualModels(true);
-      const response = await fetch('/api/virtual-models');
-      if (response.ok) {
-        const data = await response.json();
-        setVirtualModels(data.virtualModels || []);
-      }
-    } catch (error) {
-      console.error('Error fetching virtual models:', error);
-    } finally {
-      setIsLoadingVirtualModels(false);
-    }
-  };
+  }, [fetchVirtualModels]);
 
   // Handle navigating results in modal
   const navigateResult = useCallback((direction: 'prev' | 'next') => {
@@ -173,8 +142,7 @@ export default function Home() {
 
   // Handle saving API key
   const handleSaveApiKey = (newApiKey: string) => {
-    setApiKey(newApiKey);
-    localStorage.setItem('fashn_api_key', newApiKey);
+    saveApiKey(newApiKey);
     setIsApiKeyModalOpen(false);
   };
 
@@ -205,53 +173,24 @@ export default function Home() {
   };
 
   const handleSelectVirtualModel = (model: VirtualModel) => {
-    setSelectedVirtualModel(model);
+    selectVirtualModel(model);
     setIsVirtualModelSelectorOpen(false);
-    // Refresh the list after selection
-    fetchVirtualModels();
   };
 
   const handleQuickSelectVirtualModel = (modelId: string) => {
     if (modelId === '') {
-      setSelectedVirtualModel(null);
+      selectVirtualModel(null);
       return;
     }
     const model = virtualModels.find(m => m.id === parseInt(modelId));
     if (model) {
-      setSelectedVirtualModel(model);
+      selectVirtualModel(model);
     }
   };
 
   const handleSaveVirtualModel = async (modelData: CreateVirtualModelInput) => {
     try {
-      const method = editingVirtualModel ? 'PUT' : 'POST';
-      const url = editingVirtualModel
-        ? `/api/virtual-models?id=${editingVirtualModel.id}`
-        : '/api/virtual-models';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(modelData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save virtual model');
-      }
-
-      const data = await response.json();
-
-      // If we just edited, update the selected model if it was selected
-      if (editingVirtualModel && selectedVirtualModel?.id === editingVirtualModel.id) {
-        setSelectedVirtualModel(data.virtualModel);
-      }
-
-      // Refresh virtual models list
-      await fetchVirtualModels();
-
+      await saveVirtualModel(modelData);
       handleCloseVirtualModelForm();
     } catch (err: unknown) {
       const error = err as Error;
@@ -323,23 +262,15 @@ export default function Home() {
   // File input change handler
   const handleImageChange = (
     e: ChangeEvent<HTMLInputElement>,
-    setImageFile: (file: File | null) => void,
-    setPreview: (preview: string | null) => void
+    uploadHook: ReturnType<typeof useImageUpload>
   ) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
-
-      // Clear validation errors when both images are available
-      if (setImageFile === setModelImageFile && garmentImageFile) {
-        setError(null);
-      } else if (setImageFile === setGarmentImageFile && modelImageFile) {
-        setError(null);
-      }
-    } else {
-      setImageFile(null);
-      setPreview(null);
+    uploadHook.handleImageChange(e);
+    
+    // Clear validation errors when both images are available
+    if (uploadHook === modelImageUpload && garmentImageUpload.imageFile) {
+      setError(null);
+    } else if (uploadHook === garmentImageUpload && modelImageUpload.imageFile) {
+      setError(null);
     }
   };
 
@@ -387,21 +318,15 @@ export default function Home() {
   // Load example images
   const loadExampleImage = async (
     imageUrl: string,
-    setImageFile: (file: File | null) => void,
-    setPreview: (preview: string | null) => void
+    uploadHook: ReturnType<typeof useImageUpload>
   ) => {
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
-      const file = new File([blob], filename, { type: blob.type });
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
-
+      await uploadHook.loadExampleImage(imageUrl);
+      
       // Clear validation errors when both images are available
-      if (setImageFile === setModelImageFile && garmentImageFile) {
+      if (uploadHook === modelImageUpload && garmentImageUpload.imageFile) {
         setError(null);
-      } else if (setImageFile === setGarmentImageFile && modelImageFile) {
+      } else if (uploadHook === garmentImageUpload && modelImageUpload.imageFile) {
         setError(null);
       }
     } catch (err) {
@@ -412,10 +337,8 @@ export default function Home() {
 
   // Clear all form data
   const handleReset = () => {
-    setModelImageFile(null);
-    setModelImagePreview(null);
-    setGarmentImageFile(null);
-    setGarmentImagePreview(null);
+    modelImageUpload.clearImage();
+    garmentImageUpload.clearImage();
     setResultGallery([]);
     setError(null);
     setSegmentationFree(true);
@@ -433,99 +356,31 @@ export default function Home() {
     setIsComparisonModalOpen(false);
   };
 
-  /**
-   * Resize image using pica for high-quality downscaling
-   * - Uses Lanczos filtering for better quality
-   * - Maintains aspect ratio
-   * - Returns resized File object
-   */
-  const resizeImagePica = async (file: File, maxDimension = MAX_IMAGE_HEIGHT): Promise<File> => {
-    const objectUrl = URL.createObjectURL(file);
-    const img = new window.Image();
-    img.src = objectUrl;
-
-    await img.decode();
-    const { width, height } = img;
-
-    // If both dimensions are below the threshold, skip resizing
-    if (width <= maxDimension && height <= maxDimension) {
-      URL.revokeObjectURL(objectUrl);
-      return file;
-    }
-
-    // Calculate new dimensions (fit: inside)
-    const aspect = width / height;
-    let newWidth, newHeight;
-    if (width > height) {
-      newWidth = maxDimension;
-      newHeight = Math.round(maxDimension / aspect);
-    } else {
-      newHeight = maxDimension;
-      newWidth = Math.round(maxDimension * aspect);
-    }
-
-    // Source canvas
-    const sourceCanvas = document.createElement('canvas');
-    sourceCanvas.width = width;
-    sourceCanvas.height = height;
-    const ctx = sourceCanvas.getContext('2d');
-    ctx?.drawImage(img, 0, 0);
-
-    // Target canvas
-    const targetCanvas = document.createElement('canvas');
-    targetCanvas.width = newWidth;
-    targetCanvas.height = newHeight;
-
-    // Use pica for high-quality downscale (Lanczos)
-    const picaInstance = pica();
-    await picaInstance.resize(sourceCanvas, targetCanvas);
-
-    // Convert to Blob, then to File
-    const outputBlob = await picaInstance.toBlob(targetCanvas, file.type || 'image/png', JPEG_QUALITY);
-    const resizedFile = new File([outputBlob], file.name, { type: outputBlob.type });
-
-    URL.revokeObjectURL(objectUrl);
-    return resizedFile;
-  };
-
-  // Convert file to base64
-  const fileToBase64 = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
 
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!modelImageFile || !garmentImageFile) {
+    if (!modelImageUpload.imageFile || !garmentImageUpload.imageFile) {
       setError("Vui lòng chọn cả ảnh người mẫu và ảnh trang phục.");
       return;
     }
-
-    // No need to check API key here - backend will use env var if available
-    // Only show modal if backend explicitly requires it
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Preprocess images according to FASHN API best practices
-      // Base64 encoding is used for simplicity, though CDN-hosted images are recommended for production
+      // Preprocess images using image service
       let modelImageBase64, garmentImageBase64;
 
       try {
-        const resizedModelFile = await resizeImagePica(modelImageFile);
-        const resizedGarmentFile = await resizeImagePica(garmentImageFile);
-        modelImageBase64 = await fileToBase64(resizedModelFile);
-        garmentImageBase64 = await fileToBase64(resizedGarmentFile);
+        const resizedModelFile = await imageService.resizeImage(modelImageUpload.imageFile);
+        const resizedGarmentFile = await imageService.resizeImage(garmentImageUpload.imageFile);
+        modelImageBase64 = await imageService.fileToBase64(resizedModelFile);
+        garmentImageBase64 = await imageService.fileToBase64(resizedGarmentFile);
       } catch (preprocessError) {
         console.warn('Image preprocessing failed, falling back to direct base64 conversion:', preprocessError);
-        modelImageBase64 = await fileToBase64(modelImageFile);
-        garmentImageBase64 = await fileToBase64(garmentImageFile);
+        modelImageBase64 = await imageService.fileToBase64(modelImageUpload.imageFile);
+        garmentImageBase64 = await imageService.fileToBase64(garmentImageUpload.imageFile);
       }
 
       const basePayload = {
@@ -540,69 +395,36 @@ export default function Home() {
         api_key: apiKey || '', // Send empty string if no local key, backend will use env var
       };
 
+      let result: string[];
+
       if (comparison) {
-        // Run both selected models in parallel for comparison
-        const [model1Response, model2Response] = await Promise.all([
-          fetch('/api/tryon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...basePayload, model_name: comparisonModel1 }),
-          }),
-          fetch('/api/tryon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...basePayload, model_name: comparisonModel2 }),
-          })
-        ]);
-
-        const [model1Data, model2Data] = await Promise.all([
-          model1Response.json(),
-          model2Response.json()
-        ]);
-
-        // Check for errors in either response
-        if (!model1Response.ok) {
-          if (model1Data.requiresApiKey) {
-            setIsApiKeyModalOpen(true);
-          }
-          throw new Error(`${comparisonModel1} API failed: ${model1Data.error || model1Response.statusText}`);
-        }
-        if (!model2Response.ok) {
-          throw new Error(`${comparisonModel2} API failed: ${model2Data.error || model2Response.statusText}`);
-        }
-
-        // Combine results from both APIs
-        const model1Results = model1Data.output || [];
-        const model2Results = model2Data.output || [];
-        setResultGallery([...model1Results, ...model2Results]);
-
+        // Use tryOn service for comparison
+        const response = await tryOnService.generateComparison(
+          basePayload,
+          comparisonModel1,
+          comparisonModel2
+        );
+        result = response.output;
       } else {
-        // Single API call
-        const payload = { ...basePayload, model_name: modelVersion };
-
-        const response = await fetch('/api/tryon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+        // Single API call using tryOn service
+        const response = await tryOnService.generateTryOn({
+          ...basePayload,
+          model_name: modelVersion,
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // Check if API key is required/invalid
-          if (data.requiresApiKey) {
-            setIsApiKeyModalOpen(true);
-          }
-          throw new Error(data.error || `API request failed with status ${response.status}`);
-        }
-
-        setResultGallery(data.output || []);
+        result = response.output;
       }
+
+      setResultGallery(result);
 
     } catch (err: unknown) {
       console.error("Try-on error:", err);
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(errorMessage);
+      
+      // Check if API key is required
+      if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
+        setIsApiKeyModalOpen(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -804,7 +626,7 @@ export default function Home() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedVirtualModel(null)}
+                    onClick={() => selectVirtualModel(null)}
                     className="p-1.5 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-lg transition-colors"
                   >
                     <X className="h-4 w-4 text-purple-600 dark:text-purple-400" />
@@ -814,7 +636,7 @@ export default function Home() {
             )}
             <div className="space-y-6">
               <AnimatePresence mode="wait">
-                {modelImagePreview ? (
+                {modelImageUpload.imagePreview ? (
                   <motion.div
                     key="preview"
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -825,7 +647,7 @@ export default function Home() {
                   >
                     <div className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto flex items-center justify-center overflow-hidden">
                       <Image
-                        src={modelImagePreview}
+                        src={modelImageUpload.imagePreview}
                         alt="Model Preview"
                         className="max-w-full max-h-full object-contain p-4"
                         width={400}
@@ -838,8 +660,7 @@ export default function Home() {
                       whileTap={{ scale: 0.9 }}
                       type="button"
                       onClick={() => {
-                        setModelImageFile(null);
-                        setModelImagePreview(null);
+                        modelImageUpload.clearImage();
                       }}
                       className="absolute -top-3 -right-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-full p-2 shadow-lg cursor-pointer"
                     >
@@ -884,7 +705,7 @@ export default function Home() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            loadExampleImage(modelExamples[modelExampleIndex], setModelImageFile, setModelImagePreview);
+                            loadExampleImage(modelExamples[modelExampleIndex], modelImageUpload);
                           }}
                           className="w-full h-full cursor-pointer group"
                         >
@@ -960,7 +781,7 @@ export default function Home() {
               </AnimatePresence>
 
               <FileInput
-                onChange={(e) => handleImageChange(e, setModelImageFile, setModelImagePreview)}
+                onChange={(e) => handleImageChange(e, modelImageUpload)}
                 accept="image/*"
                 label="Tải lên ảnh người mẫu"
               />
@@ -1030,7 +851,7 @@ export default function Home() {
             <div className="space-y-6">
 
               <AnimatePresence mode="wait">
-                {garmentImagePreview ? (
+                {garmentImageUpload.imagePreview ? (
                   <motion.div
                     key="preview"
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1041,7 +862,7 @@ export default function Home() {
                   >
                     <div className="modern-image-container aspect-[2/2.5] max-w-[400px] max-h-[500px] mx-auto flex items-center justify-center overflow-hidden">
                       <Image
-                        src={garmentImagePreview}
+                        src={garmentImageUpload.imagePreview}
                         alt="Garment Preview"
                         className="max-w-full max-h-full object-contain p-4"
                         width={400}
@@ -1054,8 +875,7 @@ export default function Home() {
                       whileTap={{ scale: 0.9 }}
                       type="button"
                       onClick={() => {
-                        setGarmentImageFile(null);
-                        setGarmentImagePreview(null);
+                        garmentImageUpload.clearImage();
                       }}
                       className="absolute -top-3 -right-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-full p-2 shadow-lg cursor-pointer"
                     >
@@ -1100,7 +920,7 @@ export default function Home() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            loadExampleImage(garmentExamples[garmentExampleIndex], setGarmentImageFile, setGarmentImagePreview);
+                            loadExampleImage(garmentExamples[garmentExampleIndex], garmentImageUpload);
                           }}
                           className="w-full h-full cursor-pointer group"
                         >
@@ -1176,7 +996,7 @@ export default function Home() {
               </AnimatePresence>
 
               <FileInput
-                onChange={(e) => handleImageChange(e, setGarmentImageFile, setGarmentImagePreview)}
+                onChange={(e) => handleImageChange(e, garmentImageUpload)}
                 accept="image/*"
                 label="Tải lên ảnh trang phục"
               />
@@ -1247,7 +1067,7 @@ export default function Home() {
                 </div>
               </div>
             </div> */}
-            {(!modelImageFile || !garmentImageFile) && (
+            {(!modelImageUpload.imageFile || !garmentImageUpload.imageFile) && (
               <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium text-center">
                   ⚠️ Vui lòng tải lên cả ảnh người mẫu và ảnh trang phục để tiếp tục
@@ -1260,7 +1080,7 @@ export default function Home() {
               <div className="text-center">
                 <Button
                   type="submit"
-                  disabled={isLoading || !modelImageFile || !garmentImageFile}
+                  disabled={isLoading || !modelImageUpload.imageFile || !garmentImageUpload.imageFile}
                   loading={isLoading}
                   className="modern-button-enhanced bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
                 >

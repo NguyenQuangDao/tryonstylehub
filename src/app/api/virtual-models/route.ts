@@ -14,7 +14,8 @@ async function getUserInfoFromRequest(request: NextRequest): Promise<{ userId: n
   }
   
   // Get session ID from cookies for anonymous users
-  const sessionId = cookies().get('sessionId')?.value || null;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get('sessionId')?.value || null;
   
   return { userId, sessionId };
 }

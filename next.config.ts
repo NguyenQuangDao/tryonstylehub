@@ -2,20 +2,100 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      'cilsrdpvqtgutxprdofn.supabase.co', // For the FASHN logo
-      'cdn.fashn.ai', // For FASHN API result images
-      'api.fashn.ai', // Another potential domain for FASHN images
-      'app.fashn.ai', // For FASHN example model images
-      'images.pexels.com', // For Pexels garment example images
-      'v3.fal.media', // For example images in documentation
-      'custom-icon-badges.demolab.com', // For badges
-      'img.shields.io', // For badges
-      'mjc1kvq4a1.ufs.sh', // For external images from Upload Thing
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cilsrdpvqtgutxprdofn.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.fashn.ai',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.fashn.ai',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'app.fashn.ai',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'v3.fal.media',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'custom-icon-badges.demolab.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.shields.io',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mjc1kvq4a1.ufs.sh',
+        port: '',
+        pathname: '/**',
+      },
     ],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
-    serverActions: { allowedOrigins: [] }
+    serverActions: { allowedOrigins: [] },
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  poweredByHeader: false,
+  compress: true,
+  // Enable static optimization
+  trailingSlash: false,
+  // Optimize bundle
+  webpack: (config, { dev, isServer }) => {
+    // Optimize bundle size
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            enforce: true,
+          },
+        },
+      };
+    }
+    return config;
   },
 };
 

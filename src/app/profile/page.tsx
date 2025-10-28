@@ -1,5 +1,6 @@
 'use client'
 
+import { Button, VirtualModelForm } from '@/components';
 import { useAuth } from '@/lib/auth-context';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,8 +8,6 @@ import { Edit2, Mail, Plus, Trash2, User as UserIcon, Users } from 'lucide-react
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import VirtualModelForm from '../components/VirtualModelForm';
-import Button from '../components/ui/button';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
