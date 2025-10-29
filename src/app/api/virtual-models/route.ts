@@ -1,5 +1,5 @@
-import { verifyToken } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { verifyToken } from '../../../lib/auth';
+import { prisma } from '../../../lib/prisma';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 

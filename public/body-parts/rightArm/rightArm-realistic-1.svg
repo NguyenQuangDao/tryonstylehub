@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Upper arm -->
+  <ellipse cx="60" cy="80" rx="25" ry="60" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Elbow -->
+  <circle cx="60" cy="140" r="18" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Forearm -->
+  <ellipse cx="60" cy="200" rx="20" ry="50" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Hand -->
+  <ellipse cx="60" cy="270" rx="15" ry="25" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Fingers -->
+  <ellipse cx="50" cy="290" rx="3" ry="8" fill="#fdbcb4" stroke="#d97706" stroke-width="1"/>
+  <ellipse cx="57" cy="295" rx="3" ry="10" fill="#fdbcb4" stroke="#d97706" stroke-width="1"/>
+  <ellipse cx="64" cy="295" rx="3" ry="9" fill="#fdbcb4" stroke="#d97706" stroke-width="1"/>
+  <ellipse cx="71" cy="290" rx="3" ry="7" fill="#fdbcb4" stroke="#d97706" stroke-width="1"/>
+  
+  <!-- Thumb -->
+  <ellipse cx="75" cy="275" rx="4" ry="8" fill="#fdbcb4" stroke="#d97706" stroke-width="1"/>
+  
+  <!-- Muscle definition -->
+  <ellipse cx="55" cy="70" rx="8" ry="15" fill="#f59e0b" opacity="0.3"/>
+  <ellipse cx="55" cy="110" rx="6" ry="12" fill="#f59e0b" opacity="0.3"/>
+  
+  <!-- Wrist -->
+  <rect x="50" y="245" width="20" height="8" fill="#e76f51" stroke="#d97706" stroke-width="1"/>
+</svg>

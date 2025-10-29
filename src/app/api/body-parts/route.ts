@@ -16,11 +16,11 @@ export async function GET(request: Request) {
       bodyParts = composer.getAllBodyParts();
     }
 
-    return NextResponse.json({
-      success: true,
-      data: bodyParts,
-      categories: ['head', 'hair', 'face', 'body', 'arms', 'legs', 'accessories']
-    });
+  return NextResponse.json({
+    success: true,
+    data: bodyParts,
+    categories: ['hair', 'head', 'torso', 'leftArm', 'rightArm', 'legs', 'feet', 'accessories']
+  });
   } catch (error) {
     console.error('[Body Parts API] Error:', error);
     return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const validCategories = ['head', 'hair', 'face', 'body', 'arms', 'legs', 'accessories'];
+    const validCategories = ['hair', 'head', 'torso', 'leftArm', 'rightArm', 'legs', 'feet', 'accessories'];
     if (!validCategories.includes(category)) {
       return NextResponse.json(
         { success: false, error: 'Danh mục không hợp lệ' },

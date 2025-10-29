@@ -44,7 +44,7 @@ export default function CustomAvatarCreator({
   const [savedAvatars, setSavedAvatars] = useState<Array<{
     id: number;
     avatarName: string;
-    readyPlayerMeUrl?: string;
+    avatarImage?: string;
     updatedAt: string;
   }>>([]);
   const [currentAvatarName, setCurrentAvatarName] = useState<string>('');
@@ -126,12 +126,39 @@ export default function CustomAvatarCreator({
   const loadSavedAvatars = async () => {
     try {
       const response = await fetch('/api/avatar/list');
-      const result = await response.json();
-      if (result.success) {
-        setSavedAvatars(result.data);
+      const data = await response.json();
+      
+      if (data.success) {
+        setSavedAvatars(data.data);
       }
     } catch (error) {
       console.error('Error loading saved avatars:', error);
+    }
+  };
+
+  // Load avatar from database
+  const loadAvatar = async (avatarName: string) => {
+    try {
+      const response = await fetch(`/api/avatar/load?avatarName=${encodeURIComponent(avatarName)}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const avatar = data.data;
+        setCurrentAvatarName(avatar.avatarName);
+        setAvatarUrl(avatar.avatarImage || null);
+        
+        // Update customization based on avatar data
+        setCustomization({
+          gender: avatar.gender || 'male',
+          skinTone: avatar.skinTone || 'medium',
+          hairColor: avatar.hairColor || 'black',
+          hairStyle: avatar.hairStyle || 'short',
+          eyeColor: avatar.eyeColor || 'brown',
+          clothingStyle: avatar.clothingStyle || 'casual'
+        });
+      }
+    } catch (error) {
+      console.error('Error loading avatar:', error);
     }
   };
 
@@ -145,19 +172,14 @@ export default function CustomAvatarCreator({
         },
         body: JSON.stringify({
           avatarName,
-          readyPlayerMeUrl: avatarUrl,
-          readyPlayerMeId: Date.now().toString(),
-          readyPlayerMeData: customization,
-          formData: {
-            gender: customization.gender,
-            skinTone: customization.skinTone,
-            hairColor: customization.hairColor,
-            hairStyle: customization.hairStyle,
-            eyeColor: customization.eyeColor,
-            clothingStyle: customization.clothingStyle,
-            height: 170,
-            weight: 65
-          }
+          height: 170,
+          weight: 65,
+          gender: customization.gender,
+          hairColor: customization.hairColor,
+          hairStyle: customization.hairStyle,
+          skinTone: customization.skinTone,
+          eyeColor: customization.eyeColor,
+          isPublic: false
         }),
       });
 
@@ -409,7 +431,7 @@ export default function CustomAvatarCreator({
                   className={`p-3 rounded-lg border-2 transition-all ${
                     customization.eyeColor === option.value
                       ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover-gray-300'
                   }`}
                 >
                   <div 
@@ -441,7 +463,7 @@ export default function CustomAvatarCreator({
                   className={`p-3 rounded-lg border-2 transition-all ${
                     customization.clothingStyle === option.value
                       ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover-gray-300'
                   }`}
                 >
                   <div className="text-lg mb-1">{option.icon}</div>
@@ -505,45 +527,27 @@ export default function CustomAvatarCreator({
           <h3 className="text-lg font-semibold mb-4">Avatars đã lưu</h3>
           <div className="grid grid-cols-2 gap-3">
             {savedAvatars.map((avatar) => (
-              <div key={avatar.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-sm">{avatar.avatarName}</h4>
-                  <span className="text-xs text-gray-500">
-                    {new Date(avatar.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-                {avatar.readyPlayerMeUrl && (
-                  <Image 
-                    src={avatar.readyPlayerMeUrl} 
+              <motion.div
+                key={avatar.id}
+                className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-blue-300 transition-colors"
+                onClick={() => loadAvatar(avatar.avatarName)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {avatar.avatarImage && (
+                  <Image
+                    src={avatar.avatarImage}
                     alt={avatar.avatarName}
-                    width={200}
+                    width={80}
                     height={80}
-                    className="w-full h-20 object-cover rounded mb-2"
+                    className="w-20 h-20 object-cover rounded-lg mx-auto mb-2"
                   />
                 )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setAvatarUrl(avatar.readyPlayerMeUrl || null);
-                    }}
-                    className="flex-1 px-2 py-1 bg-indigo-500 text-white text-xs rounded hover:bg-indigo-600"
-                  >
-                    Load
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm('Bạn có chắc muốn xóa avatar này?')) {
-                        fetch(`/api/avatar/load?avatarName=${encodeURIComponent(avatar.avatarName)}`, {
-                          method: 'DELETE'
-                        }).then(() => loadSavedAvatars());
-                      }
-                    }}
-                    className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
+                <h4 className="font-medium text-center text-gray-900">{avatar.avatarName}</h4>
+                <p className="text-xs text-gray-500 text-center">
+                  {new Date(avatar.updatedAt).toLocaleDateString()}
+                </p>
+              </motion.div>
             ))}
           </div>
         </div>

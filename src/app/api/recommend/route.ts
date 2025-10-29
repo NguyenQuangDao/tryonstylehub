@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getCache, setCache } from "@/lib/cache";
-import { getRecommendedProductIds } from "@/lib/openai-ai";
-import { prisma } from "@/lib/prisma";
+import { getCache, setCache } from "../../../lib/cache";
+import { getRecommendedProductIds } from "../../../lib/openai-ai";
+import { prisma } from "../../../lib/prisma";
 
 type OutfitProduct = {
   id: number;

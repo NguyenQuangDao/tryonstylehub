@@ -1,4 +1,4 @@
-import { CreateVirtualModelInput, VirtualModel } from '@/types';
+import { CreateVirtualModelInput, VirtualModel } from '../types';
 import { useCallback, useState } from 'react';
 
 export interface UseVirtualModelsReturn {
@@ -27,7 +27,8 @@ export const useVirtualModels = (): UseVirtualModelsReturn => {
         const data = await response.json();
         setVirtualModels(data.virtualModels || []);
       } else {
-        throw new Error('Failed to fetch virtual models');
+        setError('Failed to fetch virtual models');
+        console.error('Error response:', response.status, response.statusText);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';

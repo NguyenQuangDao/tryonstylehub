@@ -69,7 +69,7 @@ export async function POST(request: Request) {
               .toBuffer(),
             left: x,
             top: y,
-            blend: part.blendMode || 'normal'
+            blend: part.blendMode || 'over'
           });
         }
       }

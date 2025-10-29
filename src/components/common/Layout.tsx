@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "../../lib/auth-context";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, LogIn, LogOut, Menu, Settings, ShoppingBag, Sparkles, User, X } from "lucide-react";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import Image from "next/image";
 
 interface LayoutProps {
   children: ReactNode;
@@ -47,7 +48,7 @@ export function Layout({ children }: LayoutProps) {
                   transition={{ duration: 0.6 }}
                   className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 overflow-hidden"
                 >
-                  <img 
+                  <Image 
                     src="/logo/logo.png" 
                     alt="AIStyleHub Logo" 
                     className="w-10 h-10 object-contain"

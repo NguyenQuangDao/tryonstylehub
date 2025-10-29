@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hair base -->
+  <ellipse cx="120" cy="80" rx="110" ry="60" fill="#2d1b69" stroke="#1e1b4b" stroke-width="2"/>
+  
+  <!-- Long hair strands -->
+  <path d="M 30 120 Q 35 140 40 160 Q 45 180 50 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  <path d="M 50 125 Q 55 145 60 165 Q 65 185 70 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  <path d="M 70 130 Q 75 150 80 170 Q 85 190 90 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  
+  <path d="M 150 130 Q 155 150 160 170 Q 165 190 170 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  <path d="M 170 125 Q 175 145 180 165 Q 185 185 190 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  <path d="M 190 120 Q 195 140 200 160 Q 205 180 210 200" stroke="#2d1b69" stroke-width="8" fill="none"/>
+  
+  <!-- Hair bangs -->
+  <path d="M 60 40 Q 70 50 80 60" stroke="#2d1b69" stroke-width="6" fill="none"/>
+  <path d="M 80 35 Q 90 45 100 55" stroke="#2d1b69" stroke-width="6" fill="none"/>
+  <path d="M 120 30 Q 130 40 140 50" stroke="#2d1b69" stroke-width="6" fill="none"/>
+  <path d="M 140 35 Q 150 45 160 55" stroke="#2d1b69" stroke-width="6" fill="none"/>
+  <path d="M 160 40 Q 170 50 180 60" stroke="#2d1b69" stroke-width="6" fill="none"/>
+  
+  <!-- Hair highlights -->
+  <ellipse cx="80" cy="90" rx="6" ry="15" fill="#4338ca" opacity="0.6"/>
+  <ellipse cx="120" cy="85" rx="8" ry="18" fill="#4338ca" opacity="0.6"/>
+  <ellipse cx="160" cy="90" rx="6" ry="15" fill="#4338ca" opacity="0.6"/>
+</svg>

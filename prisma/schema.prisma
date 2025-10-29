@@ -78,11 +78,7 @@ model VirtualModel {
   // Basic info
   avatarName        String   @db.VarChar(255)
   isPublic          Boolean  @default(false)
-  
-  // Ready Player Me Integration
-  readyPlayerMeUrl  String?  @db.VarChar(1024)  // Avatar URL from Ready Player Me
-  readyPlayerMeId   String?  @db.VarChar(255)   // Ready Player Me avatar ID
-  readyPlayerMeData String?  @db.Text           // JSON: Full avatar configuration data
+  avatarImage       String?  @db.VarChar(1024)  // URL of uploaded avatar image
   
   // Body Metrics (Required)
   height            Float    // cm

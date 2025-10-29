@@ -1,5 +1,5 @@
-import { CostTracker } from "@/lib/cost-optimizer";
-import { generateImageWithDALLE } from "@/lib/openai-ai";
+import { CostTracker } from "../../../lib/cost-optimizer";
+import { generateImageWithDALLE } from "../../../lib/openai-ai";
 import { NextRequest, NextResponse } from "next/server";
 
 type GenerateImageRequest = {

@@ -1,12 +1,13 @@
 'use client';
 
-import { cn } from '@/app/lib/utils';
-import { ApiKeyModal, Button, Checkbox, Dropdown, FileInput, RadioGroup, TipsModal, VirtualModelForm, VirtualModelSelector } from '@/components';
-import { useApiKey, useImageUpload, useVirtualModels } from '@/hooks';
-import { imageService, tryOnService } from '@/services';
-import { CreateVirtualModelInput, VirtualModel } from '@/types';
+import { cn } from './lib/utils';
+import { ApiKeyModal, Checkbox, Dropdown, FileInput, RadioGroup, TipsModal, VirtualModelForm, VirtualModelSelector } from '../components';
+import { Button } from '../components/ui/button';
+import { useApiKey, useImageUpload, useVirtualModels } from '../hooks';
+import { imageService, tryOnService } from '../services';
+import { CreateVirtualModelInput, VirtualModel } from '../types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, Users, X, Zap } from 'lucide-react';
+import { Lightbulb, RefreshCw, Shirt, Sparkles, UserRound, Users, X, Zap, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
 import { ReactCompareSlider, ReactCompareSliderImage, useReactCompareSliderRef } from 'react-compare-slider';
@@ -440,12 +441,12 @@ export default function Home() {
         className="hero-section text-center space-y-6 relative z-10"
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="floating-element mb-2"
+          className="mb-2"
         >
-          <h1 className="text-display-lg md:text-display-md lg:text-display-sm font-extrabold modern-gradient-text vietnamese-heading">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
             Thử Đồ Ảo AI
           </h1>
         </motion.div>
@@ -466,25 +467,25 @@ export default function Home() {
           className="flex flex-wrap items-center justify-center gap-6 pt-8"
         >
           <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-indigo-200 dark:border-indigo-700/50"
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border bg-card/90 shadow-sm"
           >
-            <Sparkles className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">AI-Powered</span>
+            <Sparkles className="h-6 w-6 text-muted-foreground" />
+            <span className="text-base font-semibold text-foreground">AI-Powered</span>
           </motion.div>
           <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-purple-200 dark:border-purple-700/50"
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border bg-card/90 shadow-sm"
           >
-            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Chất Lượng Cao</span>
+            <Zap className="h-6 w-6 text-muted-foreground" />
+            <span className="text-base font-semibold text-foreground">Chất Lượng Cao</span>
           </motion.div>
           <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="flex items-center gap-3 px-6 py-3 glass-effect rounded-2xl shadow-lg bg-white/90 dark:bg-gray-800/90 border border-pink-200 dark:border-pink-700/50"
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border bg-card/90 shadow-sm"
           >
-            <Shirt className="h-6 w-6 text-pink-600 dark:text-pink-400" />
-            <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Thời Trang Hiện Đại</span>
+            <Shirt className="h-6 w-6 text-muted-foreground" />
+            <span className="text-base font-semibold text-foreground">Thời Trang Hiện Đại</span>
           </motion.div>
         </motion.div>
       </motion.div>
@@ -497,26 +498,26 @@ export default function Home() {
         className="modern-card glass-effect flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6"
       >
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div className="w-12 h-12 rounded-2xl modern-gradient-bg flex items-center justify-center flex-shrink-0 pulse-glow">
-            <Lightbulb className="h-6 w-6 text-white" />
+          <div className="w-12 h-12 rounded-xl border border-border bg-card flex items-center justify-center flex-shrink-0">
+            <Lightbulb className="h-6 w-6 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-headline-sm sm:text-headline-md font-semibold text-gray-900 dark:text-gray-100 vietnamese-heading">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
               Mẹo để có kết quả tốt nhất
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Khám phá các mẹo và thủ thuật để tối ưu hóa trải nghiệm thử đồ ảo
             </p>
           </div>
         </div>
 
         <Button
-          variant="secondary"
+          variant="outline"
           size="sm"
           onClick={() => setIsTipsModalOpen(true)}
-          className="modern-button bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-700"
+          className=""
         >
-          <Lightbulb className="h-4 w-4 mr-2 text-yellow-600 dark:text-yellow-400" />
+          <Lightbulb className="h-4 w-4 mr-2 text-muted-foreground" />
           Xem Mẹo
         </Button>
 
@@ -547,15 +548,15 @@ export default function Home() {
                 <motion.div 
                   whileHover={{ rotate: 360, scale: 1.1 }}
                   transition={{ duration: 0.6 }}
-                  className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg"
+                  className="w-12 h-12 rounded-xl border border-border bg-card flex items-center justify-center shadow-sm"
                 >
-                  <UserRound className="h-6 w-6 text-white" />
+                  <UserRound className="h-6 w-6 text-muted-foreground" />
                 </motion.div>
                 <div>
-                  <h3 className="text-headline-sm md:text-headline-md font-semibold modern-gradient-text vietnamese-heading">
+                  <h3 className="text-lg md:text-xl font-semibold text-foreground">
                     Ảnh Người Mẫu
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <p className="text-sm text-muted-foreground">
                     Tải lên ảnh người mẫu hoặc chọn từ ví dụ
                   </p>
                 </div>
@@ -566,7 +567,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleOpenVirtualModelSelector}
-                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-foreground shadow-sm hover:bg-accent transition-colors"
                 title="Quản lý người mẫu ảo"
               >
                 <Users className="h-5 w-5" />
@@ -579,22 +580,22 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl"
+                className="mb-4 p-4 bg-muted/30 border border-border rounded-xl"
               >
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
-                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <div className="p-2 rounded-lg border border-border bg-card">
+                    <Users className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+                    <h4 className="text-sm font-semibold text-foreground mb-1">
                       Chưa có người mẫu ảo
                     </h4>
-                    <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                    <p className="text-xs text-muted-foreground mb-2">
                       Tạo người mẫu ảo với thông số cơ thể của bạn để dễ dàng thử đồ
                     </p>
                     <button
                       onClick={handleOpenVirtualModelForm}
-                      className="text-xs font-medium text-purple-600 dark:text-purple-400 hover:underline"
+                      className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
                     >
                       Tạo ngay →
                     </button>
@@ -609,12 +610,12 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl"
+                className="mb-4 p-4 bg-muted/30 border border-border rounded-xl"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-500 rounded-lg">
-                      <UserRound className="h-4 w-4 text-white" />
+                    <div className="p-2 rounded-lg border border-border bg-card">
+                      <UserRound className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">
@@ -1081,12 +1082,11 @@ export default function Home() {
                 <Button
                   type="submit"
                   disabled={isLoading || !modelImageUpload.imageFile || !garmentImageUpload.imageFile}
-                  loading={isLoading}
                   className="modern-button-enhanced bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-4">
-                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Đang tạo kết quả thử đồ...</span>
                     </span>
                   ) : (
@@ -1204,7 +1204,7 @@ export default function Home() {
                       </span>
                     )}
                     <Button
-                      variant={isComparisonMode ? "primary" : "outline"}
+                      variant={isComparisonMode ? "default" : "outline"}
                       size="sm"
                       onClick={toggleComparisonMode}
                       className="flex items-center gap-1"

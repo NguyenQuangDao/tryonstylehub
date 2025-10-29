@@ -1,5 +1,5 @@
-import { getCache, setCache } from "@/lib/cache";
-import { prisma } from "@/lib/prisma";
+import { getCache, setCache } from "../../../lib/cache";
+import { prisma } from "../../../lib/prisma";
 import { NextResponse } from "next/server";
 
 type ProductResponse = {

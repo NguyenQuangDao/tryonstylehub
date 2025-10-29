@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="250" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head shape -->
+  <ellipse cx="100" cy="140" rx="80" ry="90" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="75" cy="120" rx="12" ry="8" fill="white"/>
+  <ellipse cx="125" cy="120" rx="12" ry="8" fill="white"/>
+  <circle cx="75" cy="120" r="6" fill="#374151"/>
+  <circle cx="125" cy="120" r="6" fill="#374151"/>
+  <circle cx="77" cy="118" r="2" fill="white"/>
+  <circle cx="127" cy="118" r="2" fill="white"/>
+  
+  <!-- Eyebrows -->
+  <path d="M 65 105 Q 75 100 85 105" stroke="#8b4513" stroke-width="3" fill="none"/>
+  <path d="M 115 105 Q 125 100 135 105" stroke="#8b4513" stroke-width="3" fill="none"/>
+  
+  <!-- Nose -->
+  <path d="M 100 130 L 95 145 L 100 150 L 105 145 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+  
+  <!-- Mouth -->
+  <path d="M 85 170 Q 100 180 115 170" stroke="#dc2626" stroke-width="3" fill="none"/>
+  
+  <!-- Ears -->
+  <ellipse cx="25" cy="140" rx="15" ry="25" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  <ellipse cx="175" cy="140" rx="15" ry="25" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+  
+  <!-- Neck -->
+  <rect x="80" y="220" width="40" height="30" fill="#fdbcb4" stroke="#d97706" stroke-width="2"/>
+</svg>

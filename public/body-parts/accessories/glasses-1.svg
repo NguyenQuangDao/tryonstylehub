@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left lens -->
+  <circle cx="50" cy="30" r="25" fill="rgba(135, 206, 235, 0.3)" stroke="#374151" stroke-width="3"/>
+  
+  <!-- Right lens -->
+  <circle cx="130" cy="30" r="25" fill="rgba(135, 206, 235, 0.3)" stroke="#374151" stroke-width="3"/>
+  
+  <!-- Bridge -->
+  <rect x="75" y="27" width="30" height="6" fill="#374151" stroke="#1f2937" stroke-width="1"/>
+  
+  <!-- Left temple -->
+  <rect x="10" y="27" width="15" height="6" fill="#374151" stroke="#1f2937" stroke-width="1"/>
+  
+  <!-- Right temple -->
+  <rect x="155" y="27" width="15" height="6" fill="#374151" stroke="#1f2937" stroke-width="1"/>
+  
+  <!-- Nose pads -->
+  <ellipse cx="65" cy="35" rx="3" ry="5" fill="#6b7280"/>
+  <ellipse cx="115" cy="35" rx="3" ry="5" fill="#6b7280"/>
+  
+  <!-- Lens reflections -->
+  <ellipse cx="45" cy="25" rx="8" ry="6" fill="white" opacity="0.6"/>
+  <ellipse cx="125" cy="25" rx="8" ry="6" fill="white" opacity="0.6"/>
+</svg>

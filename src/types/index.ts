@@ -56,11 +56,7 @@ export interface VirtualModel {
   // Basic info
   avatarName: string;
   isPublic: boolean;
-  
-  // Ready Player Me Integration
-  readyPlayerMeUrl?: string | null;
-  readyPlayerMeId?: string | null;
-  readyPlayerMeData?: string | null;
+  avatarImage?: string | null; // URL of uploaded avatar image
   
   // Body Metrics (Required)
   height: number; // cm
@@ -136,5 +132,6 @@ export interface CreateVirtualModelInput {
   colorPalette?: string[];
   ageAppearance?: number;
   bodyProportionPreset?: string;
+  avatarImage?: string; // URL of uploaded avatar image
 }
 

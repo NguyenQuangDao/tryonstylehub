@@ -9,15 +9,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       avatarName, 
-      readyPlayerMeUrl, 
-      readyPlayerMeId, 
-      readyPlayerMeData,
-      formData,
-      userId 
+      height,
+      weight,
+      gender,
+      hairColor,
+      hairStyle,
+      skinTone,
+      eyeColor,
+      isPublic,
+      userId,
+      avatarImage 
     } = body;
 
     // Generate session ID for anonymous users
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     let sessionId = cookieStore.get('sessionId')?.value;
     
     if (!sessionId) {
@@ -44,10 +49,15 @@ export async function POST(request: NextRequest) {
       virtualModel = await prisma.virtualModel.update({
         where: { id: existingAvatar.id },
         data: {
-          readyPlayerMeUrl,
-          readyPlayerMeId,
-          readyPlayerMeData: JSON.stringify(readyPlayerMeData),
-          ...formData,
+          height,
+          weight,
+          gender,
+          hairColor,
+          hairStyle,
+          skinTone,
+          eyeColor,
+          isPublic: isPublic || false,
+          avatarImage: avatarImage || null,
           updatedAt: new Date()
         }
       });
@@ -58,16 +68,15 @@ export async function POST(request: NextRequest) {
           userId: userId ? parseInt(userId) : null,
           sessionId: userId ? null : sessionId,
           avatarName,
-          readyPlayerMeUrl,
-          readyPlayerMeId,
-          readyPlayerMeData: JSON.stringify(readyPlayerMeData),
-          ...formData,
-          // Required fields with defaults
-          height: formData.height || 170,
-          weight: formData.weight || 65,
-          gender: formData.gender || 'male',
-          hairColor: formData.hairColor || 'black',
-          hairStyle: formData.hairStyle || 'short'
+          height: height || 170,
+          weight: weight || 65,
+          gender: gender || 'male',
+          hairColor: hairColor || 'black',
+          hairStyle: hairStyle || 'short',
+          skinTone: skinTone || 'medium',
+          eyeColor: eyeColor || 'brown',
+          isPublic: isPublic || false,
+          avatarImage: avatarImage || null
         }
       });
     }

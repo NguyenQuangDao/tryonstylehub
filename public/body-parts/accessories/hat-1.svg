@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="220" height="120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hat brim -->
+  <ellipse cx="110" cy="90" rx="100" ry="25" fill="#8b4513" stroke="#654321" stroke-width="2"/>
+  
+  <!-- Hat crown -->
+  <ellipse cx="110" cy="60" rx="70" ry="40" fill="#a0522d" stroke="#8b4513" stroke-width="2"/>
+  
+  <!-- Hat band -->
+  <rect x="40" y="75" width="140" height="8" fill="#654321" stroke="#4a2c17" stroke-width="1"/>
+  
+  <!-- Hat top -->
+  <ellipse cx="110" cy="30" rx="60" ry="20" fill="#cd853f" stroke="#a0522d" stroke-width="1"/>
+  
+  <!-- Hat details -->
+  <circle cx="110" cy="75" r="4" fill="#4a2c17"/>
+  
+  <!-- Brim shadow -->
+  <ellipse cx="110" cy="95" rx="95" ry="20" fill="#654321" opacity="0.3"/>
+  
+  <!-- Hat highlights -->
+  <ellipse cx="90" cy="45" rx="15" ry="8" fill="#deb887" opacity="0.6"/>
+  <ellipse cx="130" cy="45" rx="15" ry="8" fill="#deb887" opacity="0.6"/>
+</svg>

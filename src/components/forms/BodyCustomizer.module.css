@@ -1,0 +1,55 @@
+/* components/BodyCustomizer.module.css */
+.customizerContainer {
+  display: flex;
+  gap: 30px;
+  font-family: sans-serif;
+}
+
+.displayArea {
+  width: 300px;
+  height: 500px;
+  position: relative;
+  border: 1px solid #ccc;
+  background-color: #f4f4f4;
+}
+
+.bodyPart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none; /* Prevents images from being draggable */
+}
+
+/* LAYER MANAGEMENT (z-index) */
+.legs { z-index: 10; }
+.feet { z-index: 12; }
+.rightArm { z-index: 18; }
+.torso { z-index: 20; }
+.leftArm { z-index: 22; }
+.head { z-index: 30; }
+.hair { z-index: 40; }
+.accessories { z-index: 50; }
+
+.controlPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.optionsGrid button {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.optionsGrid button:hover {
+  border-color: #3b82f6;
+}

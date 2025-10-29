@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="220" height="180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hair base -->
+  <ellipse cx="110" cy="90" rx="100" ry="70" fill="#8b4513" stroke="#654321" stroke-width="2"/>
+  
+  <!-- Hair curls -->
+  <circle cx="60" cy="60" r="15" fill="#a0522d" stroke="#654321" stroke-width="1"/>
+  <circle cx="85" cy="45" r="12" fill="#a0522d" stroke="#654321" stroke-width="1"/>
+  <circle cx="135" cy="45" r="12" fill="#a0522d" stroke="#654321" stroke-width="1"/>
+  <circle cx="160" cy="60" r="15" fill="#a0522d" stroke="#654321" stroke-width="1"/>
+  
+  <!-- Side curls -->
+  <circle cx="40" cy="90" r="18" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+  <circle cx="180" cy="90" r="18" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+  
+  <!-- Hair strands -->
+  <path d="M 70 30 Q 75 40 80 50" stroke="#654321" stroke-width="2" fill="none"/>
+  <path d="M 110 25 Q 115 35 120 45" stroke="#654321" stroke-width="2" fill="none"/>
+  <path d="M 140 30 Q 145 40 150 50" stroke="#654321" stroke-width="2" fill="none"/>
+  
+  <!-- Hair highlights -->
+  <ellipse cx="90" cy="70" rx="8" ry="12" fill="#cd853f" opacity="0.7"/>
+  <ellipse cx="130" cy="70" rx="8" ry="12" fill="#cd853f" opacity="0.7"/>
+</svg>

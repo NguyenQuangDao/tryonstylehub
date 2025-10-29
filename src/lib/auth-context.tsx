@@ -33,16 +33,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include', // Ensure cookies are sent
+      });
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
       } else {
-        setUser(null);
+        // Only set user to null if we get a clear 401/403, not on network errors
+        if (response.status === 401 || response.status === 403) {
+          setUser(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching user:', error);
-      setUser(null);
+      // Don't set user to null on network errors, keep current state
     } finally {
       setLoading(false);
     }

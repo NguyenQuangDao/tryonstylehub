@@ -1,4 +1,4 @@
-import { CostTracker } from "@/lib/cost-optimizer";
+import { CostTracker } from "../../../lib/cost-optimizer";
 import { NextResponse } from "next/server";
 
 export async function GET() {

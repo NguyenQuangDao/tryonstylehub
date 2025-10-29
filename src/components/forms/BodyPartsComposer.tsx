@@ -1,11 +1,20 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface BodyPart {
   id: string;
   name: string;
-  category: 'head' | 'hair' | 'face' | 'body' | 'arms' | 'legs' | 'accessories';
+  category:
+    | 'hair'
+    | 'head'
+    | 'torso'
+    | 'leftArm'
+    | 'rightArm'
+    | 'legs'
+    | 'feet'
+    | 'accessories';
   imagePath: string;
   position: {
     x: number;
@@ -39,12 +48,13 @@ export default function BodyPartsComposer() {
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 1000 });
 
   const categories = [
-    { value: 'head', label: 'Đầu' },
     { value: 'hair', label: 'Tóc' },
-    { value: 'face', label: 'Khuôn mặt' },
-    { value: 'body', label: 'Thân' },
-    { value: 'arms', label: 'Tay' },
+    { value: 'head', label: 'Đầu (không tóc)' },
+    { value: 'torso', label: 'Thân' },
+    { value: 'leftArm', label: 'Tay trái' },
+    { value: 'rightArm', label: 'Tay phải' },
     { value: 'legs', label: 'Chân' },
+    { value: 'feet', label: 'Bàn chân' },
     { value: 'accessories', label: 'Phụ kiện' }
   ];
 
@@ -359,10 +369,12 @@ export default function BodyPartsComposer() {
           {generatedImage && (
             <div className="bg-white rounded-lg shadow p-4">
               <h3 className="text-lg font-bold mb-4">Ảnh Đã Ghép</h3>
-              <img
+              <Image
                 src={generatedImage}
                 alt="Generated composition"
                 className="w-full rounded"
+                width={400}
+                height={600}
               />
             </div>
           )}

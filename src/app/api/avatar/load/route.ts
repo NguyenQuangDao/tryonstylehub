@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId');
 
     // Get session ID for anonymous users
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionId = cookieStore.get('sessionId')?.value;
 
     if (!avatarName) {
@@ -36,22 +36,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse Ready Player Me data
-    let readyPlayerMeData = null;
-    if (virtualModel.readyPlayerMeData) {
-      try {
-        readyPlayerMeData = JSON.parse(virtualModel.readyPlayerMeData);
-      } catch (error) {
-        console.error('Error parsing Ready Player Me data:', error);
-      }
-    }
-
     return NextResponse.json({
       success: true,
-      data: {
-        ...virtualModel,
-        readyPlayerMeData
-      }
+      data: virtualModel
     });
 
   } catch (error) {
@@ -70,7 +57,7 @@ export async function DELETE(request: NextRequest) {
     const userId = searchParams.get('userId');
 
     // Get session ID for anonymous users
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionId = cookieStore.get('sessionId')?.value;
 
     if (!avatarName) {
@@ -80,17 +67,28 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete virtual model
-    const deletedModel = await prisma.virtualModel.deleteMany({
+    // Find and delete virtual model
+    const virtualModel = await prisma.virtualModel.findFirst({
       where: {
         avatarName,
         ...(userId ? { userId: parseInt(userId) } : { sessionId })
       }
     });
 
+    if (!virtualModel) {
+      return NextResponse.json(
+        { success: false, error: 'Avatar not found' },
+        { status: 404 }
+      );
+    }
+
+    await prisma.virtualModel.delete({
+      where: { id: virtualModel.id }
+    });
+
     return NextResponse.json({
       success: true,
-      deletedCount: deletedModel.count
+      message: 'Avatar deleted successfully'
     });
 
   } catch (error) {

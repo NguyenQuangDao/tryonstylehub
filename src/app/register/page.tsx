@@ -20,7 +20,11 @@ export default function RegisterPage() {
   // Redirect if already logged in (only when not loading)
   useEffect(() => {
     if (!loading && user) {
-      router.push('/');
+      // Add a small delay to prevent immediate redirect issues
+      const timer = setTimeout(() => {
+        router.push('/dashboard');
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [user, loading, router]);
 

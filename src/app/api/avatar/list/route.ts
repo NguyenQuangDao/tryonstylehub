@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId');
 
     // Get session ID for anonymous users
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionId = cookieStore.get('sessionId')?.value;
 
     // Find all virtual models for user or session
@@ -23,26 +23,9 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Parse Ready Player Me data for each model
-    const modelsWithParsedData = virtualModels.map(model => {
-      let readyPlayerMeData = null;
-      if (model.readyPlayerMeData) {
-        try {
-          readyPlayerMeData = JSON.parse(model.readyPlayerMeData);
-        } catch (error) {
-          console.error('Error parsing Ready Player Me data:', error);
-        }
-      }
-      
-      return {
-        ...model,
-        readyPlayerMeData
-      };
-    });
-
     return NextResponse.json({
       success: true,
-      data: modelsWithParsedData
+      data: virtualModels
     });
 
   } catch (error) {
