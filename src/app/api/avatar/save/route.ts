@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -45,39 +45,43 @@ export async function POST(request: NextRequest) {
 
     let virtualModel;
     if (existingAvatar) {
-      // Update existing avatar
+      // Update existing avatar - prepare data object
+      const updateData: Prisma.VirtualModelUpdateInput = {
+        height,
+        weight,
+        gender,
+        hairColor,
+        hairStyle,
+        skinTone,
+        eyeColor,
+        isPublic: isPublic || false,
+        updatedAt: new Date(),
+        ...(avatarImage && { avatarImage })
+      };
+
       virtualModel = await prisma.virtualModel.update({
         where: { id: existingAvatar.id },
-        data: {
-          height,
-          weight,
-          gender,
-          hairColor,
-          hairStyle,
-          skinTone,
-          eyeColor,
-          isPublic: isPublic || false,
-          avatarImage: avatarImage || null,
-          updatedAt: new Date()
-        }
+        data: updateData
       });
     } else {
-      // Create new avatar
+      // Create new avatar - prepare data object
+      const createData: Prisma.VirtualModelCreateInput = {
+        userId: userId ? parseInt(userId) : undefined,
+        sessionId: userId ? undefined : sessionId,
+        avatarName,
+        height: height || 170,
+        weight: weight || 65,
+        gender: gender || 'male',
+        hairColor: hairColor || 'black',
+        hairStyle: hairStyle || 'short',
+        skinTone: skinTone || 'medium',
+        eyeColor: eyeColor || 'brown',
+        isPublic: isPublic || false,
+        ...(avatarImage && { avatarImage })
+      };
+
       virtualModel = await prisma.virtualModel.create({
-        data: {
-          userId: userId ? parseInt(userId) : null,
-          sessionId: userId ? null : sessionId,
-          avatarName,
-          height: height || 170,
-          weight: weight || 65,
-          gender: gender || 'male',
-          hairColor: hairColor || 'black',
-          hairStyle: hairStyle || 'short',
-          skinTone: skinTone || 'medium',
-          eyeColor: eyeColor || 'brown',
-          isPublic: isPublic || false,
-          avatarImage: avatarImage || null
-        }
+        data: createData
       });
     }
 
