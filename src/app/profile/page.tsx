@@ -1,6 +1,7 @@
 'use client'
 
-import { Button, VirtualModelForm } from '@/components';
+import { VirtualModelForm } from '@/components';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -193,7 +194,7 @@ export default function ProfilePage() {
             </div>
             <Button
               onClick={handleOpenForm}
-              variant="primary"
+              variant="default"
               className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <Plus className="h-5 w-5" />
@@ -222,7 +223,7 @@ export default function ProfilePage() {
               </p>
               <Button
                 onClick={handleOpenForm}
-                variant="primary"
+                variant="default"
                 className="flex items-center gap-2"
               >
                 <Plus className="h-5 w-5" />
@@ -327,7 +328,7 @@ export default function ProfilePage() {
                             </Button>
                             <Button
                               onClick={() => handleDeleteModel(model.id)}
-                              variant="primary"
+                              variant="default"
                               className="flex-1 bg-red-500 hover:bg-red-600"
                             >
                               Xóa

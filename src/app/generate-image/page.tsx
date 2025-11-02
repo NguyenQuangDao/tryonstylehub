@@ -3,6 +3,12 @@
 import { motion } from 'framer-motion';
 import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles, Wand2 } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function GenerateImagePage() {
   const [prompt, setPrompt] = useState('');
@@ -62,184 +68,222 @@ export default function GenerateImagePage() {
         className="space-y-8 relative z-10"
       >
         {/* Hero Section */}
-        <div className="text-center space-y-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-3xl p-8 shadow-lg border border-purple-100 dark:border-purple-900/30">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-              <Wand2 className="h-8 w-8 text-white" />
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-100 dark:border-purple-900/30">
+          <CardHeader className="text-center space-y-6">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+                <Wand2 className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent vietnamese-heading">
+                  Tạo Ảnh AI
+                </CardTitle>
+                <CardDescription className="text-lg">
+                  Tạo ảnh thời trang với công nghệ DALL-E 3 tiên tiến
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent vietnamese-heading">
-                Tạo Ảnh AI
-              </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                Tạo ảnh thời trang với công nghệ DALL-E 3 tiên tiến
-              </p>
+            
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+                <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                AI-Powered
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+                <Palette className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+                Chất lượng cao
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+                <Camera className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                Nhanh chóng
+              </Badge>
             </div>
-          </div>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md">
-              <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md">
-              <Palette className="h-5 w-5 text-pink-600 dark:text-pink-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Chất lượng cao</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md">
-              <Camera className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Nhanh chóng</span>
-            </div>
-          </div>
-        </div>
+          </CardHeader>
+        </Card>
 
         {/* Usage Guide */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-3xl p-6 border border-purple-200 dark:border-purple-800">
-        <div className={`flex items-center justify-between ${showGuide ? 'mb-4' : ''}`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-                <Info className="h-5 w-5 text-white" />
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+          <CardHeader>
+            <div className={`flex items-center justify-between ${showGuide ? 'mb-4' : ''}`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                  <Info className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-xl">Hướng Dẫn Sử Dụng</CardTitle>
               </div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Hướng Dẫn Sử Dụng</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowGuide(!showGuide)}
+                className="text-sm"
+              >
+                {showGuide ? 'Ẩn' : 'Xem'}
+              </Button>
             </div>
-            <button
-              onClick={() => setShowGuide(!showGuide)}
-              className="px-4 py-2 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              {showGuide ? 'Ẩn' : 'Xem'}
-            </button>
-          </div>
+          </CardHeader>
           
           {showGuide && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">✨ Mô Tả Chi Tiết</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Mô tả càng chi tiết càng tốt: màu sắc, phong cách, bối cảnh, ánh sáng để có kết quả tốt nhất.
-                  </p>
+            <CardContent>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">✨ Mô Tả Chi Tiết</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Mô tả càng chi tiết càng tốt: màu sắc, phong cách, bối cảnh, ánh sáng để có kết quả tốt nhất.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">🎨 Phong Cách Thời Trang</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Chỉ định phong cách: casual, formal, vintage, modern, bohemian, minimalist, etc.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">📸 Chất Lượng Ảnh</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Thêm từ khóa: &quot;professional photography&quot;, &quot;high quality&quot;, &quot;4K&quot;, &quot;studio lighting&quot;.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">💡 Ví Dụ Prompt</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        &quot;A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality&quot;
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">🎨 Phong Cách Thời Trang</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Chỉ định phong cách: casual, formal, vintage, modern, bohemian, minimalist, etc.
-                  </p>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">📸 Chất Lượng Ảnh</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Thêm từ khóa: "professional photography", "high quality", "4K", "studio lighting".
-                  </p>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">💡 Ví Dụ Prompt</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    "A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality"
-                  </p>
-                </div>
+              </motion.div>
+            </CardContent>
+          )}
+        </Card>
+
+        <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-gray-200/50 dark:border-gray-800/50">
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="prompt" className="text-sm font-medium">
+                  Mô tả ảnh bạn muốn tạo
+                </Label>
+                
+                <Textarea
+                  id="prompt"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                  placeholder="Ví dụ: A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality..."
+                />
               </div>
-            </motion.div>
-          )}
-        </div>
 
-        <form onSubmit={handleSubmit} className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-8">
-          <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Mô tả ảnh bạn muốn tạo
-          </label>
-          
-          <textarea
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-            className="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 resize-none placeholder-gray-400"
-            placeholder="Ví dụ: A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality..."
-          />
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                size="lg"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin mr-3" />
+                    <span>Đang tạo ảnh...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    <span>Tạo Ảnh</span>
+                  </>
+                )}
+              </Button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-6 w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-6 w-6 animate-spin" />
-                <span>Đang tạo ảnh...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-6 w-6" />
-                <span>Tạo Ảnh</span>
-              </>
-            )}
-          </button>
-
-          {error && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4 text-sm text-red-600 dark:text-red-400"
-            >
-              {error}
-            </motion.p>
-          )}
-        </form>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </form>
+          </CardContent>
+        </Card>
 
         {imageUrl && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-8"
           >
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
-                  <ImageIcon className="h-5 w-5 text-white" />
+            <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-gray-200/50 dark:border-gray-800/50">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                      <ImageIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl">
+                      Kết quả tạo ảnh
+                    </CardTitle>
+                  </div>
+                  
+                  <Button
+                    asChild
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <a
+                      href={imageUrl}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      Tải xuống
+                    </a>
+                  </Button>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Kết quả tạo ảnh
-                </h2>
-              </div>
-              
-              <a
-                href={imageUrl}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <Download className="h-5 w-5" />
-                Tải xuống
-              </a>
-            </div>
-
-            <div className="aspect-square max-w-2xl mx-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src={imageUrl}
-                alt="Generated fashion image"
-                className="w-full h-full object-contain"
-              />
-            </div>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-square max-w-2xl mx-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={imageUrl}
+                    alt="Generated fashion image"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
         {!imageUrl && !loading && (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-3xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-16 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-              <ImageIcon className="h-10 w-10 text-white" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Sẵn sàng tạo ảnh
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Ảnh của bạn sẽ xuất hiện ở đây sau khi tạo thành công
-            </p>
-          </div>
+          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700">
+            <CardContent className="p-16 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                <ImageIcon className="h-10 w-10 text-white" />
+              </div>
+              <CardTitle className="text-xl mb-2">
+                Sẵn sàng tạo ảnh
+              </CardTitle>
+              <CardDescription>
+                Ảnh của bạn sẽ xuất hiện ở đây sau khi tạo thành công
+              </CardDescription>
+            </CardContent>
+          </Card>
         )}
       </motion.div>
     </div>

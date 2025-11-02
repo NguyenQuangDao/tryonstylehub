@@ -2,6 +2,7 @@
 
 import { AlertCircle } from 'lucide-react';
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
@@ -61,12 +62,12 @@ class ErrorBoundary extends Component<Props, State> {
           <p className="text-sm text-red-700 dark:text-red-300 mb-4 text-center max-w-md">
             {this.state.error?.message || 'Có lỗi xảy ra khi hiển thị nội dung.'}
           </p>
-          <button
+          <Button
             onClick={this.handleReset}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+            variant="destructive"
           >
             Thử lại
-          </button>
+          </Button>
         </div>
       );
     }

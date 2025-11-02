@@ -9,6 +9,8 @@ export interface UseVirtualModelsReturn {
   fetchVirtualModels: () => Promise<void>;
   selectVirtualModel: (model: VirtualModel | null) => void;
   saveVirtualModel: (modelData: CreateVirtualModelInput) => Promise<void>;
+  createVirtualModel: (modelData: CreateVirtualModelInput) => Promise<void>;
+  updateVirtualModel: (id: number, modelData: CreateVirtualModelInput) => Promise<void>;
   deleteVirtualModel: (id: number) => Promise<void>;
 }
 
@@ -92,6 +94,34 @@ export const useVirtualModels = (): UseVirtualModelsReturn => {
     }
   }, [fetchVirtualModels, selectedVirtualModel]);
 
+  const createVirtualModel = useCallback(async (modelData: CreateVirtualModelInput) => {
+    return saveVirtualModel(modelData);
+  }, [saveVirtualModel]);
+
+  const updateVirtualModel = useCallback(async (id: number, modelData: CreateVirtualModelInput) => {
+    try {
+      setError(null);
+      const response = await fetch(`/api/virtual-models?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(modelData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update virtual model');
+      }
+
+      await fetchVirtualModels();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMessage);
+      throw err;
+    }
+  }, [fetchVirtualModels]);
+
   return {
     virtualModels,
     selectedVirtualModel,
@@ -100,6 +130,8 @@ export const useVirtualModels = (): UseVirtualModelsReturn => {
     fetchVirtualModels,
     selectVirtualModel,
     saveVirtualModel,
+    createVirtualModel,
+    updateVirtualModel,
     deleteVirtualModel,
   };
 };

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from '@/components/ui';
 
 interface BodyPart {
   id: string;
@@ -190,18 +191,19 @@ export default function BodyPartsComposer() {
             
             {/* Category Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Danh mục:</label>
-              <select
-                value={currentCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                {categories.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
+              <Label className="block text-sm font-medium mb-2">Danh mục:</Label>
+              <Select value={currentCategory} onValueChange={(value: string) => handleCategoryChange(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Body Parts Grid */}

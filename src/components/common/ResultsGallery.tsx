@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/app/lib/utils';
+import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -99,17 +100,14 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
                   Chọn 2 kết quả để so sánh ({selectedResults.length}/2)
                 </span>
               )}
-              <button
+              <Button
                 onClick={onToggleComparisonMode}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  isComparisonMode
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                variant={isComparisonMode ? "default" : "secondary"}
+                size="sm"
               >
                 {isComparisonMode ? (
                   <>
-                    <X className="h-4 w-4 inline mr-1" />
+                    <X className="h-4 w-4 mr-1" />
                     Hủy
                   </>
                 ) : (
@@ -117,7 +115,7 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
                     ⚖️ So Sánh
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           )}
         </div>

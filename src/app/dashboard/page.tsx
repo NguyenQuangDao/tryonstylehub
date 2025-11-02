@@ -1,5 +1,6 @@
 'use client'
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { DollarSign, Image, Sparkles, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -88,43 +89,53 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-6"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
-                  </div>
-                </div>
+                <Card className="shadow-lg border-gray-200 dark:border-gray-800">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                        <Icon className={`h-6 w-6 ${stat.color}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             );
           })}
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Tính năng</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl">
-              <Image className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Virtual Try-On</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Thử đồ ảo với công nghệ AI tiên tiến
-              </p>
-            </div>
+        <Card className="shadow-lg border-gray-200 dark:border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Tính năng</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0">
+                <CardContent className="p-6">
+                  <Image className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4"/>
+                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Virtual Try-On</CardTitle>
+                  <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                    Thử đồ ảo với công nghệ AI tiên tiến
+                  </CardDescription>
+                </CardContent>
+              </Card>
 
-            <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl">
-              <Sparkles className="h-8 w-8 text-green-600 dark:text-green-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Recommendations</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Nhận gợi ý trang phục phù hợp với phong cách
-              </p>
+              <Card className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-0">
+                <CardContent className="p-6">
+                  <Sparkles className="h-8 w-8 text-green-600 dark:text-green-400 mb-4" />
+                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Recommendations</CardTitle>
+                  <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                    Nhận gợi ý trang phục phù hợp với phong cách
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );

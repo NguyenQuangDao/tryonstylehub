@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Wand2, Download } from 'lucide-react';
 
@@ -100,17 +100,16 @@ export default function AvatarGenerator({ onImageGenerated, onError }: AvatarGen
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="quality" className="text-sm font-medium">Chất lượng</label>
-          <select
-            id="quality"
-            value={quality}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setQuality(e.target.value as 'standard' | 'hd')}
-            disabled={isGenerating}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="standard">Tiêu chuẩn (Nhanh hơn)</option>
-            <option value="hd">HD (Chất lượng cao)</option>
-          </select>
+          <Label htmlFor="quality" className="text-sm font-medium">Chất lượng</Label>
+          <Select value={quality} onValueChange={(value: string) => setQuality(value as 'standard' | 'hd')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Chọn chất lượng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="standard">Tiêu chuẩn (Nhanh hơn)</SelectItem>
+              <SelectItem value="hd">HD (Chất lượng cao)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Button

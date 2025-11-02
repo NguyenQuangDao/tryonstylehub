@@ -1,85 +1,30 @@
-import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
-import React, { forwardRef } from 'react';
-import { cn } from '../../app/lib/utils';
+"use client"
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  description?: string;
-  colorScheme?: 'default';
-}
+import * as React from "react"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
+import { Check } from "lucide-react"
 
-const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, description, colorScheme = 'default', ...props }, ref) => {
-    const id = React.useId();
-    
-    const colorStyles = {
-      default: 'border-gray-300 dark:border-gray-600 data-[checked]:bg-blue-600 data-[checked]:border-blue-600 dark:data-[checked]:bg-blue-500 dark:data-[checked]:border-blue-500 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400',
-    };
+import { cn } from "@/lib/utils"
 
-    return (
-      <div className="flex items-start gap-2">
-        <div className="relative flex items-center">
-          <input
-            type="checkbox"
-            id={props.id || id}
-            ref={ref}
-            className="peer sr-only"
-            {...props}
-          />
-          <motion.div
-            className={cn(
-              "h-4 w-4 shrink-0 rounded border ring-offset-white dark:ring-offset-gray-950 transition-all peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer",
-              colorStyles[colorScheme],
-              "peer-checked:data-[checked]:border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2",
-              className
-            )}
-            data-checked={props.checked ? '' : undefined}
-            whileTap={{ scale: 0.9 }}
-            initial={{ scale: 1 }}
-            animate={{ scale: 1 }}
-            onClick={() => {
-              const input = document.getElementById(props.id || id) as HTMLInputElement;
-              if (input && !props.disabled) {
-                input.click();
-              }
-            }}
-          >
-            {props.checked && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.5 }}
-                transition={{ duration: 0.1 }}
-                className="flex h-full w-full items-center justify-center"
-              >
-                <Check className="h-3 w-3 text-white" />
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-        {(label || description) && (
-          <div className="grid gap-0.5 leading-none">
-            {label && (
-              <label
-                htmlFor={props.id || id}
-                className="cursor-pointer text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-open-sans text-gray-900 dark:text-gray-100"
-              >
-                {label}
-              </label>
-            )}
-            {description && (
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-open-sans">
-                {description}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-);
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <CheckboxPrimitive.Root
+    ref={ref}
+    className={cn(
+      "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      className
+    )}
+    {...props}
+  >
+    <CheckboxPrimitive.Indicator
+      className={cn("flex items-center justify-center text-current")}
+    >
+      <Check className="h-4 w-4" />
+    </CheckboxPrimitive.Indicator>
+  </CheckboxPrimitive.Root>
+))
+Checkbox.displayName = CheckboxPrimitive.Root.displayName
 
-Checkbox.displayName = "Checkbox";
-
-export default Checkbox;
+export { Checkbox }

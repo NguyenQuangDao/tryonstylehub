@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@/components';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from '@/components/ui';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
 import { AlertCircle, Save, User, X } from 'lucide-react';
@@ -200,25 +200,25 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Giới tính *
-                </label>
-                <select
-                   value={gender}
-                   onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'non-binary')}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                   required
-                 >
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="non-binary">Khác</option>
-                </select>
+                </Label>
+                <Select value={gender} onValueChange={(value: string) => setGender(value as 'male' | 'female' | 'non-binary')}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Chọn giới tính" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Nam</SelectItem>
+                    <SelectItem value="female">Nữ</SelectItem>
+                    <SelectItem value="non-binary">Khác</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Chiều cao (cm) *
-                </label>
+                </Label>
                 <Input
                   type="number"
                   value={height}
@@ -230,9 +230,9 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Cân nặng (kg) *
-                </label>
+                </Label>
                 <Input
                   type="number"
                   value={weight}
@@ -251,76 +251,80 @@ export default function VirtualModelForm({ onClose, onSave, editModel }: Virtual
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Màu da
-                </label>
-                <select
-                   value={skinTone}
-                   onChange={(e) => setSkinTone(e.target.value as 'very-light' | 'light' | 'medium' | 'tan' | 'brown' | 'dark')}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 >
-                  <option value="very-light">Rất sáng</option>
-                  <option value="light">Sáng</option>
-                  <option value="medium">Trung bình</option>
-                  <option value="tan">Nâu nhạt</option>
-                  <option value="brown">Nâu</option>
-                  <option value="dark">Tối</option>
-                </select>
+                </Label>
+                <Select value={skinTone} onValueChange={(value: string) => setSkinTone(value as 'very-light' | 'light' | 'medium' | 'tan' | 'brown' | 'dark')}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Chọn màu da" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="very-light">Rất sáng</SelectItem>
+                    <SelectItem value="light">Sáng</SelectItem>
+                    <SelectItem value="medium">Trung bình</SelectItem>
+                    <SelectItem value="tan">Nâu nhạt</SelectItem>
+                    <SelectItem value="brown">Nâu</SelectItem>
+                    <SelectItem value="dark">Tối</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
                   Màu mắt
-                </label>
-                <select
-                   value={eyeColor}
-                   onChange={(e) => setEyeColor(e.target.value as 'brown' | 'black' | 'blue' | 'green' | 'gray' | 'amber')}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 >
-                   <option value="brown">Nâu</option>
-                   <option value="black">Đen</option>
-                   <option value="blue">Xanh dương</option>
-                   <option value="green">Xanh lá</option>
-                   <option value="gray">Xám</option>
-                   <option value="amber">Hổ phách</option>
-                 </select>
+                </Label>
+                <Select value={eyeColor} onValueChange={(value: string) => setEyeColor(value as 'brown' | 'black' | 'blue' | 'green' | 'gray' | 'amber')}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Chọn màu mắt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="brown">Nâu</SelectItem>
+                    <SelectItem value="black">Đen</SelectItem>
+                    <SelectItem value="blue">Xanh dương</SelectItem>
+                    <SelectItem value="green">Xanh lá</SelectItem>
+                    <SelectItem value="gray">Xám</SelectItem>
+                    <SelectItem value="amber">Hổ phách</SelectItem>
+                  </SelectContent>
+                </Select>
                </div>
  
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                 <Label className="block text-sm font-medium text-gray-700 mb-2">
                    Màu tóc
-                 </label>
-                 <select
-                   value={hairColor}
-                   onChange={(e) => setHairColor(e.target.value as 'black' | 'brown' | 'blonde' | 'red' | 'white' | 'gray' | 'other')}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 >
-                   <option value="black">Đen</option>
-                   <option value="brown">Nâu</option>
-                   <option value="blonde">Vàng</option>
-                   <option value="red">Đỏ</option>
-                   <option value="white">Trắng</option>
-                   <option value="gray">Xám</option>
-                   <option value="other">Khác</option>
-                 </select>
+                 </Label>
+                 <Select value={hairColor} onValueChange={(value: string) => setHairColor(value as 'black' | 'brown' | 'blonde' | 'red' | 'white' | 'gray' | 'other')}>
+                   <SelectTrigger className="w-full">
+                     <SelectValue placeholder="Chọn màu tóc" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="black">Đen</SelectItem>
+                     <SelectItem value="brown">Nâu</SelectItem>
+                     <SelectItem value="blonde">Vàng</SelectItem>
+                     <SelectItem value="red">Đỏ</SelectItem>
+                     <SelectItem value="white">Trắng</SelectItem>
+                     <SelectItem value="gray">Xám</SelectItem>
+                     <SelectItem value="other">Khác</SelectItem>
+                   </SelectContent>
+                 </Select>
                </div>
  
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                 <Label className="block text-sm font-medium text-gray-700 mb-2">
                    Kiểu tóc
-                 </label>
-                 <select
-                   value={hairStyle}
-                   onChange={(e) => setHairStyle(e.target.value as 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy')}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 >
-                  <option value="short">Ngắn</option>
-                  <option value="long">Dài</option>
-                  <option value="curly">Xoăn</option>
-                  <option value="straight">Thẳng</option>
-                  <option value="wavy">Gợn sóng</option>
-                  <option value="bald">Hói</option>
-                </select>
+                 </Label>
+                 <Select value={hairStyle} onValueChange={(value: string) => setHairStyle(value as 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy')}>
+                   <SelectTrigger className="w-full">
+                     <SelectValue placeholder="Chọn kiểu tóc" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="short">Ngắn</SelectItem>
+                     <SelectItem value="long">Dài</SelectItem>
+                     <SelectItem value="curly">Xoăn</SelectItem>
+                     <SelectItem value="straight">Thẳng</SelectItem>
+                     <SelectItem value="wavy">Gợn sóng</SelectItem>
+                     <SelectItem value="bald">Hói</SelectItem>
+                   </SelectContent>
+                 </Select>
               </div>
             </div>
           </div>

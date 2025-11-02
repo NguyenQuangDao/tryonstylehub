@@ -1,7 +1,7 @@
-import { Camera, Lightbulb, RectangleHorizontal, Sparkles, Target, Users, Zap } from 'lucide-react';
+import { Camera, Lightbulb, RectangleHorizontal, Sparkles, Target, Users } from 'lucide-react';
 import React from 'react';
 import { cn } from '../../app/lib/utils';
-import { Modal } from '../ui/modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type Tip = {
   id: number;
@@ -62,12 +62,12 @@ interface TipsModalProps {
 
 export default function TipsModal({ isOpen, onClose }: TipsModalProps) {
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose}
-      className="max-w-5xl"
-    >
-      <div className="relative">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Mẹo Sử Dụng</DialogTitle>
+        </DialogHeader>
+        
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
@@ -98,7 +98,7 @@ export default function TipsModal({ isOpen, onClose }: TipsModalProps) {
             >
               {/* Icon */}
               <div className={cn(
-                "w-12 h-12 rounded-xl bg-gradient-to-r flex items-center justify-center mb-4 shadow-lg",
+                "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 shadow-lg bg-gradient-to-r",
                 tip.gradient
               )}>
                 <div className="text-white">
@@ -107,41 +107,31 @@ export default function TipsModal({ isOpen, onClose }: TipsModalProps) {
               </div>
               
               {/* Content */}
-              <div className="relative z-10">
-                <h3 className="font-bold text-lg mb-3 text-gray-800 dark:text-gray-200 vietnamese-heading">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 vietnamese-heading">
                   {tip.title}
                 </h3>
-                
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed vietnamese-text">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   {tip.description}
                 </p>
               </div>
               
-              {/* Background decoration */}
-              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <div className={cn(
-                  "w-20 h-20 rounded-full bg-gradient-to-r",
-                  tip.gradient
-                )}>
-                </div>
-              </div>
-              
-              {/* Hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              {/* Decorative element */}
+              <div className={cn(
+                "absolute -top-2 -right-2 w-16 h-16 rounded-full opacity-10 bg-gradient-to-r",
+                tip.gradient
+              )} />
             </div>
           ))}
         </div>
         
-        {/* Footer */}
-        <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
-          <div className="flex items-center gap-3">
-            <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-              💡 Lưu ý: Tuân thủ các mẹo trên sẽ giúp bạn có được kết quả thử đồ ảo chất lượng cao và chính xác nhất!
-            </p>
-          </div>
+        {/* Footer Note */}
+        <div className="mt-8">
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-xl border border-yellow-200 dark:border-yellow-800">
+            💡 Lưu ý: Tuân thủ các mẹo trên sẽ giúp bạn có được kết quả thử đồ ảo chất lượng cao và chính xác nhất!
+          </p>
         </div>
-      </div>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,5 +1,8 @@
 'use client'
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import { ExternalLink, Heart, Info, Loader2, Palette, Sparkles, Star, Wand2 } from 'lucide-react';
 import { useState } from 'react';
@@ -147,7 +150,7 @@ export default function RecommendPage() {
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">💡 Ví Dụ Prompt</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    "casual summer beach style with pastel colors for vacation"
+                    &quot;casual summer beach style with pastel colors for vacation&quot;
                   </p>
                 </div>
               </div>
@@ -156,12 +159,12 @@ export default function RecommendPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-8">
-          <label htmlFor="style" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <Label htmlFor="style" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
             Mô tả phong cách bạn muốn
-          </label>
+          </Label>
           
           <div className="flex gap-4">
-            <input
+            <Input
               id="style"
               type="text"
               value={style}
@@ -170,7 +173,7 @@ export default function RecommendPage() {
               placeholder="Ví dụ: casual summer beach style with pastel colors..."
             />
             
-            <button
+            <Button
               type="submit"
               disabled={loading}
               className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -186,7 +189,7 @@ export default function RecommendPage() {
                   <span>Tạo Gợi Ý</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           {error && (

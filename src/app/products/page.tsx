@@ -1,5 +1,9 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { ExternalLink, Filter, Heart, Info, Search, ShoppingBag, Sparkles, Star, Store, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -180,20 +184,22 @@ export default function ProductsPage() {
           {/* Search Bar */}
           <div className="relative mb-6">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
+            <Input
               type="text"
               placeholder="Tìm kiếm sản phẩm, shop hoặc tag..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-open-sans"
+              className="pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-open-sans"
             />
             {searchTerm && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSearchTerm('')}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
                 <X className="h-4 w-4 text-gray-400" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -207,8 +213,9 @@ export default function ProductsPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {['all', 'dress', 'shirt', 'pants', 'shoes'].map((type) => (
-                  <button
+                  <Button
                     key={type}
+                    variant={filter === type ? "default" : "outline"}
                     onClick={() => setFilter(type)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all font-open-sans ${
                       filter === type
@@ -217,7 +224,7 @@ export default function ProductsPage() {
                     }`}
                   >
                     {type === 'all' ? 'Tất cả' : type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -229,7 +236,8 @@ export default function ProductsPage() {
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 font-open-sans">Cửa hàng:</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
+                <Button
+                  variant={selectedShop === null ? "default" : "outline"}
                   onClick={() => setSelectedShop(null)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all font-open-sans ${
                     selectedShop === null
@@ -238,10 +246,11 @@ export default function ProductsPage() {
                   }`}
                 >
                   Tất cả shop
-                </button>
+                </Button>
                 {shops.slice(0, 4).map((shop) => (
-                  <button
+                  <Button
                     key={shop}
+                    variant={selectedShop === shop ? "default" : "outline"}
                     onClick={() => setSelectedShop(shop)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all font-open-sans ${
                       selectedShop === shop
@@ -250,15 +259,16 @@ export default function ProductsPage() {
                     }`}
                   >
                     {shop}
-                  </button>
+                  </Button>
                 ))}
                 {shops.length > 4 && (
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={() => setShowShopModal(true)}
                     className="px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all font-open-sans"
                   >
                     +{shops.length - 4} khác
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -307,31 +317,31 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-lg border border-gray-200/50 dark:border-gray-800/50 overflow-hidden group hover:shadow-2xl hover:scale-105 transition-all duration-300"
               >
-                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingBag className="h-16 w-16 text-gray-400" />
-                    </div>
-                  )}
-                  
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
-                  {/* Price Badge */}
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                    ${product.price.toFixed(2)}
+                <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-gray-200/50 dark:border-gray-800/50 overflow-hidden group hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="h-16 w-16 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    {/* Price Badge */}
+                    <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                      ${product.price.toFixed(2)}
+                    </Badge>
                   </div>
-                </div>
                 
-                <div className="p-6">
+                  <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors vietnamese-heading">
                     {product.name}
                   </h3>
@@ -390,7 +400,8 @@ export default function ProductsPage() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </Card>
+            </motion.div>
             ))}
           </div>
         )}
