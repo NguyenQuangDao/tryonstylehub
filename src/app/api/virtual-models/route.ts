@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
         userId: userId || null,
         sessionId: userId ? null : sessionId,
         avatarName: body.avatarName,
+        avatarImage: body.avatarImage || null,
         isPublic: body.isPublic || false,
         
         // Required fields
@@ -223,6 +224,7 @@ export async function PUT(request: NextRequest) {
       where: { id: parseInt(id) },
       data: {
         avatarName: body.avatarName || existingModel.avatarName,
+        avatarImage: body.avatarImage !== undefined ? body.avatarImage : existingModel.avatarImage,
         isPublic: body.isPublic !== undefined ? body.isPublic : existingModel.isPublic,
         
         // Update fields if provided

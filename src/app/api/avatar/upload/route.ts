@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
+import { uploadToS3, generateS3Key } from '@/lib/s3';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,36 +34,31 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${randomUUID()}.${fileExtension}`;
-    const uploadPath = join(process.cwd(), 'public', 'uploads', 'avatars', fileName);
+    // Generate S3 key for avatar images
+    const s3Key = generateS3Key('avatars', file.name);
 
-    // Create directory if it doesn't exist
-    const { mkdir } = await import('fs/promises');
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'avatars');
     try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch {
-      // Directory might already exist
+      // Upload to S3
+      const s3Url = await uploadToS3(buffer, s3Key, file.type);
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          url: s3Url,
+          s3Key: s3Key,
+          originalName: file.name,
+          size: file.size,
+          type: file.type
+        }
+      });
+
+    } catch (s3Error) {
+      console.error('S3 upload failed:', s3Error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to upload to cloud storage' },
+        { status: 500 }
+      );
     }
-
-    // Write file
-    await writeFile(uploadPath, buffer);
-
-    // Return the public URL
-    const publicUrl = `/uploads/avatars/${fileName}`;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        url: publicUrl,
-        filename: fileName,
-        originalName: file.name,
-        size: file.size,
-        type: file.type
-      }
-    });
 
   } catch (error) {
     console.error('Error uploading avatar:', error);

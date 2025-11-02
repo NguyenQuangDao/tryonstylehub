@@ -4,6 +4,7 @@ import { Button } from '@/components';
 import { VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Edit2, Plus, Trash2, User, UserCheck, Users, X } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface VirtualModelSelectorProps {
@@ -208,8 +209,23 @@ export default function VirtualModelSelector({
 
                   {/* Model Info */}
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
-                      <User className="w-6 h-6 text-white" />
+                    {/* Avatar Image or Icon */}
+                    <div className="relative">
+                      {model.avatarImage ? (
+                        <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-purple-200 dark:border-purple-700">
+                          <Image
+                            src={model.avatarImage}
+                            alt={model.avatarName}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
@@ -298,7 +314,7 @@ export default function VirtualModelSelector({
                             </Button>
                             <Button
                               onClick={() => handleDelete(model.id)}
-                              variant="primary"
+                              variant="default"
                               className="flex-1 bg-red-500 hover:bg-red-600"
                             >
                               Xóa

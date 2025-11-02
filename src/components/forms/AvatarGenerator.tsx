@@ -1,20 +1,52 @@
 'use client';
 
-import { useState } from 'react';
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from '@/components/ui';
+import { Button, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wand2, Download } from 'lucide-react';
+import { PromptService } from '@/services';
+import { Download, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { useState } from 'react';
+
+interface UserInfo {
+  gender: 'male' | 'female' | 'non-binary';
+  height: number;
+  weight: number;
+  skinTone: 'very-light' | 'light' | 'medium' | 'tan' | 'brown' | 'dark';
+  eyeColor: 'brown' | 'black' | 'blue' | 'green' | 'gray' | 'amber';
+  hairColor: 'black' | 'brown' | 'blonde' | 'red' | 'white' | 'gray' | 'other';
+  hairStyle: 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy';
+}
 
 interface AvatarGeneratorProps {
   onImageGenerated: (imageUrl: string) => void;
   onError: (error: string) => void;
+  userInfo?: UserInfo;
 }
 
-export default function AvatarGenerator({ onImageGenerated, onError }: AvatarGeneratorProps) {
+export default function AvatarGenerator({ onImageGenerated, onError, userInfo }: AvatarGeneratorProps) {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
+
+  const generatePromptFromUserInfo = async () => {
+    if (!userInfo) {
+      onError('Không có thông tin người dùng để tạo prompt');
+      return;
+    }
+
+    setIsGeneratingPrompt(true);
+    try {
+      const promptService = new PromptService();
+      const generatedPrompt = await promptService.generatePrompt(userInfo);
+      setPrompt(generatedPrompt);
+    } catch (error) {
+      console.error('Error generating prompt:', error);
+      onError('Không thể tạo prompt tự động. Vui lòng nhập prompt thủ công.');
+    } finally {
+      setIsGeneratingPrompt(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -87,15 +119,39 @@ export default function AvatarGenerator({ onImageGenerated, onError }: AvatarGen
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="avatar-prompt" className="text-sm font-medium">Mô tả avatar</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="avatar-prompt" className="text-sm font-medium">Mô tả avatar</label>
+            {userInfo && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={generatePromptFromUserInfo}
+                disabled={isGeneratingPrompt || isGenerating}
+                className="flex items-center gap-1"
+              >
+                {isGeneratingPrompt ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3 w-3" />
+                    Tạo tự động
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
           <textarea
             id="avatar-prompt"
             placeholder="Ví dụ: Một người phụ nữ trẻ với tóc dài màu nâu, mắt xanh, nụ cười tươi..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
-            disabled={isGenerating}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            disabled={isGenerating || isGeneratingPrompt}
+            className="w-full min-h-[200px] p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
 
@@ -136,7 +192,7 @@ export default function AvatarGenerator({ onImageGenerated, onError }: AvatarGen
               <img
                 src={generatedImage}
                 alt="Generated avatar"
-                className="w-full h-64 object-cover rounded-lg border"
+                className="w-full h-64 object-contain rounded-lg border"
               />
             </div>
             <div className="flex gap-2">

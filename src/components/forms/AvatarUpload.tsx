@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { Upload, X, Image as ImageIcon, AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Image as ImageIcon, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useState } from 'react';
 
@@ -199,7 +199,7 @@ export default function AvatarUpload({
               alt="Uploaded avatar"
               width={400}
               height={400}
-              className="w-full h-64 object-cover"
+              className="w-full h-64 object-contain"
             />
             
             <button

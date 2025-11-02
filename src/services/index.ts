@@ -6,4 +6,5 @@ export {
 } from './cacheService';
 export { imageService } from './imageService';
 export { tryOnService } from './tryOnService';
+export { PromptService } from './promptService';
 
