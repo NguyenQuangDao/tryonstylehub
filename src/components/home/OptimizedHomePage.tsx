@@ -5,20 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  Camera,
   Lightbulb,
   Loader2,
   Shirt,
   Sparkles,
   Star,
   User,
-  Users,
   X,
   // Upload,
   Zap
@@ -53,8 +50,8 @@ interface OptimizedHomePageProps {
 export default function OptimizedHomePage({
   apiKey,
   garmentImageUpload,
-  selectedCategory,
-  setSelectedCategory,
+  // selectedCategory,
+  // setSelectedCategory,
   isLoading,
   errorMessage,
   resultGallery,
@@ -112,12 +109,12 @@ export default function OptimizedHomePage({
   //   garmentImageUpload.loadExampleImage(exampleUrl);
   // }, [currentGarmentExample, garmentExamples, garmentImageUpload]);
 
-  const categories = [
-    { id: 'tops', label: 'Áo', icon: Shirt },
-    { id: 'bottoms', label: 'Quần', icon: Users },
-    { id: 'dresses', label: 'Váy', icon: Sparkles },
-    { id: 'outerwear', label: 'Áo khoác', icon: Camera }
-  ];
+  // const categories = [
+  //   { id: 'tops', label: 'Áo', icon: Shirt },
+  //   { id: 'bottoms', label: 'Quần', icon: Users },
+  //   { id: 'dresses', label: 'Váy', icon: Sparkles },
+  //   { id: 'outerwear', label: 'Áo khoác', icon: Camera }
+  // ];
 
   // const canSubmit = (personImageUpload.imagePreview || selectedVirtualModel) && 
   //                  garmentImageUpload.imagePreview && 
@@ -181,8 +178,8 @@ export default function OptimizedHomePage({
                       <User className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">Chọn người mẫu</CardTitle>
-                      <CardDescription>Tải ảnh hoặc chọn avatar ảo</CardDescription>
+                      <CardTitle className="text-xl">Tải ảnh mẫu</CardTitle>
+                      <CardDescription>Tải ảnh</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -289,7 +286,7 @@ export default function OptimizedHomePage({
           </div>
 
           {/* Category Selection */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -325,7 +322,7 @@ export default function OptimizedHomePage({
                 </RadioGroup>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.div> */}
 
           {/* Action Buttons */}
           <motion.div
