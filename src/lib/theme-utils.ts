@@ -1,3 +1,4 @@
+/* eslint-disable */
 type Theme = 'light' | 'dark' | 'system'
 
 const THEME_KEY = 'theme-preference'

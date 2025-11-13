@@ -1,27 +1,27 @@
 "use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { Menu, User, LogOut } from "lucide-react"
+import { LogOut, Menu, User } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from '@/components/ui';
-import { ThemeToggle } from "./ThemeToggle"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth-context";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navigationItems = [
-  { href: "/body-parts", label: "Body Parts Composer" },
+  // { href: "/body-parts", label: "Body Parts Composer" },
   { href: "/generate-image", label: "Generate Image" },
   { href: "/products", label: "Products" },
   { href: "/recommend", label: "Recommend" },

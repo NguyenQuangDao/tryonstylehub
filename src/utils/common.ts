@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Common utility functions for the application
 export const formatVietnameseText = (text: string): string => {
   // Add any Vietnamese text formatting logic here

@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache';
 
-const cache = new LRUCache<string, unknown>({
+const cache = new LRUCache<string, any>({
   max: 100,
   ttl: 1000 * 60 * 10, // 10 minutes default
 });

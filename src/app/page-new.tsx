@@ -1,8 +1,7 @@
 "use client"
 
-import * as React from "react"
+import { ArrowRight, Shirt, Sparkles, Zap } from "lucide-react"
 import Link from "next/link"
-import { ArrowRight, Sparkles, Shirt, Users, Zap } from "lucide-react"
 
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
@@ -14,12 +13,12 @@ const features = [
     description: "Experience realistic virtual try-on with AI-powered technology",
     href: "/generate-image"
   },
-  {
-    icon: Users,
-    title: "Body Parts Composer",
-    description: "Create custom avatars with our advanced body composition tools",
-    href: "/body-parts"
-  },
+  // {
+  //   icon: Users,
+  //   title: "Body Parts Composer",
+  //   description: "Create custom avatars with our advanced body composition tools",
+  //   href: "/body-parts"
+  // },
   {
     icon: Sparkles,
     title: "Style Recommendations",

@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
-import OptimizedHomePage from '@/components/home/OptimizedHomePage';
 import { VirtualModelForm, VirtualModelSelector } from '@/components/forms';
-import ApiKeyModal from '@/components/modals/ApiKeyModal';
-import TipsModal from '@/components/modals/TipsModal';
-import { useApiKey, useVirtualModels, useImageUpload } from '@/hooks';
-import { VirtualModel, CreateVirtualModelInput } from '@/types';
+import OptimizedHomePage from '@/components/home/OptimizedHomePage';
+import { useApiKey, useImageUpload, useVirtualModels } from '@/hooks';
+import { CreateVirtualModelInput, VirtualModel } from '@/types';
+import { FormEvent, useState } from 'react';
 
 export default function HomePage() {
-  const { apiKey, saveApiKey } = useApiKey();
+  const { apiKey } = useApiKey();
   const { createVirtualModel, updateVirtualModel } = useVirtualModels();
   const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const personImageUpload = useImageUpload();
@@ -21,19 +19,12 @@ export default function HomePage() {
   const [isComparisonMode, setIsComparisonMode] = useState(false);
 
   // Modal states
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isVirtualModelSelectorOpen, setIsVirtualModelSelectorOpen] = useState(false);
   const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
-  const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    if (!apiKey) {
-      setIsApiKeyModalOpen(true);
-      return;
-    }
 
     if (!personImageUpload.imagePreview && !selectedVirtualModel) {
       setErrorMessage('Vui lòng chọn ảnh người hoặc người mẫu ảo');
@@ -51,6 +42,7 @@ export default function HomePage() {
     try {
       const formData = new FormData();
       formData.append('category', selectedCategory);
+      formData.append('apiKey', apiKey || '');
       
       if (selectedVirtualModel) {
         formData.append('virtualModelId', selectedVirtualModel.id.toString());
@@ -64,14 +56,12 @@ export default function HomePage() {
 
       const response = await fetch('/api/tryon', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-        },
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Có lỗi xảy ra khi thử đồ ảo');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Có lỗi xảy ra khi thử đồ ảo');
       }
 
       const result = await response.json();
@@ -101,7 +91,6 @@ export default function HomePage() {
     <>
       <OptimizedHomePage
         apiKey={apiKey}
-        setIsApiKeyModalOpen={setIsApiKeyModalOpen}
         selectedVirtualModel={selectedVirtualModel}
         setIsVirtualModelSelectorOpen={setIsVirtualModelSelectorOpen}
         personImageUpload={personImageUpload}
@@ -113,21 +102,9 @@ export default function HomePage() {
         resultGallery={resultGallery}
         isComparisonMode={isComparisonMode}
         setIsComparisonMode={setIsComparisonMode}
-        setIsTipsModalOpen={setIsTipsModalOpen}
         onSubmit={handleSubmit}
       />
 
-      {/* Modals */}
-      <ApiKeyModal
-        isOpen={isApiKeyModalOpen}
-        onClose={() => setIsApiKeyModalOpen(false)}
-        onSave={saveApiKey}
-      />
-
-      <TipsModal
-        isOpen={isTipsModalOpen}
-        onClose={() => setIsTipsModalOpen(false)}
-      />
 
       {isVirtualModelSelectorOpen && (
         <VirtualModelSelector

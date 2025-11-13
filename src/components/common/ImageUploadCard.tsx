@@ -13,7 +13,7 @@ interface ImageUploadCardProps {
   icon: React.ReactNode;
   examples: string[];
   exampleIndex: number;
-  onExampleChange: (index: number) => void;
+  onExampleChange?: (index: number) => void;
   onSwipe: (direction: 'left' | 'right') => void;
   accept?: string;
   label: string;
@@ -26,7 +26,6 @@ export const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
   icon,
   examples,
   exampleIndex,
-  onExampleChange,
   onSwipe,
   accept = "image/*",
   label,

@@ -1,5 +1,6 @@
 import Fashn from 'fashn';
 import { NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
 
 const FASHN_ENDPOINT_URL = process.env.FASHN_ENDPOINT_URL || "https://api.fashn.ai";
 const FASHN_API_KEY = process.env.FASHN_API_KEY;
@@ -7,55 +8,100 @@ const FASHN_API_KEY = process.env.FASHN_API_KEY;
 // Helper to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+async function fileToBase64(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  const mime = file.type || 'image/jpeg';
+  return `data:${mime};base64,${base64}`;
+}
+
+async function urlToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('Failed to fetch image from URL');
+  }
+  const contentType = res.headers.get('content-type') || 'image/jpeg';
+  const arrayBuffer = await res.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return `data:${contentType};base64,${base64}`;
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const {
-      model_image, // base64 string
-      garment_image, // base64 string
-      garment_photo_type,
-      category,
-      mode,
-      segmentation_free,
-      seed,
-      num_samples,
-      api_key, // User-provided API key
-      model_name, // Model version selection (v1.5, tryon-v1.6, tryon-staging)
-    } = body;
-
-    // Use environment API key if available, otherwise use user-provided key
-    const apiKey = FASHN_API_KEY || api_key;
-
-    if (!apiKey) {
+    const formData = await request.formData();
+    
+    // Get files and other data from FormData
+    const personImage = formData.get('personImage') as File;
+    const garmentImage = formData.get('garmentImage') as File;
+    const virtualModelId = formData.get('virtualModelId') as string;
+    const category = formData.get('category') as string;
+    const apiKey = formData.get('apiKey') as string;
+    
+    // Validate API key
+    const finalApiKey = FASHN_API_KEY || apiKey;
+    if (!finalApiKey) {
       return NextResponse.json({ 
         error: "API key required. Please provide your FASHN API key.",
         requiresApiKey: true 
       }, { status: 401 });
     }
-
+    
     // Validate inputs
-    if (!model_image || !garment_image) {
-      return NextResponse.json({ error: "Missing model or garment image" }, { status: 400 });
+    if (!personImage && !virtualModelId) {
+      return NextResponse.json({ error: "Missing person image or virtual model" }, { status: 400 });
     }
+    if (!garmentImage) {
+      return NextResponse.json({ error: "Missing garment image" }, { status: 400 });
+    }
+    
+    // Convert files to base64
+    let modelImageBase64 = '';
+    if (personImage) {
+      modelImageBase64 = await fileToBase64(personImage);
+    } else if (virtualModelId) {
+      const vmIdNum = parseInt(virtualModelId, 10);
+      if (Number.isNaN(vmIdNum)) {
+        return NextResponse.json({ error: 'Invalid virtual model ID' }, { status: 400 });
+      }
+      const virtualModel = await prisma.virtualModel.findUnique({ where: { id: vmIdNum } });
+      if (!virtualModel || !virtualModel.avatarImage) {
+        return NextResponse.json({ error: 'Virtual model image not found' }, { status: 404 });
+      }
+      modelImageBase64 = await urlToBase64(virtualModel.avatarImage);
+    }
+    
+    const garmentImageBase64 = await fileToBase64(garmentImage);
+    
+    // Set default parameters
+    const garmentPhotoType = 'flat-lay';
+    const mode = 'balanced';
+    const segmentationFree = false;
+    const seed = Math.floor(Math.random() * 1000000);
+    const numSamples = 1;
+
+    // Validate and set category
+    const validCategories = ['tops', 'bottoms', 'one-pieces', 'auto'] as const;
+    type CategoryType = typeof validCategories[number];
+    const finalCategory = category && validCategories.includes(category as CategoryType) ? category : 'auto';
 
     const inputs = {
-      model_image,
-      garment_image,
-      garment_photo_type: garment_photo_type.toLowerCase(),
-      category,
-      mode: mode.toLowerCase(),
-      segmentation_free,
-      seed: parseInt(seed, 10),
-      num_samples: parseInt(num_samples, 10),
+      model_image: modelImageBase64,
+      garment_image: garmentImageBase64,
+      garment_photo_type: garmentPhotoType as 'flat-lay',
+      category: finalCategory as CategoryType,
+      mode: mode as 'balanced',
+      segmentation_free: segmentationFree,
+      seed: seed,
+      num_samples: numSamples,
     };
 
     const apiPayload = {
-      model_name: model_name,
+      model_name: 'tryon-v1.6' as const,
       inputs: inputs
     }
 
     const baseURL = FASHN_ENDPOINT_URL;
-    const client = new Fashn({ apiKey, baseURL });
+    const client = new Fashn({ apiKey: finalApiKey, baseURL });
 
     // Sending request to FASHN API
     const runResponse = await client.predictions.run(apiPayload);
@@ -78,7 +124,9 @@ export async function POST(request: Request) {
 
       if (statusData.status === "completed") {
         // Prediction completed
-        return NextResponse.json({ output: statusData.output });
+        // Return array of image URLs for compatibility with client
+        const images = statusData.output || [];
+        return NextResponse.json({ images });
       } else if (statusData.status === "failed") {
         console.error(`Prediction failed with id ${predId}: ${JSON.stringify(statusData.error)}`);
         return NextResponse.json({ error: `Prediction failed: ${statusData.error?.message || 'Unknown reason'}` }, { status: 500 });

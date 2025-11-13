@@ -27,14 +27,14 @@ export class PromptService {
       if (!response.ok || !data.success) {
         // Xử lý lỗi rate limit cụ thể
         if (response.status === 429 || data.errorCode === 'RATE_LIMIT_EXCEEDED') {
-          throw new Error('API đang quá tải, đang sử dụng prompt tự động...');
+          return this.generateFallbackPrompt(userInfo);
         }
         throw new Error(data.error || 'Không thể tạo prompt');
       }
 
       return data.prompt;
     } catch (error) {
-      console.error('Error calling prompt API:', error);
+      console.warn('Error calling prompt API:', error);
       // Fallback to manual prompt generation
       return this.generateFallbackPrompt(userInfo);
     }

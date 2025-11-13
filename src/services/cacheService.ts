@@ -11,7 +11,7 @@ export interface CacheItem<T> {
   ttl: number;
 }
 
-export class CacheService<T = any> {
+export class CacheService<T = unknown> {
   private cache = new Map<string, CacheItem<T>>();
   private options: Required<CacheOptions>;
 
@@ -33,13 +33,15 @@ export class CacheService<T = any> {
     // Remove oldest items if cache is full
     if (this.cache.size >= this.options.maxSize) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
     }
 
     this.cache.set(key, item);
 
     // Store in browser storage if configured
-    if (this.options.storage !== 'memory') {
+    if (this.options.storage !== 'memory' && typeof window !== 'undefined') {
       try {
         const storage = this.options.storage === 'localStorage' 
           ? localStorage 
@@ -55,7 +57,7 @@ export class CacheService<T = any> {
     let item = this.cache.get(key);
 
     // Try to load from browser storage if not in memory
-    if (!item && this.options.storage !== 'memory') {
+    if (!item && this.options.storage !== 'memory' && typeof window !== 'undefined') {
       try {
         const storage = this.options.storage === 'localStorage' 
           ? localStorage 
@@ -63,7 +65,9 @@ export class CacheService<T = any> {
         const stored = storage.getItem(`cache_${key}`);
         if (stored) {
           item = JSON.parse(stored);
-          this.cache.set(key, item);
+          if (item) {
+            this.cache.set(key, item);
+          }
         }
       } catch (error) {
         console.warn('Failed to load cache item:', error);
@@ -89,7 +93,7 @@ export class CacheService<T = any> {
     this.cache.delete(key);
 
     // Remove from browser storage
-    if (this.options.storage !== 'memory') {
+    if (this.options.storage !== 'memory' && typeof window !== 'undefined') {
       try {
         const storage = this.options.storage === 'localStorage' 
           ? localStorage 
@@ -105,7 +109,7 @@ export class CacheService<T = any> {
     this.cache.clear();
 
     // Clear browser storage
-    if (this.options.storage !== 'memory') {
+    if (this.options.storage !== 'memory' && typeof window !== 'undefined') {
       try {
         const storage = this.options.storage === 'localStorage' 
           ? localStorage 
@@ -157,10 +161,10 @@ export const userCache = new CacheService({
 });
 
 // Cache utilities
-export const withCache = <T extends any[], R>(
+export const withCache = <T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   cacheKey: (...args: T) => string,
-  cache: CacheService<R> = apiCache,
+  cache: CacheService<R> = apiCache as CacheService<R>,
   ttl?: number
 ) => {
   return async (...args: T): Promise<R> => {
@@ -179,11 +183,11 @@ export const withCache = <T extends any[], R>(
 
 // Request deduplication
 class RequestDeduplicator {
-  private pendingRequests = new Map<string, Promise<any>>();
+  private pendingRequests = new Map<string, Promise<unknown>>();
 
   async deduplicate<T>(key: string, request: () => Promise<T>): Promise<T> {
     if (this.pendingRequests.has(key)) {
-      return this.pendingRequests.get(key)!;
+      return this.pendingRequests.get(key) as Promise<T>;
     }
 
     const promise = request().finally(() => {
@@ -204,6 +208,10 @@ export class ImagePreloader {
   async preload(src: string): Promise<void> {
     if (this.preloadedImages.has(src)) {
       return;
+    }
+
+    if (typeof Image === 'undefined') {
+      return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
@@ -281,13 +289,13 @@ export class PerformanceMonitor {
     };
   }
 
-  getAllMetrics(): Record<string, any> {
-    const result: Record<string, any> = {};
-    
-    for (const [label, measurements] of this.metrics.entries()) {
+  getAllMetrics(): Record<string, { average: number; min: number; max: number; count: number } | null> {
+    const result: Record<string, { average: number; min: number; max: number; count: number } | null> = {};
+
+    for (const [label] of this.metrics.entries()) {
       result[label] = this.getMetrics(label);
     }
-    
+
     return result;
   }
 

@@ -1,32 +1,30 @@
 'use client';
 
 import { FileInput } from '@/components';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
-import { 
-  Camera, 
-  ChevronLeft, 
-  ChevronRight, 
-  Lightbulb, 
-  Loader2, 
-  Shirt, 
-  Sparkles, 
-  Users, 
-  X,
-  User,
-  Upload,
-  Zap,
+import {
+  ArrowRight,
+  Camera,
+  Lightbulb,
+  Loader2,
+  Shirt,
+  Sparkles,
   Star,
-  ArrowRight
+  User,
+  Users,
+  X,
+  // Upload,
+  Zap
 } from 'lucide-react';
 import Image from 'next/image';
-import { FormEvent, useCallback, useMemo, useState } from 'react';
+import { FormEvent } from 'react';
 
 interface ImageUpload {
   imagePreview: string | null;
@@ -37,7 +35,6 @@ interface ImageUpload {
 
 interface OptimizedHomePageProps {
   apiKey: string | null;
-  setIsApiKeyModalOpen: (open: boolean) => void;
   selectedVirtualModel: VirtualModel | null;
   setIsVirtualModelSelectorOpen: (open: boolean) => void;
   personImageUpload: ImageUpload;
@@ -49,16 +46,12 @@ interface OptimizedHomePageProps {
   resultGallery: string[];
   isComparisonMode: boolean;
   setIsComparisonMode: (mode: boolean) => void;
-  setIsTipsModalOpen: (open: boolean) => void;
+  setIsTipsModalOpen?: (open: boolean) => void;
   onSubmit: (e: FormEvent) => void;
 }
 
 export default function OptimizedHomePage({
   apiKey,
-  setIsApiKeyModalOpen,
-  selectedVirtualModel,
-  setIsVirtualModelSelectorOpen,
-  personImageUpload,
   garmentImageUpload,
   selectedCategory,
   setSelectedCategory,
@@ -71,53 +64,53 @@ export default function OptimizedHomePage({
   onSubmit
 }: OptimizedHomePageProps) {
   // Example images
-  const personExamples = useMemo(() => [
-    '/examples/person1.jpg',
-    '/examples/person2.jpg',
-    '/examples/person3.jpg',
-    '/examples/person4.jpg'
-  ], []);
+  // const personExamples = useMemo(() => [
+  //   '/examples/person1.jpg',
+  //   '/examples/person2.jpg',
+  //   '/examples/person3.jpg',
+  //   '/examples/person4.jpg'
+  // ], []);
 
-  const garmentExamples = useMemo(() => [
-    '/examples/garment1.jpg',
-    '/examples/garment2.jpg',
-    '/examples/garment3.jpg',
-    '/examples/garment4.jpg'
-  ], []);
+  // const garmentExamples = useMemo(() => [
+  //   '/examples/garment1.jpg',
+  //   '/examples/garment2.jpg',
+  //   '/examples/garment3.jpg',
+  //   '/examples/garment4.jpg'
+  // ], []);
 
-  const [currentPersonExample, setCurrentPersonExample] = useState(0);
-  const [currentGarmentExample, setCurrentGarmentExample] = useState(0);
+  // const [currentPersonExample, setCurrentPersonExample] = useState(0);
+  // const [currentGarmentExample, setCurrentGarmentExample] = useState(0);
 
   // Handlers
-  const handlePersonExampleChange = useCallback((direction: 'left' | 'right') => {
-    setCurrentPersonExample(prev => {
-      if (direction === 'left') {
-        return prev === 0 ? personExamples.length - 1 : prev - 1;
-      } else {
-        return prev === personExamples.length - 1 ? 0 : prev + 1;
-      }
-    });
-  }, [personExamples.length]);
+  // const handlePersonExampleChange = useCallback((direction: 'left' | 'right') => {
+  //   setCurrentPersonExample(prev => {
+  //     if (direction === 'left') {
+  //       return prev === 0 ? personExamples.length - 1 : prev - 1;
+  //     } else {
+  //       return prev === personExamples.length - 1 ? 0 : prev + 1;
+  //     }
+  //   });
+  // }, [personExamples.length]);
 
-  const handleGarmentExampleChange = useCallback((direction: 'left' | 'right') => {
-    setCurrentGarmentExample(prev => {
-      if (direction === 'left') {
-        return prev === 0 ? garmentExamples.length - 1 : prev - 1;
-      } else {
-        return prev === garmentExamples.length - 1 ? 0 : prev + 1;
-      }
-    });
-  }, [garmentExamples.length]);
+  // const handleGarmentExampleChange = useCallback((direction: 'left' | 'right') => {
+  //   setCurrentGarmentExample(prev => {
+  //     if (direction === 'left') {
+  //       return prev === 0 ? garmentExamples.length - 1 : prev - 1;
+  //     } else {
+  //       return prev === garmentExamples.length - 1 ? 0 : prev + 1;
+  //     }
+  //   });
+  // }, [garmentExamples.length]);
 
-  const handleSelectPersonExample = useCallback(() => {
-    const exampleUrl = personExamples[currentPersonExample];
-    personImageUpload.loadExampleImage(exampleUrl);
-  }, [currentPersonExample, personExamples, personImageUpload]);
+  // const handleSelectPersonExample = useCallback(() => {
+  //   const exampleUrl = personExamples[currentPersonExample];
+  //   personImageUpload.loadExampleImage(exampleUrl);
+  // }, [currentPersonExample, personExamples, personImageUpload]);
 
-  const handleSelectGarmentExample = useCallback(() => {
-    const exampleUrl = garmentExamples[currentGarmentExample];
-    garmentImageUpload.loadExampleImage(exampleUrl);
-  }, [currentGarmentExample, garmentExamples, garmentImageUpload]);
+  // const handleSelectGarmentExample = useCallback(() => {
+  //   const exampleUrl = garmentExamples[currentGarmentExample];
+  //   garmentImageUpload.loadExampleImage(exampleUrl);
+  // }, [currentGarmentExample, garmentExamples, garmentImageUpload]);
 
   const categories = [
     { id: 'tops', label: 'Áo', icon: Shirt },
@@ -126,10 +119,10 @@ export default function OptimizedHomePage({
     { id: 'outerwear', label: 'Áo khoác', icon: Camera }
   ];
 
-  const canSubmit = (personImageUpload.imagePreview || selectedVirtualModel) && 
-                   garmentImageUpload.imagePreview && 
-                   selectedCategory && 
-                   apiKey;
+  // const canSubmit = (personImageUpload.imagePreview || selectedVirtualModel) && 
+  //                  garmentImageUpload.imagePreview && 
+  //                  selectedCategory && 
+  //                  apiKey;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -193,136 +186,7 @@ export default function OptimizedHomePage({
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Virtual Model Display */}
-                  {selectedVirtualModel ? (
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Avatar ảo đã chọn</Label>
-                      <div className="relative group">
-                        <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-200 dark:border-blue-700">
-                          {selectedVirtualModel.avatarImage ? (
-                            <Image
-                              src={selectedVirtualModel.avatarImage}
-                              alt={selectedVirtualModel.avatarName}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <User className="w-16 h-16 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                          <h3 className="font-semibold text-blue-900 dark:text-blue-100">
-                            {selectedVirtualModel.avatarName}
-                          </h3>
-                          <p className="text-sm text-blue-700 dark:text-blue-300">
-                            {selectedVirtualModel.gender} • {selectedVirtualModel.height}cm
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsVirtualModelSelectorOpen(true)}
-                          className="w-full mt-3"
-                        >
-                          Đổi avatar
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Person Image Upload */}
-                      <div className="space-y-4">
-                        <Label className="text-base font-semibold">Tải lên ảnh người</Label>
-                        {personImageUpload.imagePreview ? (
-                          <div className="relative group">
-                            <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700">
-                              <Image
-                                src={personImageUpload.imagePreview}
-                                alt="Person preview"
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              onClick={personImageUpload.clearImage}
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <FileInput
-                            onChange={personImageUpload.handleImageChange}
-                            accept="image/*"
-                            label="Chọn ảnh người"
-                            className="aspect-[2/3] border-2 border-dashed border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
-                          />
-                        )}
-                      </div>
-
-                      {/* Person Examples */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-base font-semibold">Hoặc chọn ảnh mẫu</Label>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handlePersonExampleChange('left')}
-                            >
-                              <ChevronLeft className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handlePersonExampleChange('right')}
-                            >
-                              <ChevronRight className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors" onClick={handleSelectPersonExample}>
-                          <Image
-                            src={personExamples[currentPersonExample]}
-                            alt={`Person example ${currentPersonExample + 1}`}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                            <Button
-                              type="button"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              Chọn ảnh này
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Virtual Avatar Button */}
-                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsVirtualModelSelectorOpen(true)}
-                          className="w-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-blue-200 dark:border-blue-700 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/30 dark:hover:to-purple-800/30"
-                        >
-                          <Users className="w-4 h-4 mr-2" />
-                          Chọn Avatar Ảo
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
+               
               </Card>
             </motion.div>
 
@@ -379,7 +243,7 @@ export default function OptimizedHomePage({
                   </div>
 
                   {/* Garment Examples */}
-                  <div className="space-y-4">
+                  {/* <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold">Hoặc chọn ảnh mẫu</Label>
                       <div className="flex gap-2">
@@ -418,7 +282,7 @@ export default function OptimizedHomePage({
                         </Button>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             </motion.div>
@@ -473,7 +337,7 @@ export default function OptimizedHomePage({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsTipsModalOpen(true)}
+              onClick={() => setIsTipsModalOpen?.(true)}
               className="px-8 py-3"
             >
               <Lightbulb className="w-4 h-4 mr-2" />
@@ -481,20 +345,21 @@ export default function OptimizedHomePage({
             </Button>
             
             {!apiKey && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsApiKeyModalOpen(true)}
-                className="px-8 py-3"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Cấu hình API Key
-              </Button>
+              // <Button
+              //   type="button"
+              //   variant="outline"
+              //   onClick={() => setIsApiKeyModalOpen(true)}
+              //   className="px-8 py-3"
+              // >
+              //   <Upload className="w-4 h-4 mr-2" />
+              //   Cấu hình API Key
+              // </Button>
+              ""
             )}
 
             <Button
               type="submit"
-              disabled={!canSubmit || isLoading}
+              // disabled={!canSubmit || isLoading}
               className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
             >
               {isLoading ? (

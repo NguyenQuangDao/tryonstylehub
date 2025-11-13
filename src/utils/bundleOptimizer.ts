@@ -3,8 +3,8 @@ export const bundleOptimizer = {
   // Dynamic imports for code splitting
   async loadComponent<T>(importFn: () => Promise<{ default: T }>): Promise<T> {
     try {
-      const module = await importFn();
-      return module.default;
+      const mod = await importFn();
+      return mod.default;
     } catch (error) {
       console.error('Failed to load component:', error);
       throw error;
@@ -12,7 +12,7 @@ export const bundleOptimizer = {
   },
 
   // Preload critical components
-  preloadComponents(components: Array<() => Promise<any>>): void {
+  preloadComponents(components: Array<() => Promise<unknown>>): void {
     components.forEach(component => {
       component().catch(error => {
         console.warn('Failed to preload component:', error);
@@ -21,14 +21,13 @@ export const bundleOptimizer = {
   },
 
   // Lazy load routes
-  async loadRoute(routeName: string): Promise<any> {
-    const routeMap: Record<string, () => Promise<any>> = {
+  async loadRoute(routeName: string): Promise<unknown> {
+    const routeMap: Record<string, () => Promise<unknown>> = {
       'dashboard': () => import('@/app/dashboard/page'),
       'products': () => import('@/app/products/page'),
       'profile': () => import('@/app/profile/page'),
       'recommend': () => import('@/app/recommend/page'),
       'generate-image': () => import('@/app/generate-image/page'),
-      'body-parts': () => import('@/app/body-parts/page'),
     };
 
     const loader = routeMap[routeName];
@@ -36,7 +35,7 @@ export const bundleOptimizer = {
       throw new Error(`Route ${routeName} not found`);
     }
 
-    return this.loadComponent(loader);
+    return this.loadComponent<unknown>(loader as () => Promise<{ default: unknown }>);
   },
 
   // Optimize images
@@ -71,21 +70,19 @@ export const bundleOptimizer = {
     preload?: boolean;
     prefetch?: boolean;
   }>): void {
+    if (typeof document === 'undefined') return;
     resources.forEach(resource => {
       const link = document.createElement('link');
       link.href = resource.href;
       link.as = resource.as;
-      
       if (resource.crossorigin) {
         link.crossOrigin = 'anonymous';
       }
-      
       if (resource.preload) {
         link.rel = 'preload';
       } else if (resource.prefetch) {
         link.rel = 'prefetch';
       }
-      
       document.head.appendChild(link);
     });
   },
@@ -100,32 +97,30 @@ export const bundleOptimizer = {
       '.glass-effect',
       '.modern-image-container',
     ];
-
+    if (typeof document === 'undefined') return '';
     const styles: string[] = [];
     const styleSheets = Array.from(document.styleSheets);
-
     styleSheets.forEach(sheet => {
       try {
-        const rules = Array.from(sheet.cssRules || sheet.rules || []);
+        const rules = Array.from((sheet as CSSStyleSheet).cssRules || []);
         rules.forEach(rule => {
           if (rule instanceof CSSStyleRule) {
-            const selector = rule.selectorText;
+            const selector = (rule as CSSStyleRule).selectorText;
             if (criticalSelectors.some(critical => selector.includes(critical))) {
               styles.push(rule.cssText);
             }
           }
         });
       } catch (error) {
-        // Cross-origin stylesheets can't be accessed
         console.warn('Cannot access stylesheet:', error);
       }
     });
-
     return styles.join('\n');
   },
 
   // Service Worker registration
   async registerServiceWorker(): Promise<void> {
+    if (typeof navigator === 'undefined') return;
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
@@ -137,65 +132,61 @@ export const bundleOptimizer = {
   },
 
   // Web Vitals monitoring
-  measureWebVitals(): void {
-    // Core Web Vitals
-    const vitals = {
-      LCP: 0, // Largest Contentful Paint
-      FID: 0, // First Input Delay
-      CLS: 0, // Cumulative Layout Shift
-    };
-
-    // Measure LCP
+  measureWebVitals(): { LCP: number; FID: number; CLS: number } {
+    if (typeof window === 'undefined') return { LCP: 0, FID: 0, CLS: 0 };
+    const vitals: { LCP: number; FID: number; CLS: number } = { LCP: 0, FID: 0, CLS: 0 };
     if ('PerformanceObserver' in window) {
       const lcpObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
+        const entries = list.getEntries() as PerformanceEntry[];
         const lastEntry = entries[entries.length - 1];
-        vitals.LCP = lastEntry.startTime;
+        vitals.LCP = lastEntry?.startTime || 0;
         console.log('LCP:', vitals.LCP);
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-
-      // Measure FID
       const fidObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
+        const entries = list.getEntries() as PerformanceEventTiming[];
         entries.forEach(entry => {
           vitals.FID = entry.processingStart - entry.startTime;
           console.log('FID:', vitals.FID);
         });
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
-
-      // Measure CLS
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
+        const entries = list.getEntries() as PerformanceEntry[];
         entries.forEach(entry => {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
-            vitals.CLS = clsValue;
-            console.log('CLS:', vitals.CLS);
+          if (entry.entryType === 'layout-shift') {
+            const layoutShiftEntry = entry as PerformanceEntry & {
+              hadRecentInput: boolean;
+              value: number;
+            };
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsValue += layoutShiftEntry.value;
+              vitals.CLS = clsValue;
+              console.log('CLS:', vitals.CLS);
+            }
           }
         });
       });
       clsObserver.observe({ entryTypes: ['layout-shift'] });
     }
-
-    // Send vitals to analytics
     return vitals;
   },
 
   // Bundle analysis
   analyzeBundle(): void {
     if (process.env.NODE_ENV === 'development') {
-      // Log bundle information in development
+      if (typeof navigator === 'undefined' || typeof performance === 'undefined') {
+        return;
+      }
       console.log('Bundle analysis:', {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
-        connection: (navigator as any).connection?.effectiveType || 'unknown',
-        memory: (performance as any).memory ? {
-          used: (performance as any).memory.usedJSHeapSize,
-          total: (performance as any).memory.totalJSHeapSize,
-          limit: (performance as any).memory.jsHeapSizeLimit,
+        connection: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType || 'unknown',
+        memory: ((performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory) ? {
+          used: (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory!.usedJSHeapSize,
+          total: (performance as Performance & { memory?: { totalJSHeapSize: number } }).memory!.totalJSHeapSize,
+          limit: (performance as Performance & { memory?: { jsHeapSizeLimit: number } }).memory!.jsHeapSizeLimit,
         } : 'not available',
       });
     }
@@ -209,9 +200,9 @@ export const bundleOptimizer = {
       maxImageSize: 1 * 1024 * 1024, // 1MB
       maxLoadTime: 3000, // 3 seconds
     };
-
+    if (typeof performance === 'undefined') return true;
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    const loadTime = navigation.loadEventEnd - navigation.fetchStart;
+    const loadTime = navigation ? navigation.loadEventEnd - navigation.fetchStart : 0;
 
     if (loadTime > budget.maxLoadTime) {
       console.warn(`Load time ${loadTime}ms exceeds budget ${budget.maxLoadTime}ms`);
@@ -225,11 +216,11 @@ export const bundleOptimizer = {
 // Tree shaking optimization
 export const treeShakingOptimizer = {
   // Remove unused exports
-  removeUnusedExports(module: any, usedExports: string[]): any {
-    const filteredModule = { ...module };
-    Object.keys(filteredModule).forEach(key => {
+  removeUnusedExports<T extends Record<string, unknown>>(module: T, usedExports: string[]): Partial<T> {
+    const filteredModule: Partial<T> = { ...module };
+    Object.keys(filteredModule as Record<string, unknown>).forEach(key => {
       if (!usedExports.includes(key)) {
-        delete filteredModule[key];
+        delete (filteredModule as Record<string, unknown>)[key];
       }
     });
     return filteredModule;
@@ -251,7 +242,10 @@ export const memoryOptimizer = {
   // Cleanup unused objects
   cleanup(): void {
     if (typeof window !== 'undefined' && 'gc' in window) {
-      (window as any).gc();
+      const w = window as unknown as { gc?: () => void };
+      if (w.gc) {
+        w.gc();
+      }
     }
   },
 
@@ -261,8 +255,9 @@ export const memoryOptimizer = {
     total: number;
     limit: number;
   } | null {
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
-      const memory = (performance as any).memory;
+    if (typeof performance !== 'undefined' && (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory) {
+      const perfWithMemory = performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } };
+      const memory = perfWithMemory.memory!;
       return {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,

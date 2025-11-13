@@ -67,7 +67,11 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Relax CSP to allow Next.js dev/runtime scripts and styles
+    contentSecurityPolicy:
+      process.env.NODE_ENV === 'production'
+        ? "default-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:; font-src 'self' https: data:; frame-src 'self'" 
+        : "default-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http: https: ws:; font-src 'self' https: data:; frame-src 'self'",
   },
   experimental: {
     serverActions: { allowedOrigins: [] },

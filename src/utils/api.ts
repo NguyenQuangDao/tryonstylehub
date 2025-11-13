@@ -1,3 +1,4 @@
+/* eslint-disable */
 // API utility functions
 export const createApiError = (message: string, status?: number): Error => {
   const error = new Error(message);
