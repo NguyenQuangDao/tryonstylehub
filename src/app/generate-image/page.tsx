@@ -5,6 +5,7 @@ import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles,
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription } from '@/components/ui/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ export default function GenerateImagePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showGuide, setShowGuide] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function GenerateImagePage() {
       
       if (data.success) {
         setImageUrl(data.imageUrl);
+        setToastOpen(true);
       } else {
         setError(data.error || 'Đã xảy ra lỗi');
       }
@@ -56,6 +59,7 @@ export default function GenerateImagePage() {
   };
 
   return (
+    <ToastProvider>
     <div className="max-w-7xl mx-auto relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -288,7 +292,13 @@ export default function GenerateImagePage() {
           </Card>
         )}
       </motion.div>
+      <Toast open={toastOpen} onOpenChange={setToastOpen}>
+        <ToastTitle>Đã lưu ảnh thành công</ToastTitle>
+        <ToastDescription>Ảnh đã được lưu vào kho ảnh của bạn</ToastDescription>
+      </Toast>
+      <ToastViewport />
     </div>
+    </ToastProvider>
   );
 }
 

@@ -1,5 +1,6 @@
 // AWS S3 Integration - Install packages first: npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Initialize S3 Client
@@ -98,5 +99,29 @@ export function generateS3Key(prefix: string, filename: string): string {
   const random = Math.random().toString(36).substring(7);
   const sanitized = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
   return `${prefix}/${timestamp}-${random}-${sanitized}`;
+}
+
+export async function getJSON<T>(key: string): Promise<T | null> {
+  try {
+    const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+    const res = await s3Client.send(command);
+    const stream = res.Body as Readable;
+    const chunks: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('error', (err: Error) => reject(err));
+      stream.on('end', () => resolve());
+    });
+    const body = Buffer.concat(chunks).toString('utf-8');
+    return JSON.parse(body) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function putJSON(key: string, data: unknown): Promise<string> {
+  const body = Buffer.from(JSON.stringify(data));
+  await uploadToS3(body, key, 'application/json');
+  return `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${key}`;
 }
 

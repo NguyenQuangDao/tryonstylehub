@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache';
 
-const cache = new LRUCache<string, any>({
+const cache = new LRUCache({
   max: 100,
   ttl: 1000 * 60 * 10, // 10 minutes default
 });
@@ -10,7 +10,7 @@ export function getCache<T>(key: string): T | undefined {
 }
 
 export function setCache<T>(key: string, value: T, ttl?: number): void {
-  cache.set(key, value, { ttl });
+  cache.set(key, value as unknown as {}, { ttl });
 }
 
 export function deleteCache(key: string): void {

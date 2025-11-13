@@ -20,6 +20,8 @@ export default function ProfilePage() {
   const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [gallery, setGallery] = useState<{ url: string; createdAt: string }[]>([]);
+  const [isLoadingGallery, setIsLoadingGallery] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -31,6 +33,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       fetchVirtualModels();
+      fetchGallery();
     }
   }, [user]);
 
@@ -46,6 +49,21 @@ export default function ProfilePage() {
       console.error('Error fetching virtual models:', error);
     } finally {
       setIsLoadingModels(false);
+    }
+  };
+
+  const fetchGallery = async () => {
+    try {
+      setIsLoadingGallery(true);
+      const res = await fetch('/api/user/gallery', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const items = (data.gallery || []) as { url: string; createdAt: string }[];
+        setGallery(items);
+      }
+    } catch {
+    } finally {
+      setIsLoadingGallery(false);
     }
   };
 
@@ -339,6 +357,46 @@ export default function ProfilePage() {
                     )}
                   </AnimatePresence>
                 </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 mt-8"
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 vietnamese-heading">Ảnh đã tạo</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kho ảnh do bạn tạo bằng AI</p>
+              </div>
+            </div>
+          </div>
+          {isLoadingGallery && (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          {!isLoadingGallery && gallery.length === 0 && (
+            <div className="text-center py-12 text-gray-600 dark:text-gray-400">Chưa có ảnh nào</div>
+          )}
+          {!isLoadingGallery && gallery.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {gallery.map((item, idx) => (
+                <div key={idx} className="relative p-3 border rounded-xl bg-white dark:bg-gray-800">
+                  <div className="aspect-square relative rounded-lg overflow-hidden">
+                    <Image src={item.url} alt="Ảnh đã tạo" fill className="object-cover" />
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
+                </div>
               ))}
             </div>
           )}

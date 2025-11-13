@@ -1,6 +1,7 @@
 import Fashn from 'fashn';
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { getPresignedUrl } from '../../../lib/s3';
 
 const FASHN_ENDPOINT_URL = process.env.FASHN_ENDPOINT_URL || "https://api.fashn.ai";
 const FASHN_API_KEY = process.env.FASHN_API_KEY;
@@ -15,9 +16,52 @@ async function fileToBase64(file: File): Promise<string> {
   return `data:${mime};base64,${base64}`;
 }
 
+function extractS3Key(input: string): string | null {
+  try {
+    if (!input) return null;
+    if (!input.startsWith('http')) return input;
+    const u = new URL(input);
+    const host = u.hostname;
+    if (host.includes('.s3.') || host.endsWith('.s3.amazonaws.com')) {
+      const key = u.pathname.replace(/^\/+/, '');
+      return key || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function urlToBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) {
+  if (!url) {
+    throw new Error('Failed to fetch image from URL');
+  }
+  if (url.startsWith('data:')) {
+    return url;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  let res: Response | null = null;
+  try {
+    res = await fetch(url, { signal: controller.signal });
+  } catch {
+    res = null;
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res || !res.ok) {
+    const s3Key = extractS3Key(url);
+    if (s3Key) {
+      const presigned = await getPresignedUrl(s3Key, 180);
+      const res2 = await fetch(presigned);
+      if (!res2.ok) {
+        throw new Error('Failed to fetch image from URL');
+      }
+      const contentType2 = res2.headers.get('content-type') || 'image/jpeg';
+      const arrayBuffer2 = await res2.arrayBuffer();
+      const base64_2 = Buffer.from(arrayBuffer2).toString('base64');
+      return `data:${contentType2};base64,${base64_2}`;
+    }
     throw new Error('Failed to fetch image from URL');
   }
   const contentType = res.headers.get('content-type') || 'image/jpeg';
