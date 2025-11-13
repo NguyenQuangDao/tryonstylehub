@@ -49,6 +49,9 @@ interface OptimizedHomePageProps {
 
 export default function OptimizedHomePage({
   apiKey,
+  // selectedVirtualModel,
+  setIsVirtualModelSelectorOpen,
+  personImageUpload,
   garmentImageUpload,
   // selectedCategory,
   // setSelectedCategory,
@@ -61,19 +64,19 @@ export default function OptimizedHomePage({
   onSubmit
 }: OptimizedHomePageProps) {
   // Example images
-  // const personExamples = useMemo(() => [
-  //   '/examples/person1.jpg',
-  //   '/examples/person2.jpg',
-  //   '/examples/person3.jpg',
-  //   '/examples/person4.jpg'
-  // ], []);
+  const personExamples = [
+    'https://images.pexels.com/photos/3772510/pexels-photo-3772510.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/936114/pexels-photo-936114.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/1055686/pexels-photo-1055686.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
+  ];
 
-  // const garmentExamples = useMemo(() => [
-  //   '/examples/garment1.jpg',
-  //   '/examples/garment2.jpg',
-  //   '/examples/garment3.jpg',
-  //   '/examples/garment4.jpg'
-  // ], []);
+  const garmentExamples = [
+    'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/4046319/pexels-photo-4046319.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/7679721/pexels-photo-7679721.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/7679723/pexels-photo-7679723.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
+  ];
 
   // const [currentPersonExample, setCurrentPersonExample] = useState(0);
   // const [currentGarmentExample, setCurrentGarmentExample] = useState(0);
@@ -183,7 +186,66 @@ export default function OptimizedHomePage({
                     </div>
                   </div>
                 </CardHeader>
-               
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <Label className="text-base font-semibold">Tải lên ảnh người mẫu</Label>
+                    {personImageUpload.imagePreview ? (
+                      <div className="relative group">
+                        <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                          <Image
+                            src={personImageUpload.imagePreview}
+                            alt="Person preview"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={personImageUpload.clearImage}
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <FileInput
+                        onChange={personImageUpload.handleImageChange}
+                        accept="image/*"
+                        label="Chọn ảnh người mẫu"
+                        className="aspect-[2/3] border-2 border-dashed border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsVirtualModelSelectorOpen(true)}
+                      className="px-6"
+                    >
+                      Chọn người mẫu ảo
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label className="text-base font-semibold">Ảnh mẫu</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {personExamples.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                          onClick={() => personImageUpload.loadExampleImage(url)}
+                        >
+                          <Image src={url} alt={`Person example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+
               </Card>
             </motion.div>
 
@@ -239,47 +301,20 @@ export default function OptimizedHomePage({
                     )}
                   </div>
 
-                  {/* Garment Examples */}
-                  {/* <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-semibold">Hoặc chọn ảnh mẫu</Label>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleGarmentExampleChange('left')}
+                  <div className="space-y-4">
+                    <Label className="text-base font-semibold">Ảnh mẫu trang phục</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {garmentExamples.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                          onClick={() => garmentImageUpload.loadExampleImage(url)}
                         >
-                          <ChevronLeft className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleGarmentExampleChange('right')}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </div>
+                          <Image src={url} alt={`Garment example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                        </div>
+                      ))}
                     </div>
-
-                    <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors" onClick={handleSelectGarmentExample}>
-                      <Image
-                        src={garmentExamples[currentGarmentExample]}
-                        alt={`Garment example ${currentGarmentExample + 1}`}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <Button
-                          type="button"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          Chọn ảnh này
-                        </Button>
-                      </div>
-                    </div>
-                  </div> */}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
