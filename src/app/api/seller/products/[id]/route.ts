@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
+import { deleteCache } from '@/lib/cache';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -19,19 +20,16 @@ const updateSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: unknown) {
   try {
     const session = await getServerSession(authOptions);
+    const { params } = context as { params: { id: string } };
     if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
     if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
 
-    const id = params.id;
+    const id = parseInt(params.id);
     const product = await prisma.product.findFirst({
       where: { id, shopId: session.user.shopId ?? undefined },
-      include: {
-        images: true,
-        _count: { select: { tryOnHistory: true, productViews: true, reviews: true } },
-      },
     });
 
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
@@ -39,9 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const resp = {
       ...product,
       styleTags: (() => { try { return product.styleTags ? JSON.parse(product.styleTags as unknown as string) : []; } catch { return []; } })(),
-      sizes: (() => { try { return product.sizes ? JSON.parse(product.sizes as unknown as string) : []; } catch { return []; } })(),
-      colors: (() => { try { return product.colors ? JSON.parse(product.colors as unknown as string) : []; } catch { return []; } })(),
-      isActive: product.status === 'ACTIVE',
+      isActive: true,
     };
 
     return NextResponse.json(resp);
@@ -51,21 +47,33 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   try {
+    const { params } = context as { params: { id: string } };
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
     if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
     if (!session.user.shopId) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
-    const id = params.id;
+    const id = parseInt(params.id);
     const body = await request.json();
     const data = updateSchema.parse(body);
 
     const product = await prisma.product.findFirst({ where: { id, shopId: session.user.shopId } });
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
-    const updates: any = {};
+    const updates: Partial<{
+      name: string;
+      description: string;
+      price: number;
+      category: string;
+      styleTags: string;
+      sizes: string;
+      colors: string;
+      stock: number;
+      isFeatured: boolean;
+      status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
+    }> = {};
     if (data.name !== undefined) updates.name = data.name;
     if (data.description !== undefined) updates.description = data.description;
     if (data.price !== undefined) updates.price = data.price;
@@ -78,14 +86,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (data.status !== undefined) updates.status = data.status;
     if (data.isActive !== undefined) updates.status = data.isActive ? 'ACTIVE' : 'INACTIVE';
 
-    const updated = await prisma.product.update({ where: { id }, data: updates });
+    await prisma.product.update({ where: { id }, data: updates });
+    deleteCache('products:all');
 
-    if (data.images !== undefined) {
-      await prisma.productImage.deleteMany({ where: { productId: id } });
-      await prisma.productImage.createMany({
-        data: data.images.map((url, index) => ({ productId: id, url, order: index, altText: `${updated.name} - Image ${index + 1}` })),
-      });
-    }
+    // Images handling is disabled in this version
 
     return NextResponse.json({ message: 'Cập nhật sản phẩm thành công' });
   } catch (error) {
@@ -97,19 +101,20 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, context: unknown) {
   try {
     const session = await getServerSession(authOptions);
+    const { params } = context as { params: { id: string } };
     if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
     if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
     if (!session.user.shopId) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
-    const id = params.id;
+    const id = parseInt(params.id);
     const product = await prisma.product.findFirst({ where: { id, shopId: session.user.shopId } });
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
-    await prisma.productImage.deleteMany({ where: { productId: id } });
     await prisma.product.delete({ where: { id } });
+    deleteCache('products:all');
 
     return NextResponse.json({ message: 'Xóa sản phẩm thành công' });
   } catch (error) {

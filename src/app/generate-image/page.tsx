@@ -17,6 +17,8 @@ export default function GenerateImagePage() {
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [improving, setImproving] = useState(false);
+  const [improveError, setImproveError] = useState('');
   const [showGuide, setShowGuide] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
 
@@ -55,6 +57,31 @@ export default function GenerateImagePage() {
       setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImprovePrompt = async () => {
+    if (!prompt || prompt.length < 5) {
+      setImproveError('Vui lòng nhập mô tả trước khi cải tiến');
+      return;
+    }
+    setImproveError('');
+    setImproving(true);
+    try {
+      const res = await fetch('/api/generate-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, preferRemote: true, model: 'google/gemini-2.0-flash-exp:free' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Không thể cải tiến prompt');
+      }
+      setPrompt(data.prompt);
+    } catch (err) {
+      setImproveError(err instanceof Error ? err.message : 'Đã xảy ra lỗi khi cải tiến');
+    } finally {
+      setImproving(false);
     }
   };
 
@@ -189,14 +216,38 @@ export default function GenerateImagePage() {
                   Mô tả ảnh bạn muốn tạo
                 </Label>
                 
-                <Textarea
-                  id="prompt"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  rows={4}
-                  className="resize-none"
-                  placeholder="Ví dụ: A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality..."
-                />
+              <Textarea
+                id="prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={4}
+                className="resize-none"
+                placeholder="Ví dụ: A stylish woman wearing a summer dress on a beach at sunset, professional photography, high quality..."
+              />
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  {improveError && <span className="text-red-600">{improveError}</span>}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleImprovePrompt}
+                  disabled={improving}
+                  className="flex items-center gap-2"
+                >
+                  {improving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Đang cải tiến...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      <span>Cải tiến bằng AI</span>
+                    </>
+                  )}
+                </Button>
+              </div>
               </div>
 
               <Button

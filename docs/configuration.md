@@ -22,8 +22,8 @@ Sao chép `.env.example` thành `.env` và điền giá trị thật:
 - AWS S3
   - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_S3_REGION`
   - `SAVE_TO_S3`: `true` để bật lưu ảnh lên S3
-- Dịch vụ AI (tuỳ chọn)
-  - `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `FASHN_API_KEY`, `DIFFUSERS_API_URL`
+- Dịch vụ AI
+  - `FASHN_API_KEY`: khóa API FASHN sử dụng cố định phía server
 
 Lưu ý: Hệ thống ưu tiên `AWS_S3_BUCKET`; nếu trước đây dùng `AWS_S3_BUCKET_NAME`, vẫn nhận.
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { FileInput } from '@/components';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -14,11 +13,10 @@ import {
   Loader2,
   Shirt,
   Sparkles,
-  Star,
   User,
   X,
   // Upload,
-  Zap
+  
 } from 'lucide-react';
 import Image from 'next/image';
 import { FormEvent } from 'react';
@@ -31,7 +29,6 @@ interface ImageUpload {
 }
 
 interface OptimizedHomePageProps {
-  apiKey: string | null;
   selectedVirtualModel: VirtualModel | null;
   setIsVirtualModelSelectorOpen: (open: boolean) => void;
   personImageUpload: ImageUpload;
@@ -48,7 +45,6 @@ interface OptimizedHomePageProps {
 }
 
 export default function OptimizedHomePage({
-  apiKey,
   // selectedVirtualModel,
   setIsVirtualModelSelectorOpen,
   personImageUpload,
@@ -126,39 +122,24 @@ export default function OptimizedHomePage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {isLoading && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-pulse" />
+      )}
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Sparkles className="w-8 h-8 text-blue-600" />
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Thử Đồ Ảo
-              </h1>
-            </div>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Trải nghiệm công nghệ AI tiên tiến để thử đồ ảo một cách chân thực và nhanh chóng
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-gray-900 dark:text-white">
+              Thử đồ ảo bằng AI
+            </h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mt-3 max-w-2xl mx-auto">
+              Giao diện tối giản, nhất quán. Tải ảnh nhanh và thao tác mượt mà.
             </p>
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Badge variant="secondary" className="px-4 py-2">
-                <Zap className="w-4 h-4 mr-2" />
-                Nhanh chóng
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2">
-                <Star className="w-4 h-4 mr-2" />
-                Chất lượng cao
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2">
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI tiên tiến
-              </Badge>
-            </div>
           </motion.div>
         </div>
       </div>
@@ -174,28 +155,27 @@ export default function OptimizedHomePage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="h-full border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+              <Card className="h-full border shadow-sm rounded-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
+                    <User className="w-6 h-6 text-blue-600" />
                     <div>
-                      <CardTitle className="text-xl">Tải ảnh mẫu</CardTitle>
-                      <CardDescription>Tải ảnh</CardDescription>
+                      <CardTitle className="text-base">Ảnh người mẫu</CardTitle>
+                      <CardDescription className="text-xs">Chọn hoặc tải lên ảnh người</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <Label className="text-base font-semibold">Tải lên ảnh người mẫu</Label>
+                    <Label className="text-sm font-medium">Tải lên ảnh người mẫu</Label>
                     {personImageUpload.imagePreview ? (
                       <div className="relative group">
-                        <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                        <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
                           <Image
                             src={personImageUpload.imagePreview}
                             alt="Person preview"
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover"
                           />
                         </div>
@@ -204,6 +184,7 @@ export default function OptimizedHomePage({
                           variant="destructive"
                           size="icon"
                           onClick={personImageUpload.clearImage}
+                          aria-label="Xóa ảnh người mẫu"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-4 h-4" />
@@ -214,7 +195,7 @@ export default function OptimizedHomePage({
                         onChange={personImageUpload.handleImageChange}
                         accept="image/*"
                         label="Chọn ảnh người mẫu"
-                        className="aspect-[2/3] border-2 border-dashed border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                        className="h-64 md:h-80 border border-dashed"
                       />
                     )}
                   </div>
@@ -231,13 +212,15 @@ export default function OptimizedHomePage({
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-base font-semibold">Ảnh mẫu</Label>
+                    <Label className="text-sm font-medium">Ảnh mẫu</Label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {personExamples.map((url, idx) => (
                         <div
                           key={idx}
-                          className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                          className="relative h-32 md:h-36 rounded-lg overflow-hidden bg-muted/20 border group cursor-pointer"
                           onClick={() => personImageUpload.loadExampleImage(url)}
+                          role="button"
+                          aria-label={`Chọn ảnh người mẫu ví dụ ${idx + 1}`}
                         >
                           <Image src={url} alt={`Person example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                         </div>
@@ -255,29 +238,28 @@ export default function OptimizedHomePage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card className="h-full border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+              <Card className="h-full border shadow-sm rounded-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                      <Shirt className="w-6 h-6 text-purple-600" />
-                    </div>
+                    <Shirt className="w-6 h-6 text-purple-600" />
                     <div>
-                      <CardTitle className="text-xl">Chọn trang phục</CardTitle>
-                      <CardDescription>Tải ảnh trang phục muốn thử</CardDescription>
+                      <CardTitle className="text-base">Ảnh trang phục</CardTitle>
+                      <CardDescription className="text-xs">Chọn hoặc tải lên ảnh trang phục</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Garment Upload */}
                   <div className="space-y-4">
-                    <Label className="text-base font-semibold">Tải lên ảnh trang phục</Label>
+                    <Label className="text-sm font-medium">Tải lên ảnh trang phục</Label>
                     {garmentImageUpload.imagePreview ? (
                       <div className="relative group">
-                        <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                        <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
                           <Image
                             src={garmentImageUpload.imagePreview}
                             alt="Garment preview"
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover"
                           />
                         </div>
@@ -286,6 +268,7 @@ export default function OptimizedHomePage({
                           variant="destructive"
                           size="icon"
                           onClick={garmentImageUpload.clearImage}
+                          aria-label="Xóa ảnh trang phục"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-4 h-4" />
@@ -296,19 +279,21 @@ export default function OptimizedHomePage({
                         onChange={garmentImageUpload.handleImageChange}
                         accept="image/*"
                         label="Chọn ảnh trang phục"
-                        className="aspect-[2/3] border-2 border-dashed border-purple-200 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                        className="h-64 md:h-80 border border-dashed"
                       />
                     )}
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-base font-semibold">Ảnh mẫu trang phục</Label>
+                    <Label className="text-sm font-medium">Ảnh mẫu trang phục</Label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {garmentExamples.map((url, idx) => (
                         <div
                           key={idx}
-                          className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700 relative group cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                          className="relative h-32 md:h-36 rounded-lg overflow-hidden bg-muted/20 border group cursor-pointer"
                           onClick={() => garmentImageUpload.loadExampleImage(url)}
+                          role="button"
+                          aria-label={`Chọn ảnh trang phục ví dụ ${idx + 1}`}
                         >
                           <Image src={url} alt={`Garment example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                         </div>
@@ -326,7 +311,7 @@ export default function OptimizedHomePage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-md hover:shadow-xl transition-shadow rounded-3xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-xl">Loại trang phục</CardTitle>
                 <CardDescription>Chọn loại trang phục để AI xử lý chính xác hơn</CardDescription>
@@ -359,40 +344,29 @@ export default function OptimizedHomePage({
             </Card>
           </motion.div> */}
 
+          {/* Provider Selection removed: hệ thống chỉ dùng FASHN trên server */}
+
           {/* Action Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            transition={{ duration: 0.3 }}
+            className="flex flex-col sm:flex-row gap-3 justify-center"
           >
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => setIsTipsModalOpen?.(true)}
-              className="px-8 py-3"
+              className="px-6"
             >
               <Lightbulb className="w-4 h-4 mr-2" />
-              Xem hướng dẫn
+              Hướng dẫn
             </Button>
-            
-            {!apiKey && (
-              // <Button
-              //   type="button"
-              //   variant="outline"
-              //   onClick={() => setIsApiKeyModalOpen(true)}
-              //   className="px-8 py-3"
-              // >
-              //   <Upload className="w-4 h-4 mr-2" />
-              //   Cấu hình API Key
-              // </Button>
-              ""
-            )}
 
             <Button
               type="submit"
-              // disabled={!canSubmit || isLoading}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
+              className="px-6"
+              aria-live="polite"
             >
               {isLoading ? (
                 <>
@@ -412,9 +386,11 @@ export default function OptimizedHomePage({
           {/* Error Message */}
           {errorMessage && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              role="alert"
+              aria-live="polite"
+              className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-700 dark:text-red-300 text-center text-sm"
             >
               {errorMessage}
             </motion.div>
@@ -429,12 +405,12 @@ export default function OptimizedHomePage({
             transition={{ duration: 0.6 }}
             className="mt-12"
           >
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <Card className="border shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl">Kết quả thử đồ</CardTitle>
-                    <CardDescription>Ảnh đã được xử lý bằng AI</CardDescription>
+                    <CardTitle className="text-lg">Kết quả thử đồ</CardTitle>
+                    <CardDescription className="text-xs">Ảnh đã được xử lý bằng AI</CardDescription>
                   </div>
                   <Button
                     variant="outline"
@@ -446,22 +422,23 @@ export default function OptimizedHomePage({
               </CardHeader>
               <CardContent>
                 <div className={cn(
-                  "grid gap-6",
+                  "grid gap-4",
                   isComparisonMode ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                 )}>
                   {resultGallery.map((result, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
                       className="relative group"
                     >
-                      <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900">
+                      <div className="aspect-[3/4] md:aspect-[2/3] rounded-lg overflow-hidden bg-muted/20">
                         <Image
                           src={result}
                           alt={`Try-on result ${index + 1}`}
                           fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
@@ -485,6 +462,14 @@ export default function OptimizedHomePage({
               </CardContent>
             </Card>
           </motion.div>
+        )}
+
+        {isLoading && resultGallery.length === 0 && (
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] md:aspect-[2/3] rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            ))}
+          </div>
         )}
       </div>
     </div>

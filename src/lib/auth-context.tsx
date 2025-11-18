@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface User {
@@ -8,6 +8,7 @@ interface User {
   email: string;
   name: string;
   avatar?: string | null;
+  tokenBalance?: number;
 }
 
 interface AuthContextType {
@@ -25,11 +26,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Fetch current user on mount
   useEffect(() => {
+    // Tránh gọi /api/auth/me trước khi đăng ký/đăng nhập
+    if (pathname === '/register' || pathname === '/login') {
+      setLoading(false);
+      return;
+    }
     fetchUser();
-  }, []);
+  }, [pathname]);
 
   const fetchUser = async () => {
     try {
@@ -67,7 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
-    router.push('/');
   };
 
   const register = async (email: string, name: string, password: string) => {
@@ -84,7 +90,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
-    router.push('/');
   };
 
   const logout = async () => {

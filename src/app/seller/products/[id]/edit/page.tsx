@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Upload, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const CATEGORIES = [
@@ -26,20 +26,6 @@ const STYLE_TAGS = [
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 const COLORS = ['Đen', 'Trắng', 'Xám', 'Nâu', 'Be', 'Navy', 'Xanh dương', 'Xanh lá', 'Đỏ', 'Hồng', 'Tím', 'Vàng', 'Cam'];
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  styleTags: string[];
-  images: string[];
-  sizes: string[];
-  colors: string[];
-  stock: number;
-  isFeatured: boolean;
-  isActive: boolean;
-}
 
 export default function EditProductPage() {
   const { data: session, status } = useSession();
@@ -77,41 +63,40 @@ export default function EditProductPage() {
     }
 
     if (status === 'authenticated' && session.user.role === 'SELLER' && productId) {
-      fetchProduct();
+      const run = async () => {
+        try {
+          const response = await fetch(`/api/seller/products/${productId}`);
+          const data = await response.json();
+
+          if (response.ok) {
+            setFormData({
+              name: data.name,
+              description: data.description,
+              price: data.price.toString(),
+              category: data.category,
+              styleTags: data.styleTags,
+              images: data.images,
+              sizes: data.sizes,
+              colors: data.colors,
+              stock: data.stock.toString(),
+              isFeatured: data.isFeatured,
+              isActive: data.isActive,
+            });
+          } else {
+            alert(data.error || 'Không tìm thấy sản phẩm');
+            router.push('/seller/products');
+          }
+        } catch (error) {
+          console.error('Error fetching product:', error);
+          alert('Có lỗi xảy ra khi tải thông tin sản phẩm');
+          router.push('/seller/products');
+        } finally {
+          setLoading(false);
+        }
+      };
+      run();
     }
   }, [status, session, router, productId]);
-
-  const fetchProduct = async () => {
-    try {
-      const response = await fetch(`/api/seller/products/${productId}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setFormData({
-          name: data.name,
-          description: data.description,
-          price: data.price.toString(),
-          category: data.category,
-          styleTags: data.styleTags,
-          images: data.images,
-          sizes: data.sizes,
-          colors: data.colors,
-          stock: data.stock.toString(),
-          isFeatured: data.isFeatured,
-          isActive: data.isActive,
-        });
-      } else {
-        alert(data.error || 'Không tìm thấy sản phẩm');
-        router.push('/seller/products');
-      }
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      alert('Có lỗi xảy ra khi tải thông tin sản phẩm');
-      router.push('/seller/products');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;

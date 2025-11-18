@@ -113,6 +113,11 @@ export default function Navigation() {
                       <div className="flex items-center gap-2 px-2 py-1 text-sm font-medium">
                         <User className="h-4 w-4" />
                         {user.name || user.email}
+                        {typeof user.tokenBalance === 'number' && (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                            {user.tokenBalance} token
+                          </span>
+                        )}
                       </div>
                       <Link
                         href="/dashboard"
@@ -181,11 +186,19 @@ export default function Navigation() {
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">{user.name || user.email}</span>
+                    {typeof user.tokenBalance === 'number' && (
+                      <span className="ml-2 hidden sm:inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        {user.tokenBalance} token
+                      </span>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/tokens">Nạp token</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/profile">Profile</Link>

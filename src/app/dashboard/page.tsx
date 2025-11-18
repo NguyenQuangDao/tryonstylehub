@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { DollarSign, Image, Sparkles, TrendingUp } from 'lucide-react';
+import { DollarSign, Image as ImageIcon, Sparkles, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CostStats {
@@ -116,7 +116,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0">
                 <CardContent className="p-6">
-                  <Image className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4"/>
+                  <ImageIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4"/>
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Virtual Try-On</CardTitle>
                   <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
                     Thử đồ ảo với công nghệ AI tiên tiến

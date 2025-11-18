@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Plus, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -30,9 +32,9 @@ interface ExistingApplication {
 }
 
 export default function SellerApplicationPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(true);
   const [existingApplication, setExistingApplication] = useState<ExistingApplication | null>(null);
   const [formData, setFormData] = useState<ApplicationData>({
@@ -43,15 +45,13 @@ export default function SellerApplicationPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login?callbackUrl=/seller/apply');
       return;
     }
-
-    if (status === 'authenticated') {
-      checkExistingApplication();
-    }
-  }, [status, router]);
+    checkExistingApplication();
+  }, [loading, user, router]);
 
   const checkExistingApplication = async () => {
     try {
@@ -70,7 +70,7 @@ export default function SellerApplicationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const response = await fetch('/api/seller/apply', {
@@ -96,7 +96,7 @@ export default function SellerApplicationPage() {
       console.error('Error submitting application:', error);
       alert('Có lỗi xảy ra khi nộp đơn');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -121,7 +121,7 @@ export default function SellerApplicationPage() {
     }));
   };
 
-  if (status === 'loading' || checkingApplication) {
+  if (loading || checkingApplication) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -171,7 +171,7 @@ export default function SellerApplicationPage() {
               <div className="mt-1">
                 <Badge 
                   variant={
-                    existingApplication.status === 'APPROVED' ? 'success' :
+                    existingApplication.status === 'APPROVED' ? 'default' :
                     existingApplication.status === 'REJECTED' ? 'destructive' :
                     'secondary'
                   }
@@ -298,9 +298,9 @@ export default function SellerApplicationPage() {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={loading}
+              disabled={submitting}
             >
-              {loading ? (
+              {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Đang gửi...

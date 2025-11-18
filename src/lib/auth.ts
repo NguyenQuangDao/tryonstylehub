@@ -1,9 +1,11 @@
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-secret-key-change-this-in-production'
-);
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret' : undefined);
+  if (!secret) throw new Error('JWT_SECRET is not configured');
+  return new TextEncoder().encode(secret);
+}
 
 export interface JWTPayload {
   userId: number;
@@ -34,9 +36,8 @@ export async function createToken(payload: JWTPayload): Promise<string> {
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d') // Token expires in 7 days
-    .sign(JWT_SECRET);
-
+    .setExpirationTime('7d')
+    .sign(getJwtSecret());
   return token;
 }
 
@@ -45,10 +46,9 @@ export async function createToken(payload: JWTPayload): Promise<string> {
  */
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload as JWTPayload;
-  } catch (error) {
-    console.error('Token verification failed:', error);
+  } catch {
     return null;
   }
 }

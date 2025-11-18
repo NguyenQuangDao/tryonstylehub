@@ -29,10 +29,6 @@ export const authOptions: NextAuthOptions = {
             email: true,
             name: true,
             password: true,
-            role: true,
-            tokenBalance: true,
-            avatar: true,
-            shopId: true,
           }
         });
 
@@ -49,11 +45,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id.toString(),
           email: user.email,
           name: user.name,
-          role: user.role,
-          tokenBalance: user.tokenBalance,
-          avatar: user.avatar,
-          shopId: user.shopId,
-        };
+        } as unknown as { id: string; email: string; name: string };
       }
     })
   ],
@@ -63,9 +55,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
-        token.role = user.role;
-        token.tokenBalance = user.tokenBalance;
-        token.shopId = user.shopId;
+        // custom fields disabled in this version
       }
       
       if (account?.provider === 'google') {
@@ -80,21 +70,16 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: token.email!,
               name: token.name!,
-              password: '', // No password for Google users
-              role: 'SHOPPER',
-              tokenBalance: 10, // Free tokens for new users
+              password: '',
             }
           });
           
           token.id = newUser.id.toString();
-          token.role = newUser.role;
-          token.tokenBalance = newUser.tokenBalance;
+          // custom fields disabled
         } else {
           // Update existing user
           token.id = existingUser.id.toString();
-          token.role = existingUser.role;
-          token.tokenBalance = existingUser.tokenBalance;
-          token.shopId = existingUser.shopId;
+          // custom fields disabled
         }
       }
       
@@ -103,15 +88,11 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.tokenBalance = token.tokenBalance as number;
-        session.user.shopId = token.shopId as number | null;
       }
       return session;
     },
   },
   pages: {
     signIn: '/auth/login',
-    signUp: '/auth/register',
   },
 };

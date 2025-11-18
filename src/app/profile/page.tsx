@@ -22,6 +22,10 @@ export default function ProfilePage() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [gallery, setGallery] = useState<{ url: string; createdAt: string }[]>([]);
   const [isLoadingGallery, setIsLoadingGallery] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -389,16 +393,61 @@ export default function ProfilePage() {
             <div className="text-center py-12 text-gray-600 dark:text-gray-400">Chưa có ảnh nào</div>
           )}
           {!isLoadingGallery && gallery.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {gallery.map((item, idx) => (
-                <div key={idx} className="relative p-3 border rounded-xl bg-white dark:bg-gray-800">
-                  <div className="aspect-square relative rounded-lg overflow-hidden">
-                    <Image src={item.url} alt="Ảnh đã tạo" fill className="object-cover" />
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Tìm theo URL/từ khóa"
+                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="desc">Mới nhất</option>
+                  <option value="asc">Cũ nhất</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {gallery
+                  .filter((item) => {
+                    const t = searchTerm.trim().toLowerCase();
+                    const matchesTerm = t === '' || item.url.toLowerCase().includes(t);
+                    const created = new Date(item.createdAt);
+                    const afterStart = startDate ? created >= new Date(startDate) : true;
+                    const beforeEnd = endDate ? created <= new Date(endDate) : true;
+                    return matchesTerm && afterStart && beforeEnd;
+                  })
+                  .sort((a, b) => {
+                    const da = new Date(a.createdAt).getTime();
+                    const db = new Date(b.createdAt).getTime();
+                    return sortOrder === 'desc' ? db - da : da - db;
+                  })
+                  .map((item, idx) => (
+                  <div key={idx} className="relative p-3 border rounded-xl bg-white dark:bg-gray-800">
+                    <div className="aspect-square relative rounded-lg overflow-hidden">
+                      <Image src={item.url} alt="Ảnh đã tạo" fill className="object-cover" />
+                    </div>
+                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
                   </div>
-                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </motion.div>

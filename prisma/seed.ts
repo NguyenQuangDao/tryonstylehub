@@ -3,6 +3,27 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Create sample users (owners)
+  const owner1 = await prisma.user.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      email: 'owner1@example.com',
+      name: 'Seed Owner 1',
+      password: 'seed-password',
+    },
+  });
+
+  const owner2 = await prisma.user.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      email: 'owner2@example.com',
+      name: 'Seed Owner 2',
+      password: 'seed-password',
+    },
+  });
+
   // Create sample shops
   const shop1 = await prisma.shop.upsert({
     where: { id: 1 },
@@ -10,6 +31,7 @@ async function main() {
     create: {
       name: 'Fashion Store',
       url: 'https://fashionstore.example.com',
+      ownerId: owner1.id,
     },
   });
 
@@ -19,6 +41,7 @@ async function main() {
     create: {
       name: 'Style Hub',
       url: 'https://stylehub.example.com',
+      ownerId: owner2.id,
     },
   });
 

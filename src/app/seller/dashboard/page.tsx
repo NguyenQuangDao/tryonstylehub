@@ -1,7 +1,9 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,48 +36,38 @@ interface DashboardStats {
 }
 
 export default function SellerDashboardPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login?callbackUrl=/seller/dashboard');
       return;
     }
+    const run = async () => {
+      try {
+        const statsResponse = await fetch('/api/seller/dashboard/stats');
+        const statsData = await statsResponse.json();
 
-    if (status === 'authenticated' && session.user.role !== 'SELLER') {
-      router.push('/');
-      return;
-    }
+        if (statsResponse.ok) {
+          setStats(statsData);
+        }
 
-    if (status === 'authenticated' && session.user.role === 'SELLER') {
-      fetchDashboardData();
-    }
-  }, [status, session, router]);
-
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch dashboard stats
-      const statsResponse = await fetch('/api/seller/dashboard/stats');
-      const statsData = await statsResponse.json();
-
-      if (statsResponse.ok) {
-        setStats(statsData);
+        await fetchProducts(1);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setPageLoading(false);
       }
-
-      // Fetch products
-      await fetchProducts(1);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    run();
+  }, [loading, user, router]);
 
   const fetchProducts = async (page: number) => {
     try {
@@ -109,7 +101,7 @@ export default function SellerDashboardPage() {
 
       if (response.ok) {
         alert(data.message);
-        fetchDashboardData(); // Refresh data
+        await fetchProducts(1);
       } else {
         alert(data.error || 'Có lỗi xảy ra');
       }
@@ -132,7 +124,7 @@ export default function SellerDashboardPage() {
     }
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />

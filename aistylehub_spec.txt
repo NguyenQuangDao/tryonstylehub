@@ -1,0 +1,2100 @@
+=================================================================================
+                    AIStyleHub (v2) - COMPLETE DEVELOPMENT SPECIFICATION
+=================================================================================
+
+TABLE OF CONTENTS
+=================================================================================
+1. Project Overview
+2. Technology Stack
+3. System Architecture
+4. Database Schema
+5. Authentication & Authorization
+6. Core Features Implementation
+7. API Endpoints
+8. Frontend Architecture
+9. Third-Party Integrations
+10. Security & Performance
+11. Deployment Strategy
+12. Testing Strategy
+13. Future Enhancements
+14. Conclusion
+
+=================================================================================
+1. PROJECT OVERVIEW
+=================================================================================
+
+PROJECT NAME: AIStyleHub
+
+VISION:
+To create a modern, AI-driven fashion marketplace and virtual try-on platform. 
+This application will serve as a central hub where end-users (Shoppers) can 
+discover fashion products from various sellers and use a sophisticated virtual 
+try-on feature.
+
+CORE PIVOT (v2):
+We are moving away from building custom OpenAI (DALL-E/GPT-4V) image generation 
+flows. Instead, we will integrate specialized third-party APIs for core AI 
+functionality. We are also introducing a multi-vendor marketplace structure and 
+a token-based monetization system.
+
+CORE USER PERSONAS:
+
+1. Shoppers
+   - End-users who want to discover new fashion
+   - Get outfit recommendations
+   - Virtually try on clothes before clicking out to buy
+
+2. Sellers (Shops)
+   - Fashion brands or individual sellers
+   - Register on platform to advertise products
+   - Gain visibility and drive traffic to e-commerce links
+
+=================================================================================
+2. TECHNOLOGY STACK
+=================================================================================
+
+CORE FRAMEWORK:
+- Next.js 14 (App Router)
+- React 18.3
+- TypeScript 5
+
+DATABASE & ORM:
+- Prisma 5.9
+- mySql (production)
+
+
+STYLING:
+- Tailwind CSS 3.4
+- Shadcn UI / Radix UI
+
+AUTHENTICATION:
+- NextAuth.js 4.24
+- @auth/prisma-adapter
+
+VALIDATION:
+- Zod 3.22
+- React Hook Form 7.50
+
+PAYMENT:
+- Stripe 14.17
+- @stripe/stripe-js
+
+FILE UPLOAD:
+- UploadThing 6.4
+
+STATE MANAGEMENT:
+- Zustand 4.5
+
+HTTP CLIENT:
+- Axios 1.6.7
+
+UTILITIES:
+- date-fns 3.3
+- lucide-react 0.330
+- sharp 0.33
+
+INFRASTRUCTURE SERVICES:
+
+Database:
+- Production: PostgreSQL (Vercel Postgres, Supabase, or Railway)
+- Development: SQLite (local)
+- Connection pooling with Prisma Accelerate
+
+File Storage:
+- UploadThing for user uploads (model images)
+- Cloudinary for product images (CDN integration)
+
+Caching:
+- Vercel Edge Cache for static assets
+- Redis (Upstash) for try-on result caching
+
+Analytics:
+- Vercel Analytics for web vitals
+- Custom analytics for seller dashboard
+
+=================================================================================
+3. SYSTEM ARCHITECTURE
+=================================================================================
+
+HIGH-LEVEL ARCHITECTURE:
+
+┌─────────────────────────────────────────────────────────────┐
+│                         Frontend Layer                       │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │  Shopper │  │  Seller  │  │  Admin   │  │  Landing │   │
+│  │   Pages  │  │Dashboard │  │  Panel   │  │   Page   │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                            ↕
+┌─────────────────────────────────────────────────────────────┐
+│                      API Layer (Next.js)                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │   Auth   │  │ Products │  │  Try-On  │  │ Payment  │   │
+│  │   APIs   │  │   APIs   │  │   APIs   │  │   APIs   │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                            ↕
+┌─────────────────────────────────────────────────────────────┐
+│                     Business Logic Layer                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │  Token   │  │  Product │  │  Try-On  │  │Analytics │   │
+│  │ Manager  │  │ Manager  │  │ Manager  │  │  Engine  │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                            ↕
+┌─────────────────────────────────────────────────────────────┐
+│                      Data Access Layer                       │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │ Prisma   │  │  Redis   │  │UploadThing│ │Cloudinary│   │
+│  │  ORM     │  │  Cache   │  │  Storage │  │   CDN    │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                            ↕
+┌─────────────────────────────────────────────────────────────┐
+│                    External Services                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │ Fashn.ai │  │Styling.ai│  │  Stripe  │  │  Email   │   │
+│  │  Try-On  │  │Recommend │  │ Payment  │  │ Service  │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+
+FOLDER STRUCTURE:
+
+aistylehub/
+├── prisma/
+│   ├── schema.prisma
+│   ├── migrations/
+│   └── seed.ts
+├── public/
+│   ├── images/
+│   └── icons/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   ├── register/
+│   │   │   └── layout.tsx
+│   │   ├── (shopper)/
+│   │   │   ├── page.tsx
+│   │   │   ├── products/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/page.tsx
+│   │   │   ├── try-on/page.tsx
+│   │   │   ├── recommend/page.tsx
+│   │   │   ├── profile/page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── (seller)/
+│   │   │   └── dashboard/
+│   │   │       ├── page.tsx
+│   │   │       ├── products/
+│   │   │       ├── shop/
+│   │   │       ├── analytics/
+│   │   │       └── layout.tsx
+│   │   ├── (admin)/
+│   │   │   └── admin/
+│   │   │       ├── sellers/
+│   │   │       ├── users/
+│   │   │       └── analytics/
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/route.ts
+│   │   │   ├── products/route.ts
+│   │   │   ├── try-on/route.ts
+│   │   │   ├── recommend/route.ts
+│   │   │   ├── tokens/
+│   │   │   ├── payment/webhook/
+│   │   │   └── upload/
+│   │   ├── become-seller/page.tsx
+│   │   ├── layout.tsx
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── auth/
+│   │   ├── products/
+│   │   ├── try-on/
+│   │   ├── seller/
+│   │   └── layout/
+│   ├── lib/
+│   │   ├── prisma.ts
+│   │   ├── auth.ts
+│   │   ├── stripe.ts
+│   │   ├── redis.ts
+│   │   ├── fashn-api.ts
+│   │   ├── styling-api.ts
+│   │   └── utils.ts
+│   ├── hooks/
+│   ├── stores/
+│   ├── types/
+│   └── middleware.ts
+├── .env.example
+├── .env.local
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json
+
+=================================================================================
+4. DATABASE SCHEMA
+=================================================================================
+
+COMPLETE PRISMA SCHEMA:
+
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum UserRole {
+  SHOPPER
+  SELLER
+  ADMIN
+}
+
+enum SellerStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum ProductCategory {
+  TOP
+  BOTTOM
+  DRESS
+  OUTERWEAR
+  SHOES
+  ACCESSORIES
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum TokenPurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum TryOnStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+// =============================================================================
+// USER & AUTHENTICATION
+// =============================================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  hashedPassword  String?
+  emailVerified   DateTime?
+  image           String?
+  role            UserRole  @default(SHOPPER)
+  
+  // Shopper-specific fields
+  tokenBalance    Int       @default(0)
+  modelImageUrl   String?
+  bio             String?
+  location        String?
+  
+  // Preferences
+  preferredStyle  String[]
+  sizePreferences Json?
+  
+  // Metadata
+  lastLoginAt     DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  shop            Shop?
+  accounts        Account[]
+  sessions        Session[]
+  tokenPurchases  TokenPurchase[]
+  tryOnHistory    TryOnHistory[]
+  savedOutfits    SavedOutfit[]
+  productViews    ProductView[]
+  reviews         Review[]
+  notifications   Notification[]
+  
+  @@index([email])
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =============================================================================
+// SHOP & SELLER
+// =============================================================================
+
+model Shop {
+  id              String         @id @default(cuid())
+  name            String
+  slug            String         @unique
+  description     String?        @db.Text
+  logoUrl         String?
+  bannerUrl       String?
+  
+  // Contact & Social
+  contactEmail    String?
+  phoneNumber     String?
+  websiteUrl      String?
+  instagramHandle String?
+  facebookUrl     String?
+  tiktokHandle    String?
+  
+  // Business Info
+  businessAddress String?
+  taxId           String?
+  
+  // Subscription
+  subscriptionTier SubscriptionTier @default(FREE)
+  subscriptionEndsAt DateTime?
+  
+  // Status
+  status          SellerStatus   @default(PENDING)
+  approvedAt      DateTime?
+  approvedBy      String?
+  rejectionReason String?
+  
+  // Metadata
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  ownerId         String         @unique
+  owner           User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products        Product[]
+  analytics       ShopAnalytics[]
+  
+  @@index([status])
+  @@index([slug])
+  @@index([ownerId])
+}
+
+model ShopAnalytics {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  // Daily metrics
+  date            DateTime @db.Date
+  totalViews      Int      @default(0)
+  uniqueVisitors  Int      @default(0)
+  totalTryOns     Int      @default(0)
+  totalClicks     Int      @default(0)
+  totalRevenue    Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([shopId, date])
+  @@index([shopId, date])
+}
+
+// =============================================================================
+// PRODUCTS
+// =============================================================================
+
+model Product {
+  id              String          @id @default(cuid())
+  name            String
+  slug            String
+  description     String          @db.Text
+  
+  // Pricing
+  price           Float
+  compareAtPrice  Float?
+  currency        String          @default("USD")
+  
+  // External link
+  purchaseUrl     String
+  
+  // Product Details
+  category        ProductCategory
+  subcategory     String?
+  brand           String?
+  
+  // Style & Filtering
+  styleTags       String[]
+  colors          String[]
+  sizes           String[]
+  gender          String?
+  season          String[]
+  
+  // Images
+  imageUrl        String
+  images          ProductImage[]
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Status
+  status          ProductStatus   @default(DRAFT)
+  isFeatured      Boolean         @default(false)
+  stock           Int?
+  
+  // Metadata
+  viewCount       Int             @default(0)
+  tryOnCount      Int             @default(0)
+  clickCount      Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  shopId          String
+  shop            Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  outfits         Outfit[]        @relation("OutfitProducts")
+  tryOnHistory    TryOnHistory[]
+  productViews    ProductView[]
+  reviews         Review[]
+  
+  @@unique([shopId, slug])
+  @@index([status])
+  @@index([category])
+  @@index([shopId])
+  @@index([isFeatured])
+  @@fulltext([name, description])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  altText   String?
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@index([productId])
+}
+
+model ProductView {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Tracking
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  
+  viewedAt  DateTime @default(now())
+  
+  @@index([productId])
+  @@index([userId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?  @db.Text
+  
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  isVerified Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([productId])
+  @@index([userId])
+}
+
+// =============================================================================
+// VIRTUAL TRY-ON
+// =============================================================================
+
+model TryOnHistory {
+  id              String       @id @default(cuid())
+  
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productId       String
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Input images
+  modelImageUrl   String
+  garmentImageUrl String
+  
+  // Output
+  resultUrl       String?
+  status          TryOnStatus  @default(PROCESSING)
+  errorMessage    String?
+  
+  // Costing
+  tokenCost       Int          @default(1)
+  
+  // Cache key
+  cacheKey        String       @unique
+  
+  // Metadata
+  processingTime  Int?
+  apiProvider     String       @default("fashn.ai")
+  createdAt       DateTime     @default(now())
+  
+  @@index([userId])
+  @@index([productId])
+  @@index([cacheKey])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// OUTFIT RECOMMENDATIONS
+// =============================================================================
+
+model Outfit {
+  id          String        @id @default(cuid())
+  
+  // Recommendation context
+  style       String
+  occasion    String?
+  season      String?
+  
+  // AI Response
+  aiResponse  Json?
+  
+  // Matched products
+  products    Product[]     @relation("OutfitProducts")
+  
+  // User saves
+  savedBy     SavedOutfit[]
+  
+  // Metadata
+  viewCount   Int           @default(0)
+  saveCount   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@index([style])
+  @@index([createdAt])
+}
+
+model SavedOutfit {
+  id        String   @id @default(cuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  outfitId  String
+  outfit    Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  
+  notes     String?
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, outfitId])
+  @@index([userId])
+}
+
+// =============================================================================
+// MONETIZATION
+// =============================================================================
+
+model TokenPurchase {
+  id                String               @id @default(cuid())
+  
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stripe data
+  stripePaymentId   String               @unique
+  stripeSessionId   String?
+  
+  // Purchase details
+  amount            Float
+  tokensGranted     Int
+  status            TokenPurchaseStatus  @default(PENDING)
+  
+  // Package info
+  packageName       String
+  
+  // Metadata
+  createdAt         DateTime             @default(now())
+  completedAt       DateTime?
+  
+  @@index([userId])
+  @@index([status])
+}
+
+model TokenPackage {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  tokens      Int
+  price       Float
+  discount    Int      @default(0)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([isActive])
+}
+
+// =============================================================================
+// NOTIFICATIONS
+// =============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  message   String   @db.Text
+  type      String
+  link      String?
+  
+  isRead    Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId, isRead])
+}
+
+// =============================================================================
+
+DATABASE RELATIONSHIPS DIAGRAM:
+
+User (1) ──────── (1) Shop
+ │
+ ├── (1:N) TokenPurchase
+ ├── (1:N) TryOnHistory ──── (N:1) Product
+ ├── (1:N) SavedOutfit ──── (N:1) Outfit ──── (N:M) Product
+ ├── (1:N) ProductView ──── (N:1) Product
+ └── (1:N) Review ──── (N:1) Product
+
+Shop (1) ──────── (N) Product
+ └── (1:N) ShopAnalytics
+
+Product (1) ──────── (N) ProductImage
+ ├── (N:M) Outfit
+ ├── (1:N) TryOnHistory
+ ├── (1:N) ProductView
+ └── (1:N) Review
+
+=================================================================================
+5. AUTHENTICATION & AUTHORIZATION
+=================================================================================
+
+NEXTAUTH CONFIGURATION:
+
+// src/lib/auth.ts
+import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import { compare } from "bcryptjs";
+import { prisma } from "./prisma";
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+    signOut: "/",
+    error: "/login",
+  },
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user || !user.hashedPassword) {
+          throw new Error("Invalid credentials");
+        }
+
+        const isPasswordValid = await compare(
+          credentials.password,
+          user.hashedPassword
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.role = user.role;
+        token.id = user.id;
+      }
+      
+      if (trigger === "update" && session) {
+        token = { ...token, ...session };
+      }
+      
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role as string;
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
+  events: {
+    async signIn({ user, isNewUser }) {
+      if (isNewUser) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { 
+            tokenBalance: 5,
+            lastLoginAt: new Date(),
+          },
+        });
+      } else {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+      }
+    },
+  },
+};
+
+MIDDLEWARE PROTECTION:
+
+// src/middleware.ts
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
+
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
+
+    // Admin routes
+    if (path.startsWith("/admin") && token?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // Seller dashboard routes
+    if (path.startsWith("/dashboard") && token?.role !== "SELLER") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // Protected shopper routes
+    if (
+      (path.startsWith("/try-on") || 
+       path.startsWith("/profile") || 
+       path.startsWith("/recommend")) &&
+      !token
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+  }
+);
+
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/try-on/:path*",
+    "/profile/:path*",
+    "/recommend/:path*",
+  ],
+};
+
+ROLE-BASED ACCESS CONTROL:
+
+// src/lib/authorization.ts
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth";
+import { prisma } from "./prisma";
+
+export async function requireAuth() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+  return session;
+}
+
+export async function requireRole(allowedRoles: string[]) {
+  const session = await requireAuth();
+  if (!allowedRoles.includes(session.user.role)) {
+    throw new Error("Forbidden: Insufficient permissions");
+  }
+  return session;
+}
+
+export async function requireSeller() {
+  const session = await requireRole(["SELLER"]);
+  
+  const shop = await prisma.shop.findUnique({
+    where: { ownerId: session.user.id },
+  });
+
+  if (!shop || shop.status !== "APPROVED") {
+    throw new Error("Shop not found or not approved");
+  }
+
+  return { session, shop };
+}
+
+export async function requireAdmin() {
+  return requireRole(["ADMIN"]);
+}
+
+export async function canAccessProduct(productId: string, userId: string) {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { shop: true },
+  });
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status === "PUBLISHED") {
+    return true;
+  }
+
+  if (product.shop.ownerId === userId) {
+    return true;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  return user?.role === "ADMIN";
+}
+
+=================================================================================
+6. CORE FEATURES IMPLEMENTATION
+=================================================================================
+
+6.1 VIRTUAL TRY-ON SYSTEM
+-------------------------
+
+TRY-ON API ENDPOINT:
+
+// src/app/api/try-on/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/authorization";
+import { prisma } from "@/lib/prisma";
+import { fashnApi } from "@/lib/fashn-api";
+import { redis } from "@/lib/redis";
+import { z } from "zod";
+
+const tryOnSchema = z.object({
+  productId: z.string().cuid(),
+  modelImageUrl: z.string().url().optional(),
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+    const userId = session.user.id;
+
+    const body = await req.json();
+    const { productId, modelImageUrl } = tryOnSchema.parse(body);
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { 
+        tokenBalance: true, 
+        modelImageUrl: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    const finalModelImageUrl = modelImageUrl || user.modelImageUrl;
+    
+    if (!finalModelImageUrl) {
+      return NextResponse.json(
+        { error: "Please upload a model image first" },
+        { status: 400 }
+      );
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { 
+        id: true,
+        imageUrl: true,
+        status: true,
+      },
+    });
+
+    if (!product || product.status !== "PUBLISHED") {
+      return NextResponse.json(
+        { error: "Product not found or not available" },
+        { status: 404 }
+      );
+    }
+
+    const cacheKey = `tryon:${userId}:${productId}`;
+
+    const cachedResult = await redis.get(cacheKey);
+    if (cachedResult) {
+      console.log("Returning cached try-on result");
+      return NextResponse.json({
+        success: true,
+        data: JSON.parse(cachedResult as string),
+        cached: true,
+      });
+    }
+
+    if (user.tokenBalance < 1) {
+      return NextResponse.json(
+        { 
+          error: "Insufficient tokens",
+          tokenBalance: user.tokenBalance,
+          requiredTokens: 1,
+        },
+        { status: 402 }
+      );
+    }
+
+    const [updatedUser, tryOnRecord] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { tokenBalance: { decrement: 1 } },
+      }),
+      prisma.tryOnHistory.create({
+        data: {
+          userId,
+          productId,
+          modelImageUrl: finalModelImageUrl,
+          garmentImageUrl: product.imageUrl,
+          cacheKey,
+          status: "PROCESSING",
+          tokenCost: 1,
+        },
+      }),
+    ]);
+
+    const startTime = Date.now();
+    try {
+      const result = await fashnApi.virtualTryOn({
+        modelImage: finalModelImageUrl,
+        garmentImage: product.imageUrl,
+      });
+
+      const processingTime = Date.now() - startTime;
+
+      const completedTryOn = await prisma.tryOnHistory.update({
+        where: { id: tryOnRecord.id },
+        data: {
+          status: "COMPLETED",
+          resultUrl: result.imageUrl,
+          processingTime,
+        },
+      });
+
+      await prisma.product.update({
+        where: { id: productId },
+        data: { tryOnCount: { increment: 1 } },
+      });
+
+      await redis.setex(
+        cacheKey,
+        3600,
+        JSON.stringify({
+          resultUrl: result.imageUrl,
+          productId,
+          createdAt: new Date().toISOString(),
+        })
+      );
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          resultUrl: result.imageUrl,
+          tokenBalance: updatedUser.tokenBalance,
+          tryOnId: completedTryOn.id,
+        },
+        cached: false,
+      });
+
+    } catch (apiError: any) {
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: userId },
+          data: { tokenBalance: { increment: 1 } },
+        }),
+        prisma.tryOnHistory.update({
+          where: { id: tryOnRecord.id },
+          data: {
+            status: "FAILED",
+            errorMessage: apiError.message,
+          },
+        }),
+      ]);
+
+      return NextResponse.json(
+        { 
+          error: "Try-on failed",
+          details: apiError.message,
+          tokenRefunded: true,
+        },
+        { status: 500 }
+      );
+    }
+
+  } catch (error: any) {
+    console.error("Try-on error:", error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+    const { searchParams } = new URL(req.url);
+    
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const offset = parseInt(searchParams.get("offset") || "0");
+
+    const history = await prisma.tryOnHistory.findMany({
+      where: { 
+        userId: session.user.id,
+        status: "COMPLETED",
+      },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+            purchaseUrl: true,
+            price: true,
+            shop: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    });
+
+    const total = await prisma.tryOnHistory.count({
+      where: { 
+        userId: session.user.id,
+        status: "COMPLETED",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: history,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+    });
+
+  } catch (error) {
+    console.error("Get history error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch history" },
+      { status: 500 }
+    );
+  }
+}
+
+FASHN.AI INTEGRATION:
+
+// src/lib/fashn-api.ts
+import axios from "axios";
+
+interface FashnTryOnRequest {
+  modelImage: string;
+  garmentImage: string;
+  category?: "tops" | "bottoms" | "full-body";
+}
+
+interface FashnTryOnResponse {
+  imageUrl: string;
+  jobId: string;
+  status: "completed" | "processing" | "failed";
+  processingTime?: number;
+}
+
+class FashnAPI {
+  private apiKey: string;
+  private baseUrl: string;
+
+  constructor() {
+    this.apiKey = process.env.FASHN_AI_API_KEY!;
+    this.baseUrl = process.env.FASHN_AI_BASE_URL || "https://api.fashn.ai/v1";
+    
+    if (!this.apiKey) {
+      throw new Error("FASHN_AI_API_KEY is not configured");
+    }
+  }
+
+  async virtualTryOn(params: FashnTryOnRequest): Promise<FashnTryOnResponse> {
+    try {
+      const response = await axios.post(
+        `${this.baseUrl}/virtual-tryon`,
+        {
+          model_image: params.modelImage,
+          garment_image: params.garmentImage,
+          category: params.category || "tops",
+          auto_crop: true,
+          auto_mask: true,
+          resolution: "high",
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 60000,
+        }
+      );
+
+      if (response.data.status === "processing") {
+        return await this.pollJobStatus(response.data.job_id);
+      }
+
+      return {
+        imageUrl: response.data.result_url || response.data.output_url,
+        jobId: response.data.job_id,
+        status: "completed",
+        processingTime: response.data.processing_time,
+      };
+
+    } catch (error: any) {
+      console.error("Fashn.ai API error:", error.response?.data || error.message);
+      
+      throw new Error(
+        error.response?.data?.message || 
+        "Virtual try-on service temporarily unavailable"
+      );
+    }
+  }
+
+  private async pollJobStatus(jobId: string, maxAttempts = 30): Promise<FashnTryOnResponse> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      try {
+        const response = await axios.get(
+          `${this.baseUrl}/jobs/${jobId}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${this.apiKey}`,
+            },
+          }
+        );
+
+        if (response.data.status === "completed") {
+          return {
+            imageUrl: response.data.result_url,
+            jobId,
+            status: "completed",
+            processingTime: response.data.processing_time,
+          };
+        }
+
+        if (response.data.status === "failed") {
+          throw new Error(response.data.error || "Processing failed");
+        }
+
+      } catch (error: any) {
+        if (attempt === maxAttempts - 1) {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error("Processing timeout");
+  }
+
+  async checkHealth(): Promise<boolean> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/health`, {
+        headers: { "Authorization": `Bearer ${this.apiKey}` },
+      });
+      return response.status === 200;
+    } catch {
+      return false;
+    }
+  }
+}
+
+export const fashnApi = new FashnAPI();
+
+6.2 OUTFIT RECOMMENDATION SYSTEM
+---------------------------------
+
+RECOMMENDATION API ENDPOINT:
+
+// src/app/api/recommend/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/authorization";
+import { prisma } from "@/lib/prisma";
+import { stylingApi } from "@/lib/styling-api";
+import { z } from "zod";
+
+const recommendSchema = z.object({
+  prompt: z.string().min(3).max(200),
+  occasion: z.string().optional(),
+  season: z.string().optional(),
+  preferredColors: z.array(z.string()).optional(),
+  priceRange: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+  }).optional(),
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+    const body = await req.json();
+    const validation = recommendSchema.parse(body);
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        preferredStyle: true,
+        sizePreferences: true,
+      },
+    });
+
+    const aiRecommendation = await stylingApi.getOutfitRecommendation({
+      prompt: validation.prompt,
+      occasion: validation.occasion,
+      season: validation.season,
+      userPreferences: {
+        styles: user?.preferredStyle || [],
+        sizes: user?.sizePreferences as any,
+      },
+    });
+
+    const matchedProducts = await matchProductsToRecommendation(
+      aiRecommendation.items,
+      validation.priceRange
+    );
+
+    const outfit = await prisma.outfit.create({
+      data: {
+        style: validation.prompt,
+        occasion: validation.occasion,
+        season: validation.season,
+        aiResponse: aiRecommendation,
+        products: {
+          connect: matchedProducts.map(p => ({ id: p.id })),
+        },
+      },
+      include: {
+        products: {
+          include: {
+            shop: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+            images: {
+              take: 1,
+              orderBy: { order: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        outfit,
+        aiSuggestions: aiRecommendation,
+        matchQuality: calculateMatchQuality(aiRecommendation.items, matchedProducts),
+      },
+    });
+
+  } catch (error: any) {
+    console.error("Recommendation error:", error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to generate recommendation" },
+      { status: 500 }
+    );
+  }
+}
+
+async function matchProductsToRecommendation(
+  items: any[],
+  priceRange?: { min?: number; max?: number }
+) {
+  const matchedProducts = [];
+
+  for (const item of items) {
+    const searchConditions: any = {
+      status: "PUBLISHED",
+      category: item.type.toUpperCase(),
+    };
+
+    if (priceRange) {
+      searchConditions.price = {};
+      if (priceRange.min) searchConditions.price.gte = priceRange.min;
+      if (priceRange.max) searchConditions.price.lte = priceRange.max;
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        ...searchConditions,
+        OR: [
+          {
+            styleTags: {
+              hasSome: [item.style, ...item.keywords],
+            },
+          },
+          {
+            colors: {
+              has: item.color,
+            },
+          },
+          {
+            name: {
+              contains: item.style,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      take: 3,
+      orderBy: [
+        { isFeatured: "desc" },
+        { viewCount: "desc" },
+      ],
+    });
+
+    if (products.length > 0) {
+      matchedProducts.push(products[0]);
+    }
+  }
+
+  return matchedProducts;
+}
+
+function calculateMatchQuality(aiItems: any[], matchedProducts: any[]): number {
+  if (aiItems.length === 0) return 0;
+  
+  const matchPercentage = (matchedProducts.length / aiItems.length) * 100;
+  return Math.round(matchPercentage);
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+    const { searchParams } = new URL(req.url);
+    
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const offset = parseInt(searchParams.get("offset") || "0");
+
+    const savedOutfits = await prisma.savedOutfit.findMany({
+      where: { userId: session.user.id },
+      include: {
+        outfit: {
+          include: {
+            products: {
+              include: {
+                shop: true,
+                images: { take: 1 },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: savedOutfits,
+    });
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch saved outfits" },
+      { status: 500 }
+    );
+  }
+}
+
+STYLING.AI INTEGRATION:
+
+// src/lib/styling-api.ts
+import axios from "axios";
+
+interface StylingRecommendationRequest {
+  prompt: string;
+  occasion?: string;
+  season?: string;
+  userPreferences?: {
+    styles: string[];
+    sizes: any;
+  };
+}
+
+interface StylingRecommendationResponse {
+  items: Array<{
+    type: string;
+    style: string;
+    color: string;
+    keywords: string[];
+    description?: string;
+  }>;
+  styleAnalysis?: string;
+  confidence: number;
+}
+
+class StylingAPI {
+  private apiKey: string;
+  private baseUrl: string;
+
+  constructor() {
+    this.apiKey = process.env.STYLING_AI_API_KEY!;
+    this.baseUrl = process.env.STYLING_AI_BASE_URL || "https://api.styling.ai/v1";
+    
+    if (!this.apiKey) {
+      throw new Error("STYLING_AI_API_KEY is not configured");
+    }
+  }
+
+  async getOutfitRecommendation(
+    params: StylingRecommendationRequest
+  ): Promise<StylingRecommendationResponse> {
+    try {
+      const response = await axios.post(
+        `${this.baseUrl}/recommend`,
+        {
+          prompt: params.prompt,
+          occasion: params.occasion,
+          season: params.season,
+          user_preferences: params.userPreferences,
+          output_format: "structured",
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 30000,
+        }
+      );
+
+      return this.parseRecommendationResponse(response.data);
+
+    } catch (error: any) {
+      console.error("Styling.ai API error:", error.response?.data || error.message);
+      
+      return this.fallbackRecommendation(params);
+    }
+  }
+
+  private parseRecommendationResponse(data: any): StylingRecommendationResponse {
+    return {
+      items: data.outfit_items || data.items || [],
+      styleAnalysis: data.analysis,
+      confidence: data.confidence || 0.8,
+    };
+  }
+
+  private fallbackRecommendation(
+    params: StylingRecommendationRequest
+  ): StylingRecommendationResponse {
+    const prompt = params.prompt.toLowerCase();
+    
+    const items: any[] = [];
+
+    if (prompt.includes("casual") || prompt.includes("everyday")) {
+      items.push(
+        { type: "top", style: "t-shirt", color: "neutral", keywords: ["casual", "cotton"] },
+        { type: "bottom", style: "jeans", color: "blue", keywords: ["casual", "denim"] },
+        { type: "shoes", style: "sneakers", color: "white", keywords: ["casual", "comfortable"] }
+      );
+    } else if (prompt.includes("formal") || prompt.includes("office") || prompt.includes("business")) {
+      items.push(
+        { type: "top", style: "dress shirt", color: "white", keywords: ["formal", "business"] },
+        { type: "bottom", style: "trousers", color: "black", keywords: ["formal", "tailored"] },
+        { type: "shoes", style: "dress shoes", color: "black", keywords: ["formal", "leather"] }
+      );
+    } else if (prompt.includes("party") || prompt.includes("night out")) {
+      items.push(
+        { type: "top", style: "blouse", color: "black", keywords: ["party", "elegant"] },
+        { type: "bottom", style: "skirt", color: "black", keywords: ["party", "stylish"] },
+        { type: "shoes", style: "heels", color: "black", keywords: ["party", "elegant"] }
+      );
+    } else {
+      items.push(
+        { type: "top", style: "shirt", color: "neutral", keywords: ["versatile"] },
+        { type: "bottom", style: "pants", color: "neutral", keywords: ["versatile"] },
+        { type: "shoes", style: "sneakers", color: "white", keywords: ["comfortable"] }
+      );
+    }
+
+    return {
+      items,
+      styleAnalysis: "Basic recommendation based on keywords",
+      confidence: 0.6,
+    };
+  }
+}
+
+export const stylingApi = new StylingAPI();
+
+6.3 TOKEN & PAYMENT SYSTEM
+---------------------------
+
+TOKEN PURCHASE API:
+
+// src/app/api/tokens/purchase/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/authorization";
+import { stripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const purchaseSchema = z.object({
+  packageId: z.string().cuid(),
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+    const body = await req.json();
+    const { packageId } = purchaseSchema.parse(body);
+
+    const package_ = await prisma.tokenPackage.findUnique({
+      where: { id: packageId, isActive: true },
+    });
+
+    if (!package_) {
+      return NextResponse.json(
+        { error: "Package not found" },
+        { status: 404 }
+      );
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: package_.name,
+              description: `${package_.tokens} tokens`,
+            },
+            unit_amount: Math.round(package_.price * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tokens/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tokens`,
+      client_reference_id: session.user.id,
+      metadata: {
+        userId: session.user.id,
+        packageId: package_.id,
+        tokens: package_.tokens.toString(),
+        packageName: package_.name,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        sessionId: checkoutSession.id,
+        url: checkoutSession.url,
+      },
+    });
+
+  } catch (error: any) {
+    console.error("Token purchase error:", error);
+    return NextResponse.json(
+      { error: "Failed to create checkout session" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const packages = await prisma.tokenPackage.findMany({
+      where: { isActive: true },
+      orderBy: [
+        { isFeatured: "desc" },
+        { price: "asc" },
+      ],
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: packages,
+    });
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch packages" },
+      { status: 500 }
+    );
+  }
+}
+
+STRIPE WEBHOOK HANDLER:
+
+// src/app/api/payment/webhook/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
+import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const signature = headers().get("stripe-signature");
+
+  if (!signature) {
+    return NextResponse.json(
+      { error: "Missing signature" },
+      { status: 400 }
+    );
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (error: any) {
+    console.error("Webhook signature verification failed:", error.message);
+    return NextResponse.json(
+      { error: "Invalid signature" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    return NextResponse.json({ received: true });
+
+  } catch (error: any) {
+    console.error("Webhook handler error:", error);
+    return NextResponse.json(
+      { error: "Webhook handler failed" },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId;
+  const packageId = session.metadata?.packageId;
+  const tokens = parseInt(session.metadata?.tokens || "0");
+  const packageName = session.metadata?.packageName || "Unknown Package";
+
+  if (!userId || !tokens) {
+    console.error("Missing metadata in checkout session:", session.id);
+    return;
+  }
+
+  const existingPurchase = await prisma.tokenPurchase.findUnique({
+    where: { stripePaymentId: session.payment_intent as string },
+  });
+
+  if (existingPurchase) {
+    console.log("Payment already processed:", session.payment_intent);
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.tokenPurchase.create({
+      data: {
+        userId,
+        stripePaymentId: session.payment_intent as string,
+        stripeSessionId: session.id,
+        amount: (session.amount_total || 0) / 100,
+        tokensGranted: tokens,
+        packageName,
+        status: "COMPLETED",
+        completedAt: new Date(),
+      },
+    });
+
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        tokenBalance: {
+          increment: tokens,
+        },
+      },
+    });
+
+    await tx.notification.create({
+      data: {
+        userId,
+        title: "Tokens Added!",
+        message: `${tokens} tokens have been added to your account.`,
+        type: "token_purchase",
+        link: "/tokens",
+      },
+    });
+  });
+
+  console.log(`Successfully processed payment for user ${userId}: ${tokens} tokens`);
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const purchase = await prisma.tokenPurchase.findUnique({
+    where: { stripePaymentId: charge.payment_intent as string },
+  });
+
+  if (!purchase || purchase.status === "REFUNDED") {
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.tokenPurchase.update({
+      where: { id: purchase.id },
+      data: { status: "REFUNDED" },
+    });
+
+    const user = await tx.user.findUnique({
+      where: { id: purchase.userId },
+      select: { tokenBalance: true },
+    });
+
+    if (user && user.tokenBalance >= purchase.tokensGranted) {
+      await tx.user.update({
+        where: { id: purchase.userId },
+        data: {
+          tokenBalance: {
+            decrement: purchase.tokensGranted,
+          },
+        },
+      });
+    }
+
+    await tx.notification.create({
+      data: {
+        userId: purchase.userId,
+        title: "Payment Refunded",
+        message: `Your payment has been refunded. ${purchase.tokensGranted} tokens have been removed.`,
+        type: "token_refund",
+      },
+    });
+  });
+
+  console.log(`Refund processed for purchase ${purchase.id}`);
+}
+
+TOKEN BALANCE API:
+
+// src/app/api/tokens/balance/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/authorization";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await requireAuth();
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        tokenBalance: true,
+        tokenPurchases: {
+          where: { status: "COMPLETED" },
+          select: {
+            tokensGranted: true,
+            amount: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    const totalPurchased = user.tokenPurchases.reduce(
+      (sum, p) => sum + p.tokensGranted,
+      0
+    );
+    const totalUsed = totalPurchased - user.tokenBalance;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        balance: user.tokenBalance,
+        totalPurchased,
+        totalUsed,
+        recentPurchases: user.tokenPurchases,
+      },
+    });
+
+  } catch (error) {
+    console.error("Get balance error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch balance" },
+      { status: 500 }
+    );
+  }
+}
+
+=================================================================================
+7. API ENDPOINTS DOCUMENTATION
+=================================================================================
+
+AUTHENTICATION
+--------------
+POST   /api/auth/register          Register new user
+POST   /api/auth/login             Login with credentials
+POST   /api/auth/logout            Logout
+GET    /api/auth/session           Get current session
+
+USERS
+-----
+GET    /api/users/me               Get current user profile
+PATCH  /api/users/me               Update profile
+POST   /api/users/upload-model     Upload model image for try-on
+DELETE /api/users/me               Delete account
+
+PRODUCTS
+--------
+GET    /api/products               List products (with filters)
+POST   /api/products               Create product (seller only)
+GET    /api/products/[id]          Get product details
+PATCH  /api/products/[id]          Update product (seller only)
+DELETE /api/products/[id]          Delete product (seller only)
+GET    /api/products/featured      Get featured products
+GET    /api/products/search        Advanced search
+
+SHOPS
+-----
+GET    /api/shops                  List all shops
+GET    /api/shops/[slug]           Get shop by slug
+POST   /api/shops                  Create shop (apply to become seller)
+PATCH  /api/shops/[id]             Update shop (seller only)
+GET    /api/shops/[slug]/products  Get products from specific shop
+
+VIRTUAL TRY-ON
+--------------
+POST   /api/try-on                 Generate try-on (costs 1 token)
+GET    /api/try-on/history         Get try-on history
+DELETE /api/try-on/[id]            Delete try-on from history
+
+OUTFIT RECOMMENDATIONS
+----------------------
+POST   /api/recommend              Get AI outfit recommendation
+GET    /api/recommend/saved        Get saved outfits
+POST   /api/recommend/save         Save an outfit
+DELETE /api/recommend/saved/[id]   Remove saved outfit
+
+TOKENS & PAYMENTS
+-----------------
+GET    /api/tokens/balance         Get token balance
+GET    /api/tokens/packages        Get available token packages
+POST   /api/tokens/purchase        Purchase tokens (creates Stripe session)
+POST   /api/payment/webhook        Stripe webhook handler
+
+ANALYTICS (Seller)
+------------------
+GET    /api/analytics/seller       Get seller dashboard analytics
+GET    /api/analytics/products     Product-specific analytics
+
+ADMIN
+-----
+GET    /api/admin/sellers/pending  Get pending seller applications
+PATCH  /api/admin/sellers/[id]/approve   Approve seller
+PATCH  /api/admin/sellers/[id]/reject    Reject seller
+GET    /api/admin/users            List all users
+GET    /api/admin/analytics        Platform-wide analytics
+
+REVIEWS
+-------
+POST   /api/products/[id]/reviews  Add review
+GET    /api/products/[id]/reviews  Get product reviews
+PATCH  /api/reviews/[id]           Update own review
+DELETE /api/reviews/[id]           Delete own review
+
+NOTIFICATIONS
+-------------
+GET    /api/notifications          Get user notifications
+PATCH  /api/notifications/[id]/read Mark as read
+PATCH  /api/notifications/read-all  Mark all as read
+
+=================================================================================
+8. SECURITY & PERFORMANCE
+=================================================================================
+
+ENVIRONMENT VARIABLES:
+
+# .env.example
+
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/aistylehub"
+
+# NextAuth
+NEXTAUTH_SECRET="your-nextauth-secret-here"
+NEXTAUTH_URL="http

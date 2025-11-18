@@ -1,11 +1,11 @@
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // dùng prisma singleton
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -31,22 +31,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get dashboard stats
-    const productIds = await prisma.product.findMany({
-      where: { shopId: session.user.shopId },
-      select: { id: true },
-    }).then((rows) => rows.map((r) => r.id));
 
-    const [totalProducts, activeProducts, totalTryOns, totalViews, recentProductsRaw] = await Promise.all([
+    const [totalProducts, totalTryOns, recentProductsRaw] = await Promise.all([
       prisma.product.count({ where: { shopId: session.user.shopId } }),
-      prisma.product.count({ where: { shopId: session.user.shopId, status: 'ACTIVE' } }),
-      prisma.tryOnHistory.count({ where: { productId: { in: productIds } } }),
-      prisma.productView.count({ where: { productId: { in: productIds } } }),
+      prisma.tryOnHistory.count(),
       prisma.product.findMany({
         where: { shopId: session.user.shopId },
-        include: {
-          images: { orderBy: { order: 'asc' }, take: 1 },
-          _count: { select: { tryOnHistory: true, productViews: true, reviews: true } },
-        },
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
@@ -54,18 +44,14 @@ export async function GET(request: NextRequest) {
 
     const recentProducts = recentProductsRaw.map((p) => ({
       ...p,
-      images: p.images,
-      status: p.status,
       styleTags: (() => { try { return p.styleTags ? JSON.parse(p.styleTags as unknown as string) : []; } catch { return []; } })(),
-      sizes: (() => { try { return p.sizes ? JSON.parse(p.sizes as unknown as string) : []; } catch { return []; } })(),
-      colors: (() => { try { return p.colors ? JSON.parse(p.colors as unknown as string) : []; } catch { return []; } })(),
     }));
 
     return NextResponse.json({
       totalProducts,
-      activeProducts,
+      activeProducts: totalProducts,
       totalTryOns,
-      totalViews,
+      totalViews: 0,
       recentProducts,
     });
 

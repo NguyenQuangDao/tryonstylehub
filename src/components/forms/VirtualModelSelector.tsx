@@ -108,35 +108,31 @@ export default function VirtualModelSelector({
               </p>
             </div>
           </div>
-          <button
+          <Button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon"
+            aria-label="Đóng trình chọn người mẫu ảo"
+            className="rounded-lg"
           >
-            <X className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          </button>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-6">
           {/* Create New Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onCreateNew}
-            className="w-full flex items-center justify-center gap-3 p-6 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-xl hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group mb-6"
-          >
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/50 rounded-full group-hover:bg-purple-200 dark:group-hover:bg-purple-900 transition-colors">
-              <Plus className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Tạo người mẫu ảo mới
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Tùy chỉnh người mẫu ảo theo cơ thể của bạn
-              </p>
-            </div>
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.01 }} className="mb-6">
+            <Button
+              onClick={onCreateNew}
+              variant="outline"
+              className="w-full justify-start gap-3 border-dashed"
+              aria-label="Tạo người mẫu ảo mới"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="text-sm">Tạo người mẫu ảo mới</span>
+            </Button>
+          </motion.div>
 
           {/* Loading State */}
           {isLoading && (
@@ -269,25 +265,29 @@ export default function VirtualModelSelector({
 
                   {/* Actions */}
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         onEdit(model);
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                      variant="secondary"
+                      className="flex-1 gap-2"
+                      aria-label="Chỉnh sửa người mẫu ảo"
                     >
                       <Edit2 className="w-4 h-4" />
                       <span className="text-sm font-medium">Chỉnh sửa</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteConfirm(model.id);
                       }}
-                      className="px-3 py-2 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors"
+                      variant="destructive"
+                      size="icon"
+                      aria-label="Xóa người mẫu ảo"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
 
                   {/* Delete Confirmation */}
@@ -307,15 +307,15 @@ export default function VirtualModelSelector({
                           <div className="flex gap-2">
                             <Button
                               onClick={() => setDeleteConfirm(null)}
-                              variant="secondary"
+                              variant="outline"
                               className="flex-1"
                             >
                               Hủy
                             </Button>
                             <Button
                               onClick={() => handleDelete(model.id)}
-                              variant="default"
-                              className="flex-1 bg-red-500 hover:bg-red-600"
+                              variant="destructive"
+                              className="flex-1"
                             >
                               Xóa
                             </Button>

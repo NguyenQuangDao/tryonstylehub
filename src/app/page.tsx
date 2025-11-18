@@ -2,12 +2,11 @@
 
 import { VirtualModelForm, VirtualModelSelector } from '@/components/forms';
 import OptimizedHomePage from '@/components/home/OptimizedHomePage';
-import { useApiKey, useImageUpload, useVirtualModels } from '@/hooks';
+import { useImageUpload, useVirtualModels } from '@/hooks';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { FormEvent, useState } from 'react';
 
 export default function HomePage() {
-  const { apiKey } = useApiKey();
   const { createVirtualModel, updateVirtualModel } = useVirtualModels();
   const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const personImageUpload = useImageUpload();
@@ -42,7 +41,6 @@ export default function HomePage() {
     try {
       const formData = new FormData();
       formData.append('category', selectedCategory);
-      formData.append('apiKey', apiKey || '');
       
       if (selectedVirtualModel) {
         formData.append('virtualModelId', selectedVirtualModel.id.toString());
@@ -90,7 +88,6 @@ export default function HomePage() {
   return (
     <>
       <OptimizedHomePage
-        apiKey={apiKey}
         selectedVirtualModel={selectedVirtualModel}
         setIsVirtualModelSelectorOpen={setIsVirtualModelSelectorOpen}
         personImageUpload={personImageUpload}
