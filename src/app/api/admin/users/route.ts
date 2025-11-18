@@ -1,10 +1,10 @@
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // GET: Fetch all users
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -16,23 +16,6 @@ export async function GET(request: NextRequest) {
     }
 
     const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        tokenBalance: true,
-        createdAt: true,
-        updatedAt: true,
-        shop: {
-          select: {
-            id: true,
-            name: true,
-            isActive: true,
-          },
-        },
-      },
       orderBy: {
         createdAt: 'desc',
       },

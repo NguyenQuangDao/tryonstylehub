@@ -9,16 +9,17 @@ const updateUserSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: unknown) {
   try {
+    const { params } = context as { params: { id: string } };
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = params.id;
+    const userId = parseInt(params.id);
 
-    if (userId === session.user.id) {
+    if (String(userId) === session.user.id) {
       return NextResponse.json({ error: 'Cannot update your own account' }, { status: 403 });
     }
 
@@ -30,16 +31,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       data: {
         ...(data.role !== undefined ? { role: data.role } : {}),
         ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        tokenBalance: true,
-        createdAt: true,
-        updatedAt: true,
       },
     });
 

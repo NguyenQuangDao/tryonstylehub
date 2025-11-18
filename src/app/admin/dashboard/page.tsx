@@ -1,7 +1,9 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,27 +33,20 @@ interface RecentApplication {
 }
 
 export default function AdminDashboardPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentApplications, setRecentApplications] = useState<RecentApplication[]>([]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login?callbackUrl=/admin/dashboard');
       return;
     }
-
-    if (status === 'authenticated' && session.user.role !== 'ADMIN') {
-      router.push('/');
-      return;
-    }
-
-    if (status === 'authenticated' && session.user.role === 'ADMIN') {
-      fetchDashboardData();
-    }
-  }, [status, session, router]);
+    fetchDashboardData();
+  }, [loading, user, router]);
 
   const fetchDashboardData = async () => {
     try {
@@ -73,7 +68,7 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -90,7 +85,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />

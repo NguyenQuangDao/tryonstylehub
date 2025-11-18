@@ -5,11 +5,11 @@ A modern, high-performance virtual try-on platform built with Next.js 15, React 
 ## 🚀 Features
 
 ### Core Features
-- **AI-Powered Virtual Try-On**: Advanced machine learning models for realistic clothing simulation
+- **AI-Powered Virtual Try-On**: Công nghệ FASHN cho mô phỏng trang phục chân thực
 - **Real-time Image Processing**: High-quality image resizing and optimization using Pica
-- **Multiple Model Support**: Try-on v1.5, v1.6 with comparison capabilities
+- **FASHN v1.6**: Hỗ trợ model try-on v1.6
 - **Virtual Model Management**: Create and manage custom virtual models with body measurements
-- **Responsive Design**: Optimized for all devices with modern UI/UX
+- **Responsive Design**: Optimized for all devices with modern UI/UX theo Material Design
 - **Dark Mode Support**: Complete dark/light theme system
 - **Accessibility**: WCAG 2.1 compliant with keyboard navigation and screen reader support
 
@@ -54,7 +54,7 @@ src/
 ### Technology Stack
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4 with custom design system
+- **Styling**: Tailwind CSS + shadcn/ui, tuân thủ Material Design
 - **Animations**: Framer Motion
 - **State Management**: React hooks with custom state management
 - **Image Processing**: Pica for high-quality resizing
@@ -91,7 +91,7 @@ src/
    
    Configure the following variables:
    ```env
-   # API Configuration
+   # API Configuration (server-side only)
    FASHN_API_KEY=your_api_key_here
    
    # Database (if using Prisma)
@@ -129,9 +129,9 @@ src/
 - Manage multiple models for different body types
 
 #### Comparison Mode
-- Compare results from different AI models
-- Side-by-side comparison with interactive slider
-- Automated animation for demonstration
+- So sánh kết quả dễ dàng
+- Side-by-side comparison với lưới hoặc chế độ đối chiếu
+- Hiệu ứng chuyển động trực quan
 
 #### Performance Optimization
 - Automatic image optimization and resizing

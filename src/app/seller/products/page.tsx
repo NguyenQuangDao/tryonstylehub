@@ -1,11 +1,13 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { Loader2, Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -28,10 +30,10 @@ interface Product {
 }
 
 export default function SellerProductsPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -42,10 +44,13 @@ export default function SellerProductsPage() {
   ];
 
   useEffect(() => {
-    if (status === 'authenticated' && session.user.role === 'SELLER') {
-      fetchProducts();
+    if (loading) return;
+    if (!user) {
+      router.push('/auth/login?callbackUrl=/seller/products');
+      return;
     }
-  }, [status, session]);
+    fetchProducts();
+  }, [loading, user]);
 
   const fetchProducts = async () => {
     try {
@@ -60,7 +65,7 @@ export default function SellerProductsPage() {
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -116,17 +121,7 @@ export default function SellerProductsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  if (status === 'unauthenticated') {
-    router.push('/auth/login?callbackUrl=/seller/products');
-    return null;
-  }
-
-  if (status === 'authenticated' && session.user.role !== 'SELLER') {
-    router.push('/');
-    return null;
-  }
-
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="container mx-auto py-8 flex justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -242,7 +237,7 @@ export default function SellerProductsPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => toggleProductStatus(product.id, product.isActive)}
+                    onClick={() => toggleProductStatus(product.id, !!product.isActive)}
                     className="flex-1"
                   >
                     {product.isActive ? 'Ngừng' : 'Kích hoạt'}

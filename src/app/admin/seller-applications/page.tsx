@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, Eye, Loader2, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -30,30 +32,23 @@ interface Application {
 }
 
 export default function SellerApplicationsPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login?callbackUrl=/admin/seller-applications');
       return;
     }
-
-    if (status === 'authenticated' && session.user.role !== 'ADMIN') {
-      router.push('/');
-      return;
-    }
-
-    if (status === 'authenticated' && session.user.role === 'ADMIN') {
-      fetchApplications();
-    }
-  }, [status, session, router]);
+    fetchApplications();
+  }, [loading, user, router]);
 
   const fetchApplications = async () => {
     try {
@@ -69,7 +64,7 @@ export default function SellerApplicationsPage() {
       console.error('Error fetching applications:', error);
       alert('Có lỗi xảy ra khi tải danh sách đơn đăng ký');
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -158,7 +153,7 @@ export default function SellerApplicationsPage() {
       case 'PENDING':
         return <Badge variant="secondary">Đang chờ duyệt</Badge>;
       case 'APPROVED':
-        return <Badge variant="success">Đã duyệt</Badge>;
+        return <Badge variant="default">Đã duyệt</Badge>;
       case 'REJECTED':
         return <Badge variant="destructive">Đã từ chối</Badge>;
       default:
@@ -166,7 +161,7 @@ export default function SellerApplicationsPage() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (loading || pageLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />

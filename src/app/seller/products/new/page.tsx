@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Upload, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -27,9 +29,9 @@ const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 const COLORS = ['Đen', 'Trắng', 'Xám', 'Nâu', 'Be', 'Navy', 'Xanh dương', 'Xanh lá', 'Đỏ', 'Hồng', 'Tím', 'Vàng', 'Cam'];
 
 export default function NewProductPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -45,13 +47,8 @@ export default function NewProductPage() {
     isFeatured: false,
   });
 
-  if (status === 'unauthenticated') {
+  if (!loading && !user) {
     router.push('/auth/login?callbackUrl=/seller/products/new');
-    return null;
-  }
-
-  if (status === 'authenticated' && session.user.role !== 'SELLER') {
-    router.push('/');
     return null;
   }
 
@@ -97,7 +94,7 @@ export default function NewProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const response = await fetch('/api/seller/products', {
@@ -124,7 +121,7 @@ export default function NewProductPage() {
       console.error('Error creating product:', error);
       alert('Có lỗi xảy ra khi tạo sản phẩm');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -360,9 +357,9 @@ export default function NewProductPage() {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={loading || formData.images.length === 0 || formData.styleTags.length === 0}
+              disabled={submitting || formData.images.length === 0 || formData.styleTags.length === 0}
             >
-              {loading ? (
+              {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Đang tạo...

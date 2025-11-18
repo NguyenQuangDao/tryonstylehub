@@ -79,15 +79,13 @@ export async function POST(request: Request) {
     const garmentImage = formData.get('garmentImage') as File;
     const virtualModelId = formData.get('virtualModelId') as string;
     const category = formData.get('category') as string;
-    const apiKey = formData.get('apiKey') as string;
     
-    // Validate API key
-    const finalApiKey = FASHN_API_KEY || apiKey;
+    // Validate API key (server-side only)
+    const finalApiKey = FASHN_API_KEY;
     if (!finalApiKey) {
       return NextResponse.json({ 
-        error: "API key required. Please provide your FASHN API key.",
-        requiresApiKey: true 
-      }, { status: 401 });
+        error: "Missing FASHN_API_KEY on server. Please set environment variable.",
+      }, { status: 500 });
     }
     
     // Validate inputs

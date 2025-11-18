@@ -27,7 +27,7 @@ export default function AvatarUpload({
   const [uploadedImage, setUploadedImage] = useState<string | null>(existingImage);
   const [error, setError] = useState<string | null>(null);
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {
       return `Invalid file type. Only ${acceptedTypes.map(type => type.split('/')[1].toUpperCase()).join(', ')} files are allowed.`;
     }
@@ -37,9 +37,9 @@ export default function AvatarUpload({
     }
 
     return null;
-  };
+  }, [acceptedTypes, maxSize]);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = useCallback(async (file: File) => {
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
@@ -74,7 +74,7 @@ export default function AvatarUpload({
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [validateFile, onError, onImageUploaded]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -84,7 +84,7 @@ export default function AvatarUpload({
     if (files.length > 0) {
       uploadFile(files[0]);
     }
-  }, []);
+  }, [uploadFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

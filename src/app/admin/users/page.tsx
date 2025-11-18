@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, User, Mail, Calendar, Shield } from 'lucide-react';
+import { Loader2, Search, User, Shield } from 'lucide-react';
 
 interface User {
   id: string;
@@ -26,28 +26,21 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login?callbackUrl=/admin/users');
       return;
     }
-
-    if (status === 'authenticated' && session.user.role !== 'ADMIN') {
-      router.push('/');
-      return;
-    }
-
-    if (status === 'authenticated' && session.user.role === 'ADMIN') {
-      fetchUsers();
-    }
-  }, [status, session, router]);
+    fetchUsers();
+  }, [loading, user, router]);
 
   const fetchUsers = async () => {
     try {
@@ -62,7 +55,7 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -134,7 +127,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="container mx-auto py-8 flex justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -159,7 +152,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-0 shadow-md hover:shadow-lg transition-shadow rounded-3xl">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -195,7 +188,7 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card>
+      <Card className="border-0 shadow-md hover:shadow-lg transition-shadow rounded-3xl">
         <CardHeader>
           <CardTitle>Danh sách người dùng ({filteredUsers.length})</CardTitle>
         </CardHeader>
@@ -221,42 +214,42 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                  {filteredUsers.map((u) => (
+                    <tr key={u.id} className="border-b hover:bg-accent/10">
                       <td className="p-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                             <User className="h-5 w-5 text-gray-500" />
                           </div>
                           <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="font-medium">{u.name}</p>
+                            <p className="text-sm text-gray-500">{u.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="p-4">
-                        {getRoleBadge(user.role)}
+                        {getRoleBadge(u.role)}
                       </td>
                       <td className="p-4">
-                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                          {user.isActive ? 'Hoạt động' : 'Bị khóa'}
+                        <Badge variant={u.isActive ? 'default' : 'destructive'}>
+                          {u.isActive ? 'Hoạt động' : 'Bị khóa'}
                         </Badge>
                       </td>
                       <td className="p-4">
-                        <span className="font-medium">{user.tokenBalance}</span>
+                        <span className="font-medium">{u.tokenBalance}</span>
                       </td>
                       <td className="p-4">
                         <span className="text-sm text-gray-500">
-                          {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                          {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                         </span>
                       </td>
                       <td className="p-4">
                         <div className="flex space-x-2">
                           <select
-                            value={user.role}
-                            onChange={(e) => updateUserRole(user.id, e.target.value)}
+                            value={u.role}
+                            onChange={(e) => updateUserRole(u.id, e.target.value)}
                             className="text-sm border rounded px-2 py-1"
-                            disabled={user.id === session?.user.id}
+                            disabled={String(u.id) === String(user?.id)}
                           >
                             <option value="SHOPPER">Người mua</option>
                             <option value="SELLER">Người bán</option>
@@ -264,11 +257,11 @@ export default function AdminUsersPage() {
                           </select>
                           <Button
                             size="sm"
-                            variant={user.isActive ? 'destructive' : 'default'}
-                            onClick={() => updateUserStatus(user.id, !user.isActive)}
-                            disabled={user.id === session?.user.id}
+                            variant={u.isActive ? 'destructive' : 'default'}
+                            onClick={() => updateUserStatus(u.id, !u.isActive)}
+                            disabled={String(u.id) === String(user?.id)}
                           >
-                            {user.isActive ? 'Khóa' : 'Mở'}
+                            {u.isActive ? 'Khóa' : 'Mở'}
                           </Button>
                         </div>
                       </td>

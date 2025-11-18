@@ -1,25 +1,38 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const saveSchema = z.object({
+  avatarName: z.string().min(1).max(255),
+  height: z.number().positive().max(300).optional(),
+  weight: z.number().positive().max(500).optional(),
+  gender: z.enum(['male', 'female', 'non-binary']).optional(),
+  hairColor: z.string().min(1).max(50).optional(),
+  hairStyle: z.string().min(1).max(50).optional(),
+  skinTone: z.string().min(1).max(50).optional(),
+  eyeColor: z.string().min(1).max(50).optional(),
+  isPublic: z.boolean().optional(),
+  userId: z.union([z.number().int().positive(), z.string().regex(/^\d+$/)]).optional(),
+  avatarImage: z.string().url().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { 
-      avatarName, 
-      height,
-      weight,
-      gender,
-      hairColor,
-      hairStyle,
-      skinTone,
-      eyeColor,
-      isPublic,
-      userId,
-      avatarImage 
-    } = body;
+    const raw = await request.json();
+    const parsed = saveSchema.parse(raw);
+    const avatarName = parsed.avatarName;
+    const height = parsed.height;
+    const weight = parsed.weight;
+    const gender = parsed.gender;
+    const hairColor = parsed.hairColor;
+    const hairStyle = parsed.hairStyle;
+    const skinTone = parsed.skinTone;
+    const eyeColor = parsed.eyeColor;
+    const isPublic = parsed.isPublic;
+    const userId = parsed.userId !== undefined ? (typeof parsed.userId === 'string' ? parseInt(parsed.userId) : parsed.userId) : undefined;
+    const avatarImage = parsed.avatarImage;
 
     // Generate session ID for anonymous users
     const cookieStore = await cookies();
@@ -39,7 +52,7 @@ export async function POST(request: NextRequest) {
     const existingAvatar = await prisma.virtualModel.findFirst({
       where: {
         avatarName,
-        ...(userId ? { userId: parseInt(userId) } : { sessionId })
+        ...(userId ? { userId } : { sessionId })
       }
     });
 
@@ -66,7 +79,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Create new avatar - prepare data object
       const createData: Prisma.VirtualModelCreateInput = {
-        userId: userId ? parseInt(userId) : undefined,
+        user: userId ? { connect: { id: userId } } : undefined,
         sessionId: userId ? undefined : sessionId,
         avatarName,
         height: height || 170,
@@ -92,6 +105,12 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Dữ liệu không hợp lệ', details: error.errors },
+        { status: 400 }
+      );
+    }
     console.error('Error saving avatar:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to save avatar' },

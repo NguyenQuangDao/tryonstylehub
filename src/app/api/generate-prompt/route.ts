@@ -25,10 +25,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userInfo: UserInfo = await request.json();
+    const body = await request.json();
+    const incomingPrompt: string | undefined = typeof body === 'object' && typeof body.prompt === 'string' ? body.prompt : undefined;
+    const userInfo: UserInfo | undefined = typeof body === 'object' && typeof body.gender === 'string' ? body as UserInfo : undefined;
+    const preferRemote: boolean = typeof body === 'object' && body?.preferRemote ? true : false;
+    const model: string = typeof body === 'object' && typeof body?.model === 'string' ? body.model : 'google/gemini-2.0-flash-exp:free';
 
-    // Tạo prompt system message (nâng cấp cho ảnh chân thực photorealistic)
-    const systemMessage = `You are an expert prompt engineer for DALL-E (image generation). Your task is to produce ONE concise but richly detailed English prompt that creates a photorealistic, full-body image of a person based on the provided info.
+    const systemMessageForUserInfo = `You are an expert prompt engineer for DALL-E (image generation). Your task is to produce ONE concise but richly detailed English prompt that creates a photorealistic, full-body image of a person based on the provided info.
 
 Strict requirements:
 - Output ONLY the final prompt text (no explanations, no lists).
@@ -46,6 +49,18 @@ Strict requirements:
 - Clothing instruction: Do NOT specify exact garments or brands; avoid detailed clothing descriptions (keep neutral/general only if needed).
 
 Return only the single prompt.`;
+
+    const systemMessageForImprove = `You are a senior prompt engineer specialized in DALL-E 3. Improve the user's prompt for fashion image generation.
+
+Rules:
+- Output ONLY the improved prompt in English.
+- Preserve the original intent and key subject.
+- Enhance with professional, photorealistic, high-quality photography cues.
+- Add clear composition (subject-centered), lighting, background, and camera details.
+- Avoid brand names and copyrighted characters; avoid text/watermarks.
+- Avoid overly prescriptive clothing details unless requested.
+- Prefer full-body framing when the subject is a person; otherwise choose suitable framing.
+`;
 
     // Helpers để tăng độ chi tiết của mô tả cơ thể
     const describeHeightImpression = (h: number) => {
@@ -76,18 +91,19 @@ Return only the single prompt.`;
       }
     };
 
-    const heightImpression = describeHeightImpression(userInfo.height);
-    const bodyType = describeBodyType(userInfo.height, userInfo.weight);
-    const skinToneDesc = mapSkinTone(userInfo.skinTone);
+    const heightImpression = userInfo ? describeHeightImpression(userInfo.height) : undefined;
+    const bodyType = userInfo ? describeBodyType(userInfo.height, userInfo.weight) : undefined;
+    const skinToneDesc = userInfo ? mapSkinTone(userInfo.skinTone) : undefined;
 
-    // Tạo user message giàu thông tin hơn
-    const userMessage = `Create a single photorealistic full-body prompt with:
-- Gender: ${userInfo.gender}, age: adult
-- Height: ${userInfo.height} cm (${heightImpression})
+    const userMessage = incomingPrompt
+      ? `Original user prompt to improve:\n\n${incomingPrompt}\n\nRewrite it into a single, concise but richly detailed prompt optimized for DALL-E 3, following the rules.`
+      : `Create a single photorealistic full-body prompt with:
+- Gender: ${userInfo!.gender}, age: adult
+- Height: ${userInfo!.height} cm (${heightImpression})
 - Body type: ${bodyType}
 - Skin tone: ${skinToneDesc}
-- Eye color: ${userInfo.eyeColor}
-- Hair: ${userInfo.hairStyle} ${userInfo.hairColor}
+- Eye color: ${userInfo!.eyeColor}
+- Hair: ${userInfo!.hairStyle} ${userInfo!.hairColor}
 
 Additional constraints:
 - Pose: natural standing, slight angle toward camera, relaxed hands at sides
@@ -98,6 +114,42 @@ Additional constraints:
 - Quality: photorealistic, professional photography, high quality, high detail, lifelike
 - Negative: no watermark, no text, no blur, no distortion, no cropping or cut-off head/hands/feet
 - Clothing: avoid specifying garments or brands (keep neutral/general only)`;
+
+    const localImprovePrompt = (original: string) => {
+      const base = [
+        'photorealistic',
+        'professional photography',
+        'high quality',
+        'high detail',
+        'lifelike',
+        'subject centered',
+        'full-body composition',
+        'head-to-toe visible',
+        'DSLR 50mm prime, f/2.0, ISO 200, 1/200s',
+        'soft studio key light with gentle rim light',
+        'neutral studio gradient background',
+        'no watermark, no text, no blur, no distortion'
+      ].join(', ');
+      return `${original}, ${base}`;
+    };
+
+    const localGenerateFromUserInfo = (info: UserInfo) => {
+      const genderTerm = info.gender === 'male' ? 'man' : info.gender === 'female' ? 'woman' : 'person';
+      const base = [
+        `photorealistic full body portrait of an ${bodyType} ${genderTerm}`,
+        `${skinToneDesc}`,
+        `${info.hairColor} ${info.hairStyle} hair`,
+        `${info.eyeColor} eyes`,
+        'natural standing pose, slight angle toward camera, relaxed hands at sides',
+        'subject centered, head-to-toe visible',
+        'DSLR 50mm prime, f/2.0, ISO 200, 1/200s',
+        'soft studio key light with gentle rim light',
+        'neutral studio gradient background',
+        'professional photography, high quality, high detail, lifelike',
+        'no watermark, no text, no blur, no distortion'
+      ].join(', ');
+      return base;
+    };
 
     // Gọi OpenRouter API với retry logic
     let response;
@@ -115,11 +167,11 @@ Additional constraints:
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.0-flash-exp:free',
+            model,
             messages: [
               {
                 role: 'system',
-                content: systemMessage
+                content: incomingPrompt ? systemMessageForImprove : systemMessageForUserInfo
               },
               {
                 role: 'user',
@@ -140,13 +192,11 @@ Additional constraints:
         if (response.status === 429) {
           retryCount++;
           if (retryCount <= maxRetries) {
-            // Đợi một chút trước khi retry (exponential backoff)
-            const waitTime = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
-            console.log(`Rate limit hit, retrying in ${waitTime}ms (attempt ${retryCount}/${maxRetries})`);
+            const waitTime = Math.pow(2, retryCount) * 1000;
             await new Promise(resolve => setTimeout(resolve, waitTime));
             continue;
-          } else {
-            // Đã hết số lần retry
+          }
+          if (preferRemote) {
             return NextResponse.json(
               {
                 success: false,
@@ -156,20 +206,37 @@ Additional constraints:
               { status: 429 }
             );
           }
+          const promptOut = incomingPrompt
+            ? localImprovePrompt(incomingPrompt)
+            : localGenerateFromUserInfo(userInfo!);
+          return NextResponse.json({ success: true, prompt: promptOut, source: 'local' });
         }
 
         // Các lỗi khác
         throw new Error(`OpenRouter API error: ${response.status}`);
 
       } catch (fetchError) {
+        console.error('Error fetching from OpenRouter:', fetchError);
         if (retryCount < maxRetries) {
           retryCount++;
           const waitTime = 1000 * retryCount;
-          console.log(`Network error, retrying in ${waitTime}ms (attempt ${retryCount}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           continue;
         }
-        throw fetchError;
+        if (preferRemote) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Không gọi được OpenRouter, vui lòng thử lại',
+              errorCode: 'NETWORK_ERROR'
+            },
+            { status: 502 }
+          );
+        }
+        const promptOut = incomingPrompt
+          ? localImprovePrompt(incomingPrompt)
+          : localGenerateFromUserInfo(userInfo!);
+        return NextResponse.json({ success: true, prompt: promptOut, source: 'local' });
       }
     }
 
@@ -182,7 +249,8 @@ Additional constraints:
 
     return NextResponse.json({
       success: true,
-      prompt: generatedPrompt.trim()
+      prompt: generatedPrompt.trim(),
+      source: 'openrouter'
     });
 
   } catch (error) {

@@ -53,33 +53,29 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create token
-    const token = await createToken({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-    });
-
-    // Set cookie and return response
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-      },
-    });
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    return response;
+    // Create token and set cookie nếu cấu hình đầy đủ
+    try {
+      const token = await createToken({ userId: user.id, email: user.email, name: user.name });
+      const response = NextResponse.json({
+        success: true,
+        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+      });
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+      return response;
+    } catch {
+      // Nếu JWT_SECRET chưa cấu hình: vẫn trả user, không set cookie
+      return NextResponse.json({
+        success: true,
+        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+        warning: 'JWT chưa cấu hình, vui lòng đăng nhập thủ công',
+      });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
