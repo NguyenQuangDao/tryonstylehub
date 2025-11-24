@@ -35,7 +35,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const parseResult = recommendSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
@@ -68,21 +68,76 @@ export async function POST(request: NextRequest) {
       ...product,
       styleTags: JSON.parse(product.styleTags || '[]')
     }));
-    
+
+    // Get AI recommendations
     const recommendedIds = await getRecommendedProductIds(style, productsWithParsedTags);
     let selectedProducts = products.filter(product =>
       recommendedIds.includes(product.id)
     );
 
+    // Smart fallback with semantic matching
     if (!selectedProducts.length) {
-      const fallback = products
-        .filter(product => {
-          const tags = JSON.parse(product.styleTags || '[]');
-          return tags.some((tag: string) => normalizedStyle.includes(tag.toLowerCase()));
-        })
-        .slice(0, 4);
+      console.log('[Recommend API] Using intelligent fallback');
 
-      selectedProducts = fallback.length ? fallback : products.slice(0, 4);
+      // Extract keywords from style description
+      const keywords = normalizedStyle
+        .split(/\s+/)
+        .filter(word => word.length > 3);
+
+      // Score products based on tag and name matching
+      const scoredProducts = products.map(product => {
+        const tags = JSON.parse(product.styleTags || '[]');
+        const productText = `${product.name} ${product.type} ${tags.join(' ')}`.toLowerCase();
+
+        let score = 0;
+        keywords.forEach(keyword => {
+          if (productText.includes(keyword)) {
+            score += 2;
+          }
+          // Partial match
+          tags.forEach((tag: string) => {
+            if (tag.toLowerCase().includes(keyword) || keyword.includes(tag.toLowerCase())) {
+              score += 1;
+            }
+          });
+        });
+
+        return { product, score };
+      });
+
+      // Sort by score and get top matches
+      scoredProducts.sort((a, b) => b.score - a.score);
+
+      // Ensure diversity in product types
+      const typesSeen = new Set<string>();
+      const diverseProducts: typeof products = [];
+
+      for (const { product, score } of scoredProducts) {
+        if (score > 0) {
+          const type = product.type.toLowerCase();
+          // Prefer products of different types
+          if (!typesSeen.has(type) || diverseProducts.length < 3) {
+            diverseProducts.push(product);
+            typesSeen.add(type);
+          }
+        }
+        if (diverseProducts.length >= 5) break;
+      }
+
+      selectedProducts = diverseProducts.length
+        ? diverseProducts
+        : products.slice(0, 4);
+    }
+
+    // Ensure we have a balanced outfit (if we have enough products)
+    if (selectedProducts.length >= 3) {
+      const typeCount = selectedProducts.reduce((acc, p) => {
+        acc[p.type] = (acc[p.type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Log diversity for debugging
+      console.log('[Recommend API] Product type distribution:', typeCount);
     }
 
     const outfitRecord = await prisma.outfit.create({

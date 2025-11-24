@@ -15,8 +15,6 @@ import {
   Sparkles,
   User,
   X,
-  // Upload,
-  
 } from 'lucide-react';
 import Image from 'next/image';
 import { FormEvent } from 'react';
@@ -61,64 +59,18 @@ export default function OptimizedHomePage({
 }: OptimizedHomePageProps) {
   // Example images
   const personExamples = [
-    'https://images.pexels.com/photos/3772510/pexels-photo-3772510.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
     'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
     'https://images.pexels.com/photos/936114/pexels-photo-936114.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/1055686/pexels-photo-1055686.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
+    'https://images.pexels.com/photos/1055686/pexels-photo-1055686.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
   ];
 
   const garmentExamples = [
-    'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/4046319/pexels-photo-4046319.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
+    'https://images.pexels.com/photos/325876/pexels-photo-325876.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
     'https://images.pexels.com/photos/7679721/pexels-photo-7679721.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
     'https://images.pexels.com/photos/7679723/pexels-photo-7679723.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
   ];
-
-  // const [currentPersonExample, setCurrentPersonExample] = useState(0);
-  // const [currentGarmentExample, setCurrentGarmentExample] = useState(0);
-
-  // Handlers
-  // const handlePersonExampleChange = useCallback((direction: 'left' | 'right') => {
-  //   setCurrentPersonExample(prev => {
-  //     if (direction === 'left') {
-  //       return prev === 0 ? personExamples.length - 1 : prev - 1;
-  //     } else {
-  //       return prev === personExamples.length - 1 ? 0 : prev + 1;
-  //     }
-  //   });
-  // }, [personExamples.length]);
-
-  // const handleGarmentExampleChange = useCallback((direction: 'left' | 'right') => {
-  //   setCurrentGarmentExample(prev => {
-  //     if (direction === 'left') {
-  //       return prev === 0 ? garmentExamples.length - 1 : prev - 1;
-  //     } else {
-  //       return prev === garmentExamples.length - 1 ? 0 : prev + 1;
-  //     }
-  //   });
-  // }, [garmentExamples.length]);
-
-  // const handleSelectPersonExample = useCallback(() => {
-  //   const exampleUrl = personExamples[currentPersonExample];
-  //   personImageUpload.loadExampleImage(exampleUrl);
-  // }, [currentPersonExample, personExamples, personImageUpload]);
-
-  // const handleSelectGarmentExample = useCallback(() => {
-  //   const exampleUrl = garmentExamples[currentGarmentExample];
-  //   garmentImageUpload.loadExampleImage(exampleUrl);
-  // }, [currentGarmentExample, garmentExamples, garmentImageUpload]);
-
-  // const categories = [
-  //   { id: 'tops', label: 'Áo', icon: Shirt },
-  //   { id: 'bottoms', label: 'Quần', icon: Users },
-  //   { id: 'dresses', label: 'Váy', icon: Sparkles },
-  //   { id: 'outerwear', label: 'Áo khoác', icon: Camera }
-  // ];
-
-  // const canSubmit = (personImageUpload.imagePreview || selectedVirtualModel) && 
-  //                  garmentImageUpload.imagePreview && 
-  //                  selectedCategory && 
-  //                  apiKey;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -200,19 +152,21 @@ export default function OptimizedHomePage({
                     )}
                   </div>
 
-                  <div className="flex gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsVirtualModelSelectorOpen(true)}
-                      className="px-6"
-                    >
-                      Chọn người mẫu ảo
-                    </Button>
-                  </div>
+
 
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium">Ảnh mẫu</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Ảnh mẫu người</Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        onClick={() => setIsVirtualModelSelectorOpen(true)}
+                        className="h-auto p-0 text-blue-600 font-normal hover:no-underline hover:text-blue-700"
+                      >
+                        Chọn người mẫu ảo
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {personExamples.map((url, idx) => (
                         <div
