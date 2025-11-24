@@ -1,8 +1,12 @@
-import { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import { TOKEN_CONFIG } from '../config/tokens';
+import { LogLevel, logPaymentEvent, PaymentEventType } from './payment-logger';
+
+
 
 
 export const authOptions: NextAuthOptions = {
@@ -57,7 +61,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         // custom fields disabled in this version
       }
-      
+
       if (account?.provider === 'google') {
         // Handle Google OAuth user creation/updates
         const existingUser = await prisma.user.findUnique({
@@ -65,15 +69,29 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!existingUser) {
-          // Create new user with Google account
+          // Create new user with Google account AND free tokens
           const newUser = await prisma.user.create({
             data: {
               email: token.email!,
               name: token.name!,
               password: '',
+              tokenBalance: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP, // Grant free tokens
             }
           });
-          
+
+          // Log free token grant
+          await logPaymentEvent({
+            userId: newUser.id,
+            eventType: PaymentEventType.PURCHASE_COMPLETED,
+            level: LogLevel.INFO,
+            details: {
+              source: 'signup_bonus',
+              tokensAdded: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP,
+              provider: 'google',
+              newBalance: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP,
+            },
+          });
+
           token.id = newUser.id.toString();
           // custom fields disabled
         } else {
@@ -82,7 +100,7 @@ export const authOptions: NextAuthOptions = {
           // custom fields disabled
         }
       }
-      
+
       return token;
     },
     async session({ session, token }) {

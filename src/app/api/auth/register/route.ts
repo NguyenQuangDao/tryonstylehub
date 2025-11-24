@@ -1,6 +1,8 @@
-import { createToken, hashPassword, isValidEmail, isValidPassword } from '../../../../lib/auth';
-import { prisma } from '../../../../lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { TOKEN_CONFIG } from '../../../../config/tokens';
+import { createToken, hashPassword, isValidEmail, isValidPassword } from '../../../../lib/auth';
+import { LogLevel, logPaymentEvent, PaymentEventType } from '../../../../lib/payment-logger';
+import { prisma } from '../../../../lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,12 +46,26 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create user with free tokens
     const user = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
+        tokenBalance: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP, // Grant free tokens on signup
+      },
+    });
+
+    // Log free token grant
+    await logPaymentEvent({
+      userId: user.id,
+      eventType: PaymentEventType.PURCHASE_COMPLETED,
+      level: LogLevel.INFO,
+      details: {
+        source: 'signup_bonus',
+        tokensAdded: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP,
+        provider: 'credentials',
+        newBalance: TOKEN_CONFIG.FREE_TOKENS_ON_SIGNUP,
       },
     });
 

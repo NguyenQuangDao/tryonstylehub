@@ -1,14 +1,14 @@
 "use client"
 
-import * as React from "react"
+import { Loader2, LogIn } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LogIn, Loader2 } from "lucide-react"
+import * as React from "react"
 
+import { Alert, AlertDescription } from "../../components/ui/alert"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
-import { Alert, AlertDescription } from "../../components/ui/alert"
 import { useAuth } from "../../lib/auth-context"
 
 export default function LoginPage() {
@@ -19,16 +19,20 @@ export default function LoginPage() {
   const { login, user, loading } = useAuth()
   const router = useRouter()
 
+  // Get redirect URL from query params
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const redirectUrl = searchParams?.get('redirect') || '/'
+
   // Redirect if already logged in - but only after loading is complete
   React.useEffect(() => {
     if (!loading && user) {
       // Add a small delay to prevent immediate redirect issues
       const timer = setTimeout(() => {
-        router.push("/dashboard")
+        router.push(redirectUrl)
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [user, loading, router])
+  }, [user, loading, router, redirectUrl])
 
   // Show loading state while checking auth
   if (loading) {
@@ -79,7 +83,7 @@ export default function LoginPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   Email
@@ -94,7 +98,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   Password
@@ -109,7 +113,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
@@ -124,7 +128,7 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-            
+
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">

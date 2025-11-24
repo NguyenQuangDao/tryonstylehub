@@ -3,30 +3,51 @@ import { verifyToken } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
+  const { pathname } = request.nextUrl;
 
-  // Protected routes that require authentication
-  const protectedPaths = ['/dashboard', '/profile', '/products'];
-  const isProtectedPath = protectedPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  );
+  // Public routes that don't require authentication
+  const publicPaths = ['/login', '/register'];
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
 
-  // If trying to access protected route without token, redirect to login
-  if (isProtectedPath && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // API routes are handled separately
+  const isApiRoute = pathname.startsWith('/api');
+
+  // Allow access to public routes and API routes
+  if (isPublicPath || isApiRoute) {
+    // If user is already logged in and trying to access login/register, redirect to home
+    if (isPublicPath && token) {
+      const payload = await verifyToken(token);
+      if (payload) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    }
+    return NextResponse.next();
   }
 
-  // Verify token if present
-  if (token) {
-    const payload = await verifyToken(token);
-    if (!payload && isProtectedPath) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  // All other routes require authentication
+  if (!token) {
+    // Store the original URL to redirect back after login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Verify token validity
+  const payload = await verifyToken(token);
+  if (!payload) {
+    // Invalid token, redirect to login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/products/:path*'],
+  // Match all routes except static files and images
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };
 

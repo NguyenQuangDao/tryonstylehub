@@ -4,6 +4,7 @@
 
 
 @import "../styles/performance.css";
+@import "../styles/token-animations.css";
 
 @layer base {
   :root {
