@@ -29,6 +29,7 @@ export interface PaymentParams {
     cancelUrl?: string
     notifyUrl?: string
     ipAddress?: string
+    preferredPaymentMethods?: string[]
 }
 
 export interface PaymentResult {
@@ -123,6 +124,7 @@ export async function createPayment(params: PaymentParams): Promise<PaymentResul
                     packageId: params.packageId,
                     description: `Nạp token - Gói ${params.packageId}`,
                     callbackUrl: params.returnUrl,
+                    preferredPaymentMethods: params.preferredPaymentMethods,
                 })
                 return {
                     success: result.success,

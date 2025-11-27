@@ -54,9 +54,44 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(new URL('/tokens?payment=success', req.url))
         }
 
-        // For successful payment without existing record,
-        // we need to get package info from somewhere
-        // Ideally stored in a temporary table during payment initiation
+        let packageId = ''
+        if (provider === PaymentProvider.VNPAY) {
+            const parts = transactionId.split('_')
+            if (parts.length >= 4) {
+                packageId = parts.slice(2, parts.length - 1).join('_')
+            }
+        }
+
+        if (!packageId) {
+            return NextResponse.redirect(new URL('/tokens?payment=processing', req.url))
+        }
+
+        const { TOKEN_CONFIG } = await import('../../../../config/tokens')
+        const pkg = TOKEN_CONFIG.PACKAGES.find(p => p.id === packageId)
+
+        if (!pkg) {
+            return NextResponse.redirect(new URL('/tokens?payment=error', req.url))
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const purchaseRecord = await tx.tokenPurchase.create({
+                data: {
+                    userId,
+                    stripePaymentId: transactionId,
+                    amount: pkg.price,
+                    tokens: pkg.tokens,
+                    status: 'completed',
+                }
+            })
+
+            const updatedUser = await tx.user.update({
+                where: { id: userId },
+                data: { tokenBalance: { increment: pkg.tokens } },
+                select: { tokenBalance: true },
+            })
+
+            return { purchaseRecord, newBalance: updatedUser.tokenBalance }
+        })
 
         await logPaymentEvent({
             userId,
@@ -65,10 +100,13 @@ export async function GET(req: NextRequest) {
             details: {
                 provider,
                 transactionId: verification.transactionId,
+                packageId,
+                tokensAdded: pkg.tokens,
+                newBalance: result.newBalance,
             },
         })
 
-        return NextResponse.redirect(new URL('/tokens?payment=processing', req.url))
+        return NextResponse.redirect(new URL('/tokens?payment=success', req.url))
 
     } catch (error) {
         console.error('Payment callback error:', error)
