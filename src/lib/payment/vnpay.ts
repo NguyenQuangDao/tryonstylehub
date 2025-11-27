@@ -42,7 +42,7 @@ export async function createVNPayPayment(
             }
         }
 
-        const orderId = `TOKEN_${params.userId}_${Date.now()}`
+        const orderId = `TOKEN_${params.userId}_${params.packageId}_${Date.now()}`
         const amount = Math.round(params.amount * 100) // VNPay uses smallest unit (VND * 100)
 
         const createDate = new Date()

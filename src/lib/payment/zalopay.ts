@@ -11,6 +11,8 @@ export interface ZaloPayPaymentParams {
     packageId: string
     description: string
     callbackUrl: string
+    preferredPaymentMethods?: string[]
+    bankCode?: string
 }
 
 export interface ZaloPayPaymentResult {
@@ -41,13 +43,19 @@ export async function createZaloPayPayment(
             }
         }
 
-        const transId = `${Date.now()}`
-        const appTransId = `${new Date().toISOString().slice(0, 6).replace(/-/g, '')}_${transId}`
+        const nowUtc = new Date()
+        const vnTime = new Date(nowUtc.getTime() + 7 * 60 * 60 * 1000)
+        const yy = String(vnTime.getUTCFullYear()).slice(-2)
+        const mm = String(vnTime.getUTCMonth() + 1).padStart(2, '0')
+        const dd = String(vnTime.getUTCDate()).padStart(2, '0')
+        const transId = `TOKEN_${params.userId}_${Date.now()}`
+        const appTransId = `${yy}${mm}${dd}_${transId}`
 
         const embedData = JSON.stringify({
             redirecturl: params.callbackUrl,
             userId: params.userId,
             packageId: params.packageId,
+            preferred_payment_method: params.preferredPaymentMethods ?? [],
         })
 
         const items = JSON.stringify([
@@ -68,7 +76,7 @@ export async function createZaloPayPayment(
             item: items,
             embed_data: embedData,
             description: params.description,
-            bank_code: 'zalopayapp',
+            bank_code: params.bankCode ?? '',
         }
 
         // Create MAC signature

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Parse request body
     const body = await req.json()
-    const { packageId, paymentMethodId } = body
+    const { packageId, paymentMethodId, preferredMethods } = body
 
     if (!packageId || !paymentMethodId) {
       return NextResponse.json({
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
       paymentMethodId,
       userEmail: payload.email || 'unknown@example.com',
       req,
+      preferredMethods,
     })
 
     if (!paymentResult.success) {
@@ -205,13 +206,14 @@ async function processPayment(params: {
   paymentMethodId: string
   userEmail: string
   req: NextRequest
+  preferredMethods?: string[]
 }): Promise<{
   success: boolean
   transactionId?: string
   paymentUrl?: string
   clientSecret?: string
   error?: string
-}> {
+}>{
   const { createPayment, PaymentProvider } = await import('../../../../lib/payment/payment-manager')
 
   // Map payment method ID to provider
@@ -266,6 +268,7 @@ async function processPayment(params: {
       cancelUrl,
       notifyUrl,
       ipAddress,
+      preferredPaymentMethods: params.preferredMethods,
     })
 
     return result
