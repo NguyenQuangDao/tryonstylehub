@@ -4,6 +4,7 @@ import { FileInput } from '@/components';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
@@ -47,8 +48,8 @@ export default function OptimizedHomePage({
   setIsVirtualModelSelectorOpen,
   personImageUpload,
   garmentImageUpload,
-  // selectedCategory,
-  // setSelectedCategory,
+  selectedCategory,
+  setSelectedCategory,
   isLoading,
   errorMessage,
   resultGallery,
@@ -260,43 +261,27 @@ export default function OptimizedHomePage({
           </div>
 
           {/* Category Selection */}
-          {/* <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.3 }}
           >
-            <Card className="border-0 shadow-md hover:shadow-xl transition-shadow rounded-3xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-xl">Loại trang phục</CardTitle>
-                <CardDescription>Chọn loại trang phục để AI xử lý chính xác hơn</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {categories.map((category) => {
-                      const Icon = category.icon;
-                      return (
-                        <div key={category.id} className="relative">
-                          <RadioGroupItem 
-                            value={category.id} 
-                            id={category.id}
-                            className="peer sr-only"
-                          />
-                          <Label 
-                            htmlFor={category.id}
-                            className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all hover:border-blue-400 dark:hover:border-blue-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30"
-                          >
-                            <Icon className="w-8 h-8 text-gray-600 dark:text-gray-400 peer-checked:text-blue-600" />
-                            <span className="font-medium">{category.label}</span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </RadioGroup>
-              </CardContent>
-            </Card>
-          </motion.div> */}
+            <div className="max-w-md mx-auto">
+              <Label className="text-sm font-medium">Loại trang phục</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger aria-label="Chọn loại trang phục" className="mt-2">
+                  <SelectValue placeholder="Chọn loại" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tops">Áo</SelectItem>
+                  <SelectItem value="bottoms">Quần/Váy</SelectItem>
+                  <SelectItem value="dress">Đầm</SelectItem>
+                  <SelectItem value="outerwear">Áo khoác</SelectItem>
+                  <SelectItem value="accessories">Phụ kiện</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </motion.div>
 
           {/* Provider Selection removed: hệ thống chỉ dùng FASHN trên server */}
 

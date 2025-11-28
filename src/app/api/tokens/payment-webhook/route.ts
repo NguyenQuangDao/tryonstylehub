@@ -79,10 +79,9 @@ export async function POST(req: NextRequest) {
             const extraData = JSON.parse(body.extraData || '{}')
             packageId = extraData.packageId
         } else if (provider === PaymentProvider.VNPAY) {
-            const parts = transactionId.split('_')
-            if (parts.length >= 4) {
-                packageId = parts.slice(2, parts.length - 1).join('_')
-            }
+            const orderInfo = body['vnp_OrderInfo'] || ''
+            const m = orderInfo.match(/TOKEN_PACKAGE:([\w-]+)/)
+            packageId = m ? m[1] : ''
         } else if (provider === PaymentProvider.STRIPE) {
             packageId = body.metadata?.packageId
         }

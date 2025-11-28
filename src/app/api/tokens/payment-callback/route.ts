@@ -56,10 +56,9 @@ export async function GET(req: NextRequest) {
 
         let packageId = ''
         if (provider === PaymentProvider.VNPAY) {
-            const parts = transactionId.split('_')
-            if (parts.length >= 4) {
-                packageId = parts.slice(2, parts.length - 1).join('_')
-            }
+            const orderInfo = params['vnp_OrderInfo'] || ''
+            const m = orderInfo.match(/TOKEN_PACKAGE:([\w-]+)/)
+            packageId = m ? m[1] : ''
         }
 
         if (!packageId) {

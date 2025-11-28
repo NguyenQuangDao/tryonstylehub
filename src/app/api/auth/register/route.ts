@@ -71,10 +71,17 @@ export async function POST(request: NextRequest) {
 
     // Create token and set cookie nếu cấu hình đầy đủ
     try {
-      const token = await createToken({ userId: user.id, email: user.email, name: user.name });
+      const shop = await prisma.shop.findUnique({ where: { ownerId: user.id } });
+      const token = await createToken({
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        shopId: shop?.id ?? null,
+      });
       const response = NextResponse.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar, role: user.role, shopId: shop?.id ?? null },
       });
       response.cookies.set('token', token, {
         httpOnly: true,
@@ -88,7 +95,7 @@ export async function POST(request: NextRequest) {
       // Nếu JWT_SECRET chưa cấu hình: vẫn trả user, không set cookie
       return NextResponse.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar, role: user.role },
         warning: 'JWT chưa cấu hình, vui lòng đăng nhập thủ công',
       });
     }
@@ -100,4 +107,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

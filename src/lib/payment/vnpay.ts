@@ -42,14 +42,13 @@ export async function createVNPayPayment(
             }
         }
 
-        const orderId = `TOKEN_${params.userId}_${params.packageId}_${Date.now()}`
+        const orderId = `TOKEN_${params.userId}_${Date.now()}`
         const amount = Math.round(params.amount * 100) // VNPay uses smallest unit (VND * 100)
-
-        const createDate = new Date()
-            .toISOString()
-            .replace(/[-:]/g, '')
-            .replace(/\.\d{3}Z/, '')
-            .slice(0, 14)
+        const now = new Date()
+        const pad = (n: number) => n.toString().padStart(2, '0')
+        const createDate = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+        const expire = new Date(now.getTime() + 15 * 60 * 1000)
+        const expireDate = `${expire.getFullYear()}${pad(expire.getMonth() + 1)}${pad(expire.getDate())}${pad(expire.getHours())}${pad(expire.getMinutes())}${pad(expire.getSeconds())}`
 
         const vnpParams: Record<string, string> = {
             vnp_Version: '2.1.0',
@@ -57,6 +56,7 @@ export async function createVNPayPayment(
             vnp_TmnCode: VNPAY_TMN_CODE,
             vnp_Amount: amount.toString(),
             vnp_CreateDate: createDate,
+            vnp_ExpireDate: expireDate,
             vnp_CurrCode: 'VND',
             vnp_IpAddr: params.ipAddress,
             vnp_Locale: 'vn',
