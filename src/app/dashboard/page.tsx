@@ -1,8 +1,22 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
-import { DollarSign, Image as ImageIcon, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  Activity,
+  BarChart3,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  Image as ImageIcon,
+  Sparkles,
+  TrendingUp,
+  Zap
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CostStats {
@@ -20,7 +34,7 @@ interface Transaction {
   status: string
 }
 
-export default function DashboardPage() {
+export default function EnhancedDashboardPage() {
   const [costStats, setCostStats] = useState<CostStats>({ daily: 0, weekly: 0, monthly: 0 });
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -66,6 +80,7 @@ export default function DashboardPage() {
       icon: Sparkles,
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/20',
+      description: 'Token còn lại trong tài khoản',
       action: {
         label: 'Nạp thêm',
         href: '/tokens',
@@ -77,173 +92,226 @@ export default function DashboardPage() {
       icon: DollarSign,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/20',
+      description: 'Tổng chi phí trong ngày',
+    },
+    {
+      title: 'Chi phí tuần này',
+      value: `$${costStats.weekly.toFixed(2)}`,
+      icon: Calendar,
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-100 dark:bg-blue-900/20',
+      description: 'Chi phí 7 ngày gần nhất',
     },
     {
       title: 'Chi phí tháng này',
       value: `$${costStats.monthly.toFixed(2)}`,
       icon: TrendingUp,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/20',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+      description: 'Tổng chi phí 30 ngày',
+    },
+  ];
+
+  const features = [
+    {
+      title: 'Virtual Try-On',
+      description: 'Thử đồ ảo với công nghệ AI tiên tiến. Tốn 1 token/lần.',
+      icon: ImageIcon,
+      color: 'from-blue-600 to-cyan-600',
+      href: '/',
+    },
+    {
+      title: 'AI Recommendations',
+      description: 'Nhận gợi ý trang phục phù hợp. Tốn 1 token/lần.',
+      icon: Sparkles,
+      color: 'from-purple-600 to-pink-600',
+      href: '/recommend',
+    },
+    {
+      title: 'Product Store',
+      description: 'Khám phá hàng ngàn sản phẩm thời trang từ các shop uy tín.',
+      icon: Activity,
+      color: 'from-green-600 to-emerald-600',
+      href: '/products',
     },
   ];
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-8">
+          <Skeleton className="h-32 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto pb-12">
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 vietnamese-heading">Bảng Điều Khiển</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Quản lý token và theo dõi hoạt động
-            </p>
-          </div>
-          <a
-            href="/tokens"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-2"
-          >
-            <Sparkles className="w-5 h-5" />
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent vietnamese-heading">
+            Bảng Điều Khiển
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Quản lý token và theo dõi hoạt động của bạn
+          </p>
+        </div>
+        <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" asChild>
+          <a href="/tokens">
+            <Sparkles className="w-5 h-5 mr-2" />
             Nạp Token
           </a>
-        </div>
+        </Button>
+      </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
 
-            return (
-              <motion.div
-                key={stat.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="shadow-lg border-gray-200 dark:border-gray-800 h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+          return (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`w-8 h-8 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stat.description}
+                  </p>
+                  {stat.action && (
+                    <Button variant="link" size="sm" className="px-0 mt-2" asChild>
+                      <a href={stat.action.href}>
+                        {stat.action.label} →
+                      </a>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="transactions" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="transactions">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Lịch sử Giao dịch
+          </TabsTrigger>
+          <TabsTrigger value="features">
+            <Zap className="h-4 w-4 mr-2" />
+            Tính năng
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="transactions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lịch sử Giao dịch</CardTitle>
+              <CardDescription>Các giao dịch nạp token gần đây của bạn</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {transactions.length > 0 ? (
+                <div className="space-y-4">
+                  {transactions.map((tx) => (
+                    <div key={tx.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                          <Icon className={`h-6 w-6 ${stat.color}`} />
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                          <CreditCard className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
-                          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+                          <p className="font-medium">
+                            {new Date(tx.createdAt).toLocaleDateString('vi-VN')}
+                          </p>
+                          <p className="text-sm text-muted-foreground font-mono">
+                            {tx.stripePaymentId.substring(0, 16)}...
+                          </p>
                         </div>
                       </div>
-                      {stat.action && (
-                        <a
-                          href={stat.action.href}
-                          className="text-sm font-semibold text-purple-600 hover:text-purple-700 bg-purple-50 px-3 py-1 rounded-full"
-                        >
-                          {stat.action.label} →
-                        </a>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Transaction History */}
-        <Card className="shadow-lg border-gray-200 dark:border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Lịch sử Giao dịch</CardTitle>
-            <CardDescription>Các giao dịch nạp token gần đây của bạn</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transactions.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Thời gian</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Mã giao dịch</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Số tiền</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Token</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((tx) => (
-                      <tr key={tx.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                        <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">
-                          {new Date(tx.createdAt).toLocaleDateString('vi-VN')} {new Date(tx.createdAt).toLocaleTimeString('vi-VN')}
-                        </td>
-                        <td className="py-3 px-4 text-sm font-mono text-gray-500">
-                          {tx.stripePaymentId.substring(0, 12)}...
-                        </td>
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                      <div className="text-right">
+                        <p className="font-bold text-purple-600">
+                          +{tx.tokens} Token
+                        </p>
+                        <p className="text-sm text-muted-foreground">
                           {tx.amount > 1000
                             ? `${tx.amount.toLocaleString('vi-VN')}₫`
                             : `$${tx.amount}`
                           }
-                        </td>
-                        <td className="py-3 px-4 text-sm font-bold text-purple-600">
-                          +{tx.tokens}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${tx.status === 'completed'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                            }
-                          `}>
-                            {tx.status === 'completed' ? 'Thành công' : 'Đang xử lý'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                Chưa có giao dịch nào
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0 transform transition-all hover:scale-[1.02] cursor-pointer">
-            <CardContent className="p-6">
-              <ImageIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4" />
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Virtual Try-On</CardTitle>
-              <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Thử đồ ảo với công nghệ AI tiên tiến. Tốn 1 token/lần.
-              </CardDescription>
-              <a href="/try-on" className="text-blue-600 font-semibold hover:underline">Thử ngay →</a>
+                        </p>
+                      </div>
+                      <Badge variant={tx.status === 'completed' ? 'default' : 'secondary'}>
+                        {tx.status === 'completed' ? 'Thành công' : 'Đang xử lý'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Chưa có giao dịch nào</p>
+                </div>
+              )}
             </CardContent>
           </Card>
+        </TabsContent>
 
-          <Card className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-0 transform transition-all hover:scale-[1.02] cursor-pointer">
-            <CardContent className="p-6">
-              <Sparkles className="h-8 w-8 text-green-600 dark:text-green-400 mb-4" />
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Recommendations</CardTitle>
-              <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Nhận gợi ý trang phục phù hợp. Tốn 1 token/lần.
-              </CardDescription>
-              <a href="/recommend" className="text-green-600 font-semibold hover:underline">Khám phá →</a>
-            </CardContent>
-          </Card>
-        </div>
-      </motion.div>
+        <TabsContent value="features" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <a href={feature.href} className="block">
+                    <Card className="hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer">
+                      <CardHeader>
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}>
+                          <Icon className="h-6 w-6 text-white" />
+                        </div>
+                        <CardTitle>{feature.title}</CardTitle>
+                        <CardDescription>{feature.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button variant="ghost" className="w-full">
+                          Khám phá →
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </a>
+                </motion.div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-

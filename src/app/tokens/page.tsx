@@ -33,7 +33,6 @@ export default function TokenPurchasePage() {
     const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'VND'>('VND')
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null)
-    const [preferredMethods, setPreferredMethods] = useState<string[]>([])
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -113,7 +112,6 @@ export default function TokenPurchasePage() {
         // Reset selections
         setSelectedPackage(null)
         setSelectedPaymentMethod(currencyMethods.length > 0 ? currencyMethods[0].id : null)
-        setPreferredMethods([])
     }
 
     const handlePurchase = async () => {
@@ -132,7 +130,6 @@ export default function TokenPurchasePage() {
                 body: JSON.stringify({
                     packageId: selectedPackage,
                     paymentMethodId: selectedPaymentMethod,
-                    preferredMethods: selectedPaymentMethod === 'zalopay' ? preferredMethods : undefined,
                 }),
             })
 
@@ -345,30 +342,7 @@ export default function TokenPurchasePage() {
                         {paymentMethods.length === 0 && (
                             <div className="mt-3 text-sm text-red-600">Không có phương thức cho loại tiền đã chọn. Vui lòng chuyển sang VND.</div>
                         )}
-                        {selectedPaymentMethod === 'zalopay' && (
-                            <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
-                                <div className="text-sm font-semibold text-gray-800 mb-2">Tuỳ chọn hiển thị trên cổng ZaloPay</div>
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        onClick={() => setPreferredMethods(['domestic_card','vietqr','zalopayapp','account'])}
-                                        className={`px-3 py-2 rounded-lg text-sm border ${preferredMethods.sort().join(',') === ['domestic_card','vietqr','zalopayapp','account'].sort().join(',') ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                                    >Tất cả</button>
-                                    <button
-                                        onClick={() => setPreferredMethods(['domestic_card'])}
-                                        className={`px-3 py-2 rounded-lg text-sm border ${preferredMethods.join(',') === 'domestic_card' ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                                    >Thẻ ATM nội địa</button>
-                                    <button
-                                        onClick={() => setPreferredMethods(['vietqr'])}
-                                        className={`px-3 py-2 rounded-lg text-sm border ${preferredMethods.join(',') === 'vietqr' ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                                    >VietQR</button>
-                                    <button
-                                        onClick={() => setPreferredMethods(['zalopayapp'])}
-                                        className={`px-3 py-2 rounded-lg text-sm border ${preferredMethods.join(',') === 'zalopayapp' ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                                    >Ví ZaloPay</button>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-2">Không chọn sẽ hiển thị tất cả hình thức hỗ trợ (thẻ, QR, ví ZaloPay...).</p>
-                            </div>
-                        )}
+                        
                         <p className="text-sm text-gray-500 mt-4">
                             🔒 Tất cả giao dịch được mã hóa và bảo mật
                         </p>

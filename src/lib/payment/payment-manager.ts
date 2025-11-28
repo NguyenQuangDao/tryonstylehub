@@ -7,13 +7,11 @@ import { createMoMoPayment, verifyMoMoSignature } from './momo'
 import { capturePayPalPayment, createPayPalPayment } from './paypal'
 import { createStripePayment, verifyStripePayment } from './stripe'
 import { createVNPayPayment, isVNPayPaymentSuccess, verifyVNPaySignature } from './vnpay'
-import { createZaloPayPayment, verifyZaloPayCallback } from './zalopay'
 
 export enum PaymentProvider {
     STRIPE = 'stripe',
     MOMO = 'momo',
     VNPAY = 'vnpay',
-    ZALOPAY = 'zalopay',
     PAYPAL = 'paypal',
 }
 
@@ -101,7 +99,7 @@ export async function createPayment(params: PaymentParams): Promise<PaymentResul
                     amount: amountVND,
                     userId: params.userId,
                     packageId: params.packageId,
-                    orderInfo: `Nạp token - Gói ${params.packageId}`,
+                    orderInfo: `Nạp token - TOKEN_PACKAGE:${params.packageId}`,
                     returnUrl: params.returnUrl,
                     ipAddress: params.ipAddress || '127.0.0.1',
                 })
@@ -113,26 +111,6 @@ export async function createPayment(params: PaymentParams): Promise<PaymentResul
                 }
             }
 
-            case PaymentProvider.ZALOPAY: {
-                const amountVND = params.currency === 'USD'
-                    ? convertUSDtoVND(params.amount)
-                    : params.amount
-
-                const result = await createZaloPayPayment({
-                    amount: amountVND,
-                    userId: params.userId,
-                    packageId: params.packageId,
-                    description: `Nạp token - Gói ${params.packageId}`,
-                    callbackUrl: params.returnUrl,
-                    preferredPaymentMethods: params.preferredPaymentMethods,
-                })
-                return {
-                    success: result.success,
-                    transactionId: result.transactionId,
-                    paymentUrl: result.orderUrl,
-                    error: result.error,
-                }
-            }
 
             case PaymentProvider.PAYPAL: {
                 const result = await createPayPalPayment({
@@ -211,20 +189,6 @@ export async function verifyPayment(
                 }
             }
 
-            case PaymentProvider.ZALOPAY: {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const isValid = verifyZaloPayCallback(data as any)
-                if (!isValid) {
-                    return { success: false, error: 'Invalid signature' }
-                }
-
-                const callbackData = JSON.parse(data.data)
-                return {
-                    success: callbackData.return_code === 1,
-                    transactionId: callbackData.app_trans_id,
-                    error: callbackData.return_code !== 1 ? callbackData.return_message : undefined,
-                }
-            }
 
             case PaymentProvider.PAYPAL: {
                 const result = await capturePayPalPayment(data.orderId)
@@ -255,7 +219,6 @@ export function getAvailablePaymentMethods(currency: string): PaymentProvider[] 
         return [
             PaymentProvider.MOMO,
             PaymentProvider.VNPAY,
-            PaymentProvider.ZALOPAY,
             PaymentProvider.STRIPE,
         ]
     }

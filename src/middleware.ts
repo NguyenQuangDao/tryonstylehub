@@ -41,6 +41,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Role-based access control for protected areas
+  const isAdminArea = pathname.startsWith('/admin');
+  const isSellerArea = pathname.startsWith('/seller');
+
+  const role = (payload as any).role as string | undefined;
+  if (isAdminArea) {
+    if (role && role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
+  if (isSellerArea) {
+    if (role && role !== 'SELLER') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -50,4 +67,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-

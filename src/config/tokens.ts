@@ -444,19 +444,6 @@ export const TOKEN_CONFIG = {
             color: '#0E4F9A',
             popularity: 2,
         },
-        {
-            id: 'zalopay',
-            name: 'ZaloPay',
-            nameVi: 'ZaloPay',
-            icon: '⚡',
-            svgIcon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12h5v8h10v-8h5L12 2z"/></svg>`,
-            enabled: true,
-            description: 'ZaloPay e-wallet',
-            descriptionVi: 'Ví điện tử ZaloPay',
-            currencies: ['VND'],
-            color: '#0068FF',
-            popularity: 3,
-        },
     ],
 
     // Balance thresholds with visual indicators

@@ -231,9 +231,6 @@ async function processPayment(params: {
     case 'vnpay':
       provider = PaymentProvider.VNPAY
       break
-    case 'zalopay':
-      provider = PaymentProvider.ZALOPAY
-      break
     default:
       // Fallback for old mock IDs
       if (params.paymentMethodId.startsWith('pm_mock_')) {
