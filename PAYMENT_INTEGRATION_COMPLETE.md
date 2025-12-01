@@ -120,8 +120,8 @@ cp .env.example .env
 1. Visit: https://dashboard.stripe.com/register
 2. Get test API keys
 3. Add to .env:
-   STRIPE_SECRET_KEY="sk_test_..."
-   STRIPE_PUBLISHABLE_KEY="pk_test_..."
+   STRIPE_SECRET_KEY="<your_stripe_secret_key>"
+   STRIPE_PUBLISHABLE_KEY="<your_stripe_publishable_key>"
 ```
 
 #### PayPal (Free, Instant)

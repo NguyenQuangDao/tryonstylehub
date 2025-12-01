@@ -190,8 +190,8 @@ npm install stripe @stripe/stripe-js
 
 Cập nhật `.env`:
 ```
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=<your_stripe_secret_key>
+STRIPE_PUBLISHABLE_KEY=<your_stripe_publishable_key>
 ```
 
 Thay thế `processPayment` function trong `/api/tokens/purchase/route.ts`

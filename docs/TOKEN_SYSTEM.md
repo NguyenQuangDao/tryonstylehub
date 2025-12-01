@@ -309,9 +309,9 @@ Hiện tại sử dụng mock payment. Để tích hợp Stripe thật:
 
 2. Thêm environment variables:
    ```env
-   STRIPE_SECRET_KEY=sk_test_...
-   STRIPE_PUBLISHABLE_KEY=pk_test_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
+   STRIPE_SECRET_KEY=<your_stripe_secret_key>
+   STRIPE_PUBLISHABLE_KEY=<your_stripe_publishable_key>
+   STRIPE_WEBHOOK_SECRET=<your_stripe_webhook_secret>
    ```
 
 3. Cập nhật `processPayment` function trong `/api/tokens/purchase/route.ts`
