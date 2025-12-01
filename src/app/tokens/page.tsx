@@ -1,5 +1,6 @@
 'use client'
 
+import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -30,7 +31,7 @@ export default function TokenPurchasePage() {
     const [allPackages, setAllPackages] = useState<TokenPackage[]>([])
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
     const [allPaymentMethods, setAllPaymentMethods] = useState<PaymentMethod[]>([])
-    const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'VND'>('VND')
+    const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'VND'>('USD')
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
@@ -38,6 +39,11 @@ export default function TokenPurchasePage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [currentBalance, setCurrentBalance] = useState<number>(0)
+    const [stripe, setStripe] = useState<Stripe | null>(null)
+    const [elements, setElements] = useState<StripeElements | null>(null)
+    const [clientSecret, setClientSecret] = useState<string | null>(null)
+    const [showStripeForm, setShowStripeForm] = useState(false)
+    const paymentElementId = 'stripe-payment-element'
 
     useEffect(() => {
         fetchData()
@@ -147,9 +153,29 @@ export default function TokenPurchasePage() {
 
             // Handle Stripe client-side confirmation
             if (data.requiresClientConfirmation && data.clientSecret) {
-                // TODO: Integrate Stripe Elements for client-side confirmation
-                setError('Stripe payment requires client-side setup. Coming soon!')
+                const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+                if (!pk) {
+                    setError('Thiếu NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY trong môi trường')
+                    setProcessing(false)
+                    return
+                }
+                const s = await loadStripe(pk)
+                if (!s) {
+                    setError('Không thể khởi tạo Stripe')
+                    setProcessing(false)
+                    return
+                }
+                setStripe(s)
+                setClientSecret(data.clientSecret)
+                const els = s.elements({ clientSecret: data.clientSecret })
+                setElements(els)
+                setShowStripeForm(true)
                 setProcessing(false)
+                const container = document.getElementById(paymentElementId)
+                if (container && els) {
+                    const pe = els.create('payment')
+                    pe.mount(`#${paymentElementId}`)
+                }
                 return
             }
 
@@ -413,6 +439,56 @@ export default function TokenPurchasePage() {
                             <p className="text-center text-sm text-gray-500 mt-4">
                                 Token sẽ được thêm vào tài khoản ngay lập tức sau khi thanh toán thành công
                             </p>
+                        </div>
+                    )}
+                    {showStripeForm && clientSecret && (
+                        <div className="mt-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Thanh toán bằng thẻ</h3>
+                            <div id={paymentElementId} className="mb-6"></div>
+                            <button
+                                onClick={async () => {
+                                    if (!stripe || !elements) return
+                                    setProcessing(true)
+                                    setError(null)
+                                    const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
+                                        elements,
+                                        redirect: 'if_required',
+                                    })
+                                    if (stripeErr) {
+                                        setError(stripeErr.message || 'Xác nhận thanh toán thất bại')
+                                        setProcessing(false)
+                                        return
+                                    }
+                                    if (paymentIntent && paymentIntent.status === 'succeeded') {
+                                        const pkgId = selectedPackage
+                                        const res = await fetch('/api/tokens/confirm-stripe', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ paymentIntentId: paymentIntent.id, packageId: pkgId }),
+                                        })
+                                        const d = await res.json()
+                                        if (!res.ok || !d.success) {
+                                            setError(d.error || 'Không thể ghi nhận giao dịch')
+                                            setProcessing(false)
+                                            return
+                                        }
+                                        setSuccess(true)
+                                        setCurrentBalance(d.data?.newBalance || currentBalance)
+                                        setProcessing(false)
+                                        setTimeout(() => {
+                                            router.push('/dashboard?purchase=success')
+                                        }, 1500)
+                                    } else {
+                                        setError('Thanh toán chưa hoàn tất')
+                                        setProcessing(false)
+                                    }
+                                }}
+                                disabled={processing}
+                                className="w-full bg-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {processing ? 'Đang xác nhận...' : 'Thanh toán'}
+                            </button>
+                            <p className="text-sm text-gray-500 mt-3">Dùng thẻ thử Stripe: 4242 4242 4242 4242</p>
                         </div>
                     )}
                 </div>

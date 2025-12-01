@@ -34,12 +34,17 @@ export async function createStripePayment(
     params: StripePaymentParams
 ): Promise<StripePaymentResult> {
     try {
-        // Convert amount to cents (Stripe uses smallest currency unit)
-        const amountInCents = Math.round(params.amount * 100)
+        const zeroDecimalCurrencies = new Set([
+            'BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','XAF','XOF','XPF'
+        ])
+        const currency = params.currency.toUpperCase()
+        const amountInSmallestUnit = zeroDecimalCurrencies.has(currency)
+            ? Math.round(params.amount)
+            : Math.round(params.amount * 100)
 
         // Create payment intent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: amountInCents,
+            amount: amountInSmallestUnit,
             currency: params.currency.toLowerCase(),
             metadata: {
                 userId: params.userId.toString(),

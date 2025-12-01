@@ -147,55 +147,105 @@ export async function createPayment(params: PaymentParams): Promise<PaymentResul
 /**
  * Verify payment callback/webhook
  */
+type MoMoCallbackPayload = {
+    orderId: string
+    requestId: string
+    amount: string
+    orderInfo: string
+    orderType: string
+    transId: string
+    resultCode: number
+    message: string
+    payType: string
+    responseTime: string
+    extraData: string
+    signature: string
+}
+
+type VNPayCallbackPayload = {
+    vnp_TxnRef: string
+    vnp_ResponseCode?: string
+    vnp_OrderInfo?: string
+    vnp_SecureHash?: string
+    [key: string]: string | undefined
+}
+
 export async function verifyPayment(
     provider: PaymentProvider,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: Record<string, any>
-): Promise<{ success: boolean; transactionId?: string; error?: string }> {
+    data: Record<string, unknown>
+): Promise<{ success: boolean; transactionId?: string; error?: string; packageId?: string }> {
     try {
         switch (provider) {
             case PaymentProvider.STRIPE: {
-                const result = await verifyStripePayment(data.paymentIntentId)
+                const pid = typeof data.paymentIntentId === 'string' ? data.paymentIntentId : ''
+                const result = await verifyStripePayment(pid)
                 return {
                     success: result.success,
-                    transactionId: data.paymentIntentId,
+                    transactionId: pid,
                     error: result.error,
                 }
             }
 
             case PaymentProvider.MOMO: {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const isValid = verifyMoMoSignature(data as any)
+                const momoData = data as MoMoCallbackPayload
+                const isValid = verifyMoMoSignature(momoData)
                 if (!isValid) {
                     return { success: false, error: 'Invalid signature' }
                 }
+                let pkgId: string | undefined
+                try {
+                    const extra = typeof momoData.extraData === 'string' ? JSON.parse(momoData.extraData) : {}
+                    pkgId = typeof extra.packageId === 'string' ? extra.packageId : undefined
+                } catch {}
                 return {
-                    success: data.resultCode === 0,
-                    transactionId: data.orderId,
-                    error: data.resultCode !== 0 ? data.message : undefined,
+                    success: momoData.resultCode === 0,
+                    transactionId: momoData.orderId,
+                    error: momoData.resultCode !== 0 ? momoData.message : undefined,
+                    packageId: pkgId,
                 }
             }
 
             case PaymentProvider.VNPAY: {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const isValid = verifyVNPaySignature(data as any)
+                const vnData = data as VNPayCallbackPayload
+                const vnParams: Record<string, string> = {}
+                for (const key in vnData) {
+                    const val = vnData[key]
+                    if (typeof val === 'string') vnParams[key] = val
+                }
+                const isValid = verifyVNPaySignature({ ...vnParams })
                 if (!isValid) {
                     return { success: false, error: 'Invalid signature' }
                 }
+                const success = isVNPayPaymentSuccess(vnParams)
+                let pkgId: string | undefined
+                try {
+                    const m = (vnParams['vnp_OrderInfo'] || '').match(/TOKEN_PACKAGE:([\w-]+)/)
+                    pkgId = m ? m[1] : undefined
+                } catch {}
                 return {
-                    success: isVNPayPaymentSuccess(data),
-                    transactionId: data.vnp_TxnRef,
-                    error: !isVNPayPaymentSuccess(data) ? 'Payment failed' : undefined,
+                    success,
+                    transactionId: vnParams['vnp_TxnRef'],
+                    error: !success ? 'Payment failed' : undefined,
+                    packageId: pkgId,
                 }
             }
 
 
             case PaymentProvider.PAYPAL: {
-                const result = await capturePayPalPayment(data.orderId)
+                const orderId = typeof (data as Record<string, unknown>).orderId === 'string' ? (data as Record<string, unknown>).orderId as string : ''
+                const result = await capturePayPalPayment(orderId)
+                let pkgId: string | undefined
+                try {
+                    if (result.customId) {
+                        const c = JSON.parse(result.customId)
+                        pkgId = typeof c.packageId === 'string' ? c.packageId : undefined
+                    }
+                } catch {}
                 return {
                     success: result.success,
-                    transactionId: data.orderId,
+                    transactionId: result.referenceId || orderId,
                     error: result.error,
+                    packageId: pkgId,
                 }
             }
 
@@ -215,13 +265,9 @@ export async function verifyPayment(
  * Get available payment methods based on currency
  */
 export function getAvailablePaymentMethods(currency: string): PaymentProvider[] {
-    if (currency === 'VND') {
-        return [
-            PaymentProvider.MOMO,
-            PaymentProvider.VNPAY,
-            PaymentProvider.STRIPE,
-        ]
+    const c = currency.toUpperCase()
+    if (c === 'VND') {
+        return [PaymentProvider.VNPAY, PaymentProvider.MOMO]
     }
-
     return [PaymentProvider.STRIPE, PaymentProvider.PAYPAL]
 }

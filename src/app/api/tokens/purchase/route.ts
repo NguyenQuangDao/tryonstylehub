@@ -222,24 +222,10 @@ async function processPayment(params: {
     case 'stripe':
       provider = PaymentProvider.STRIPE
       break
-    case 'paypal':
-      provider = PaymentProvider.PAYPAL
-      break
-    case 'momo':
-      provider = PaymentProvider.MOMO
-      break
-    case 'vnpay':
-      provider = PaymentProvider.VNPAY
-      break
     default:
-      // Fallback for old mock IDs
-      if (params.paymentMethodId.startsWith('pm_mock_')) {
-        provider = PaymentProvider.STRIPE
-      } else {
-        return {
-          success: false,
-          error: 'Invalid payment method',
-        }
+      return {
+        success: false,
+        error: 'Invalid payment method',
       }
   }
 

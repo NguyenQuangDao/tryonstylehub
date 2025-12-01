@@ -140,7 +140,7 @@ export async function createPayPalPayment(
  */
 export async function capturePayPalPayment(
     orderId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; referenceId?: string; customId?: string; error?: string }> {
     try {
         const accessToken = await getPayPalAccessToken()
 
@@ -164,7 +164,16 @@ export async function capturePayPalPayment(
         const result = await response.json()
 
         if (result.status === 'COMPLETED') {
-            return { success: true }
+            let referenceId: string | undefined
+            let customId: string | undefined
+            try {
+                const pu = Array.isArray(result.purchase_units) ? result.purchase_units[0] : undefined
+                if (pu) {
+                    referenceId = typeof pu.reference_id === 'string' ? pu.reference_id : undefined
+                    customId = typeof pu.custom_id === 'string' ? pu.custom_id : undefined
+                }
+            } catch {}
+            return { success: true, referenceId, customId }
         }
 
         return {
