@@ -1,6 +1,7 @@
-import { createToken, isValidEmail, verifyPassword } from '../../../../lib/auth';
-import { prisma } from '../../../../lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { createToken, isValidEmail, verifyPassword } from '../../../../lib/auth';
+import { checkDatabaseConnection } from '../../../../lib/db-check';
+import { prisma } from '../../../../lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Email không hợp lệ' },
         { status: 400 }
+      );
+    }
+    const dbOk = await checkDatabaseConnection();
+    if (!dbOk) {
+      return NextResponse.json(
+        { error: 'Cơ sở dữ liệu không khả dụng', hint: 'Vui lòng cấu hình DATABASE_URL và khởi động DB' },
+        { status: 503 }
       );
     }
 
@@ -54,7 +62,7 @@ export async function POST(request: NextRequest) {
       });
       const response = NextResponse.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar, role: user.role, shopId: shop?.id ?? null },
+        user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl, role: user.role, shopId: shop?.id ?? null },
       });
       response.cookies.set('token', token, {
         httpOnly: true,
@@ -68,12 +76,17 @@ export async function POST(request: NextRequest) {
       // Nếu JWT chưa cấu hình: vẫn trả user, không set cookie
       return NextResponse.json({
         success: true,
-        user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar, role: user.role },
+        user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl, role: user.role },
         warning: 'JWT chưa cấu hình, vui lòng sử dụng phiên hiện tại hoặc cấu hình JWT_SECRET',
       });
     }
   } catch (error) {
-    console.error('Login error:', error);
+    if (error instanceof Error && error.name === 'PrismaClientInitializationError') {
+      return NextResponse.json(
+        { error: 'Cơ sở dữ liệu không khả dụng', hint: 'Vui lòng cấu hình DATABASE_URL và khởi động DB' },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       { error: 'Đã xảy ra lỗi khi đăng nhập' },
       { status: 500 }

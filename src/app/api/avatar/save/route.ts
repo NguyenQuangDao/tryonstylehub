@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const skinTone = parsed.skinTone;
     const eyeColor = parsed.eyeColor;
     const isPublic = parsed.isPublic;
-    const userId = parsed.userId !== undefined ? (typeof parsed.userId === 'string' ? parseInt(parsed.userId) : parsed.userId) : undefined;
+  const userId = parsed.userId !== undefined ? (typeof parsed.userId === 'string' ? parsed.userId : String(parsed.userId)) : undefined;
     const avatarImage = parsed.avatarImage;
 
     // Generate session ID for anonymous users

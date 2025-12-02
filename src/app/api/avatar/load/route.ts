@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const virtualModel = await prisma.virtualModel.findFirst({
       where: {
         avatarName,
-        ...(userId ? { userId: parseInt(userId) } : { sessionId })
+        ...(userId ? { userId } : { sessionId })
       }
     });
 
@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest) {
     const virtualModel = await prisma.virtualModel.findFirst({
       where: {
         avatarName,
-        ...(userId ? { userId: parseInt(userId) } : { sessionId })
+        ...(userId ? { userId } : { sessionId })
       }
     });
 

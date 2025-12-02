@@ -91,6 +91,17 @@ export async function uploadBase64ToS3(
   }
 }
 
+export async function uploadFileToS3(
+  file: File,
+  folder: string
+): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+  const key = generateS3Key(folder, file.name || 'upload')
+  const contentType = file.type || 'application/octet-stream'
+  return uploadToS3(buffer, key, contentType)
+}
+
 /**
  * Generate S3 key for file
  */
@@ -124,4 +135,3 @@ export async function putJSON(key: string, data: unknown): Promise<string> {
   await uploadToS3(body, key, 'application/json');
   return `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${key}`;
 }
-

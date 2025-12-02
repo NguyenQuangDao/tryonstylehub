@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import { motion } from 'framer-motion';
 import {
   Activity,
@@ -80,7 +81,7 @@ export default function EnhancedDashboardPage() {
       icon: Sparkles,
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/20',
-      description: 'Token còn lại trong tài khoản',
+      trend: '+0.0% from last week',
       action: {
         label: 'Nạp thêm',
         href: '/tokens',
@@ -92,7 +93,7 @@ export default function EnhancedDashboardPage() {
       icon: DollarSign,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/20',
-      description: 'Tổng chi phí trong ngày',
+      trend: '+5.2% from yesterday',
     },
     {
       title: 'Chi phí tuần này',
@@ -100,7 +101,7 @@ export default function EnhancedDashboardPage() {
       icon: Calendar,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/20',
-      description: 'Chi phí 7 ngày gần nhất',
+      trend: '+12.4% from last week',
     },
     {
       title: 'Chi phí tháng này',
@@ -108,7 +109,7 @@ export default function EnhancedDashboardPage() {
       icon: TrendingUp,
       color: 'text-orange-600 dark:text-orange-400',
       bgColor: 'bg-orange-100 dark:bg-orange-900/20',
-      description: 'Tổng chi phí 30 ngày',
+      trend: '+20.1% from last month',
     },
   ];
 
@@ -176,44 +177,14 @@ export default function EnhancedDashboardPage() {
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-
-          return (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                  <div className={`w-8 h-8 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                    <Icon className={`h-4 w-4 ${stat.color}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.description}
-                  </p>
-                  {stat.action && (
-                    <Button variant="link" size="sm" className="px-0 mt-2" asChild>
-                      <a href={stat.action.href}>
-                        {stat.action.label} →
-                      </a>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
+      <DashboardOverview
+        items={stats.map((s) => ({
+          title: s.title,
+          value: s.value,
+          trend: s.trend,
+          icon: s.icon,
+        }))}
+      />
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="transactions" className="space-y-4">

@@ -24,7 +24,7 @@ export enum PaymentEventType {
 }
 
 interface LogEntry {
-    userId?: number
+    userId?: string | number
     eventType: PaymentEventType
     level: LogLevel
     details: Record<string, any>
@@ -51,7 +51,7 @@ export async function logPaymentEvent(entry: LogEntry): Promise<void> {
             }),
         }
 
-        await prisma.costTracking.create({ data: logData })
+        await (prisma as any).costTracking.create({ data: logData })
 
         // Also log to console for development
         console.log(`[${entry.level}] ${entry.eventType}:`, entry.details)
@@ -64,7 +64,7 @@ export async function logPaymentEvent(entry: LogEntry): Promise<void> {
  * Log token deduction events
  */
 export async function logTokenDeduction(
-    userId: number,
+    userId: string | number,
     operation: string,
     tokensCost: number,
     success: boolean,
@@ -86,8 +86,8 @@ export async function logTokenDeduction(
 /**
  * Get payment logs for a user
  */
-export async function getUserPaymentLogs(userId: number, limit = 50) {
-    return prisma.costTracking.findMany({
+export async function getUserPaymentLogs(userId: string | number, limit = 50) {
+    return (prisma as any).costTracking.findMany({
         where: {
             userId,
             service: 'payment',
@@ -101,13 +101,13 @@ export async function getUserPaymentLogs(userId: number, limit = 50) {
  * Get security events
  */
 export async function getSecurityEvents(limit = 100) {
-    const logs = await prisma.costTracking.findMany({
+    const logs = await (prisma as any).costTracking.findMany({
         where: { service: 'payment' },
         orderBy: { createdAt: 'desc' },
         take: limit,
     })
 
-    return logs.filter(log => {
+    return logs.filter((log: any) => {
         try {
             const details = JSON.parse(log.details || '{}')
             return details.level === LogLevel.SECURITY

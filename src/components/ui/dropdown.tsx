@@ -52,7 +52,7 @@ export function Dropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className={cn('rounded-lg border shadow-sm', colorStyles[colorScheme], className)}
+            className={cn('rounded-md border', colorStyles[colorScheme], className)}
           >
             <div className="p-4">
               {children}

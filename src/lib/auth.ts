@@ -8,7 +8,7 @@ function getJwtSecret(): Uint8Array {
 }
 
 export interface JWTPayload {
-  userId: number;
+  userId: string;
   email: string;
   name: string;
   [key: string]: unknown;
@@ -70,4 +70,3 @@ export function isValidPassword(password: string): { valid: boolean; message?: s
   }
   return { valid: true };
 }
-

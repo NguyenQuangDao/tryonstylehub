@@ -8,7 +8,10 @@ interface User {
   email: string;
   name: string;
   avatar?: string | null;
+  avatarUrl?: string | null;
   tokenBalance?: number;
+  role?: 'USER' | 'SELLER' | 'ADMIN';
+  shopId?: string | null;
 }
 
 interface AuthContextType {
@@ -116,4 +119,3 @@ export function useAuth() {
   }
   return context;
 }
-

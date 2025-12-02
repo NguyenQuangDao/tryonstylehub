@@ -7,168 +7,236 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Product {
-  id        Int       @id @default(autoincrement())
-  name      String    @db.VarChar(255)
-  type      String    @db.VarChar(50)
-  imageUrl  String    @db.VarChar(1024)
-  price     Float
-  styleTags String    @db.Text  // Store as JSON string
-  shopId    Int
-  shop      Shop      @relation(fields: [shopId], references: [id])
-  outfits   Outfit[]  @relation("OutfitProducts")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+enum UserRole {
+  ADMIN
+  USER
+  SELLER
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum TransactionType {
+  DEPOSIT
+  PURCHASE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum TokenPurchaseStatus {
+  pending
+  completed
+  failed
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  name         String
+  avatarUrl    String?
+  role         UserRole      @default(USER)
+  tokenBalance Int           @default(0)
+  shop         Shop?
+  orders       Order[]
+  reviews      Review[]
+  transactions Transaction[]
+  tokenPurchases TokenPurchase[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([role])
 }
 
 model Shop {
-  id        Int        @id @default(autoincrement())
-  name      String     @db.VarChar(255)
-  url       String     @db.VarChar(1024)
-  owner     User       @relation(fields: [ownerId], references: [id])
-  ownerId   Int        @unique
+  id            String     @id @default(cuid())
+  name          String
+  slug          String     @unique
+  logoUrl       String?
+  bannerUrl     String?
+  description   String?
+  status        ShopStatus @default(PENDING)
+  averageRating Float      @default(0)
+  totalSales    Int        @default(0)
+  ownerId       String     @unique
+  owner         User       @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  products      Product[]
+  orders        Order[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([slug])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  imageUrl  String?
+  parentId  String?
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Category[] @relation("CategoryHierarchy")
   products  Product[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  @@index([ownerId])
+  @@index([slug])
+  @@index([parentId])
 }
 
-model SellerApplication {
-  id          Int                    @id @default(autoincrement())
-  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int                    @unique
-  businessName String                @db.VarChar(255)
-  businessDescription String          @db.Text
-  website     String?                @db.VarChar(1024)
-  socialMedia String?                @db.Text  // JSON array of social media links
-  status      ApplicationStatus      @default(PENDING)
-  reviewedBy  Int?                   // Admin user ID who reviewed
-  reviewedAt  DateTime?
-  rejectionReason String?            @db.Text
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
+model Product {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  images      Json
+  basePrice   Decimal          @db.Decimal(10, 2)
+  status      ProductStatus    @default(DRAFT)
+  shopId      String
+  shop        Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId  String
+  category    Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  variants    ProductVariant[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([shopId])
+  @@index([categoryId])
 }
 
-enum ApplicationStatus {
-  PENDING
-  APPROVED
-  REJECTED
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name       String
+  price      Decimal?    @db.Decimal(10, 2)
+  stock      Int         @default(0)
+  sku        String      @unique
+  attributes Json
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([productId])
 }
 
-model Outfit {
-  id        Int        @id @default(autoincrement())
-  style     String     @db.Text
-  imageUrl  String?    @db.VarChar(1024)
-  products  Product[]  @relation("OutfitProducts")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model Order {
+  id              String        @id @default(cuid())
+  buyerId         String
+  buyer           User          @relation(fields: [buyerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  shopId          String
+  shop            Shop          @relation(fields: [shopId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  totalAmount     Decimal       @db.Decimal(10, 2)
+  shippingAddress Json
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  items           OrderItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([buyerId])
+  @@index([shopId])
 }
 
-model User {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique @db.VarChar(255)
-  name              String             @db.VarChar(255)
-  password          String             @db.VarChar(255)  // Hashed password
-  avatar            String?            @db.VarChar(1024)
-  role              UserRole           @default(SHOPPER)
-  tokenBalance      Int                @default(10)  // Free tokens for new users
-  virtualModels     VirtualModel[]
-  sellerApplication SellerApplication?
-  shop              Shop?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+model OrderItem {
+  id               String          @id @default(cuid())
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId        String
+  product          Product         @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  quantity         Int
+  price            Decimal         @db.Decimal(10, 2)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([productVariantId])
 }
 
-enum UserRole {
-  SHOPPER
-  SELLER
-  ADMIN
+model Transaction {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  amount      Decimal           @db.Decimal(10, 2)
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
-model TryOnHistory {
-  id              Int      @id @default(autoincrement())
-  userId          Int?
-  modelImageUrl   String   @db.VarChar(1024)
-  garmentImageUrl String   @db.VarChar(1024)
-  resultImageUrl  String   @db.VarChar(1024)
-  modelVersion    String   @db.VarChar(50)
-  createdAt       DateTime @default(now())
-}
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  images    Json
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-model CostTracking {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  service     String   @db.VarChar(100)  // "openai", "fashn", "aws-s3"
-  operation   String   @db.VarChar(100)  // "image-generation", "try-on", "upload"
-  cost        Float
-  details     String?  @db.Text  // JSON with additional details
-  createdAt   DateTime @default(now())
+  @@index([userId])
+  @@index([productId])
 }
 
 model TokenPurchase {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  stripePaymentId String @unique @db.VarChar(255)
-  amount      Float    // USD amount
-  tokens      Int      // Number of tokens purchased
-  status      String   @default("completed") @db.VarChar(50)
-  createdAt   DateTime @default(now())
-}
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  stripePaymentId String              @unique
+  amount          Decimal             @db.Decimal(10, 2)
+  tokens          Int
+  status          TokenPurchaseStatus @default(pending)
+  createdAt       DateTime            @default(now())
 
-model VirtualModel {
-  id                Int      @id @default(autoincrement())
-  userId            Int?
-  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Basic info
-  avatarName        String   @db.VarChar(255)
-  isPublic          Boolean  @default(false)
-  avatarImage       String?  @db.VarChar(1024)  // URL of uploaded avatar image
-  
-  // Body Metrics (Required)
-  height            Float    // cm
-  weight            Float    // kg
-  gender            String   @db.VarChar(50)  // "male", "female", "non-binary"
-  
-  // Body Metrics (Optional)
-  bodyShape         String?  @db.VarChar(50)  // "slim", "balanced", "muscular", "curvy"
-  skinTone          String?  @db.VarChar(50)  // "very-light", "light", "medium", "tan", "brown", "dark"
-  muscleLevel       Int?     // 1-5
-  fatLevel          Int?     // 1-5
-  shoulderWidth     Float?   // cm
-  waistSize         Float?   // cm
-  hipSize           Float?   // cm
-  legLength         Float?   // cm
-  
-  // Appearance (Hair - Required)
-  hairColor         String   @db.VarChar(50)  // "black", "brown", "blonde", "red", "white", "other"
-  hairStyle         String   @db.VarChar(50)  // "long", "short", "curly", "straight", "bald"
-  
-  // Appearance (Optional)
-  eyeColor          String?  @db.VarChar(50)  // "brown", "black", "blue", "green", "gray", "amber"
-  faceShape         String?  @db.VarChar(50)  // "round", "oval", "square", "triangle", "long"
-  beardStyle        String?  @db.VarChar(50)  // "none", "goatee", "full", "stubble"
-  tattoos           String?  @db.Text         // JSON or text description
-  piercings         String?  @db.Text         // JSON or text description
-  
-  // Style (Optional)
-  clothingStyle     String?  @db.VarChar(50)  // "sport", "elegant", "street", "gothic", "casual"
-  accessories       String?  @db.Text         // JSON array
-  footwearType      String?  @db.VarChar(50)  // "sneaker", "heels", "sandals", "boots"
-  colorPalette      String?  @db.Text         // JSON array of colors
-  
-  // Additional
-  ageAppearance     Int?     // Age appearance
-  bodyProportionPreset String? @db.VarChar(50) // "supermodel", "athletic", "realistic"
-  
-  // Session tracking for anonymous users
-  sessionId         String?  @db.VarChar(255)  // For anonymous users
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
   @@index([userId])
-  @@index([sessionId])
 }
 
+model CostTracking {
+  id        String   @id @default(cuid())
+  userId    String?
+  service   String
+  operation String
+  cost      Int      @default(0)
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, service])
+}

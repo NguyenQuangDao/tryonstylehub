@@ -1,18 +1,18 @@
-# Hướng Dẫn Tích Hợp Phương Thức Thanh Toán
+# Hướng Dẫn Tích Hợp Thanh Toán (Stripe-Only)
 
 ## 📋 Tổng Quan
 
-Hệ thống đã được tích hợp **5 phương thức thanh toán** hỗ trợ cả thị trường quốc tế và Việt Nam:
+Hệ thống hiện chỉ hỗ trợ thanh toán qua **Stripe**. Tất cả phương thức thanh toán khác đã được loại bỏ khỏi hệ thống.
 
-### ✅ Phương Thức Thanh Toán
+### ✅ Phương Thức Stripe Đang Hỗ Trợ
 
-| Phương thức | Thị trường | Loại tiền | Trạng thái |
-|------------|------------|-----------|------------|
-| **Stripe** | Quốc tế | USD, VND | ✅ Sẵn sàng |
-| **PayPal** | Quốc tế | USD | ✅ Sẵn sàng |
-| **MoMo** | Việt Nam | VND | ✅ Sẵn sàng |
-| **VNPay** | Việt Nam | VND | ✅ Sẵn sàng |
-| **ZaloPay** | Việt Nam | VND | ✅ Sẵn sàng |
+- `card` (Credit/Debit Card): Visa, MasterCard, American Express
+
+### 🚫 Phương Thức Stripe ĐÃ BỊ Vô Hiệu Hóa
+
+- Cash App Pay
+- Amazon Pay
+- Cryptocurrency
 
 ---
 
@@ -43,27 +43,7 @@ STRIPE_SECRET_KEY="<your_stripe_secret_key>"
 STRIPE_PUBLISHABLE_KEY="<your_stripe_publishable_key>"
 STRIPE_WEBHOOK_SECRET="<your_stripe_webhook_secret>"
 
-# PayPal
-PAYPAL_CLIENT_ID="..."
-PAYPAL_CLIENT_SECRET="..."
-PAYPAL_API_BASE="https://api-m.sandbox.paypal.com"
-
-# MoMo
-MOMO_PARTNER_CODE="..."
-MOMO_ACCESS_KEY="..."
-MOMO_SECRET_KEY="..."
-MOMO_ENDPOINT="https://test-payment.momo.vn/v2/gateway/api/create"
-
-# VNPay
-VNPAY_TMN_CODE="..."
-VNPAY_HASH_SECRET="..."
-VNPAY_URL="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
-
-# ZaloPay
-ZALOPAY_APP_ID="..."
-ZALOPAY_KEY1="..."
-ZALOPAY_KEY2="..."
-ZALOPAY_ENDPOINT="https://sb-openapi.zalopay.vn/v2/create"
+# Chỉ yêu cầu biến môi trường Stripe
 ```
 
 ### Bước 3: Đăng Ký Tài Khoản Developer
@@ -73,28 +53,7 @@ ZALOPAY_ENDPOINT="https://sb-openapi.zalopay.vn/v2/create"
 2. Tạo tài khoản và lấy API keys
 3. Cấu hình webhook endpoint: `/api/tokens/payment-webhook?provider=stripe`
 
-#### 🅿️ PayPal (Quốc tế)
-1. Truy cập: https://developer.paypal.com/
-2. Tạo app và lấy Client ID/Secret
-3. Bật sandbox mode để test
-
-#### 🟣 MoMo (Việt Nam)
-1. Truy cập: https://developers.momo.vn/
-2. Đăng ký merchant và tạo app
-3. Lấy Partner Code, Access Key, Secret Key
-4. Cấu hình IPN URL: `/api/tokens/payment-webhook?provider=momo`
-
-#### 🔵 VNPay (Việt Nam)
-1. Truy cập: https://sandbox.vnpayment.vn/
-2. Đăng ký merchant test
-3. Lấy TMN Code và Hash Secret
-4. Cấu hình Return URL: `/api/tokens/payment-callback?provider=vnpay`
-
-#### ⚡ ZaloPay (Việt Nam)
-1. Truy cập: https://docs.zalopay.vn/
-2. Đăng ký merchant
-3. Lấy App ID, Key1, Key2
-4. Cấu hình callback URL
+Các cổng thanh toán khác đã bị loại bỏ.
 
 ---
 
@@ -110,19 +69,7 @@ Người dùng truy cập `/tokens`:
 
 ### 2. Flow Thanh Toán
 
-#### A. Redirect-based (MoMo, VNPay, ZaloPay, PayPal)
-
-```
-User → Chọn gói & phương thức
-     → API tạo payment URL
-     → Redirect đến trang thanh toán
-     → User thanh toán
-     → Redirect về callback URL
-     → Verify payment
-     → Cộng token
-```
-
-#### B. Client-side (Stripe) - Coming Soon
+#### Client-side (Stripe)
 
 ```
 User → Chọn gói & phương thức
@@ -136,31 +83,9 @@ User → Chọn gói & phương thức
 ### 3. API Endpoints
 
 #### POST `/api/tokens/purchase`
-Tạo giao dịch thanh toán
+Tạo payment intent Stripe và trả `clientSecret`.
 
-**Request:**
-```json
-{
-  "packageId": "starter_vnd",
-  "paymentMethodId": "momo"
-}
-```
-
-**Response (Redirect):**
-```json
-{
-  "success": true,
-  "requiresRedirect": true,
-  "paymentUrl": "https://payment.momo.vn/...",
-  "transactionId": "TOKEN_123_1234567890"
-}
-```
-
-#### GET `/api/tokens/payment-callback?provider=momo`
-Xử lý redirect sau khi thanh toán
-
-#### POST `/api/tokens/payment-webhook?provider=momo`
-Xử lý webhook/IPN từ payment gateway
+Stripe dùng webhook: `POST /api/tokens/payment-webhook?provider=stripe` và xác nhận client: `POST /api/tokens/confirm-stripe`.
 
 ---
 
@@ -171,10 +96,7 @@ src/
 ├── lib/payment/
 │   ├── payment-manager.ts     # Quản lý tổng hợp
 │   ├── stripe.ts              # Stripe integration
-│   ├── paypal.ts              # PayPal integration
-│   ├── momo.ts                # MoMo integration
-│   ├── vnpay.ts               # VNPay integration
-│   └── zalopay.ts             # ZaloPay integration
+│   └── (chỉ Stripe)
 ├── app/api/tokens/
 │   ├── purchase/route.ts      # API mua token
 │   ├── payment-callback/route.ts  # Callback handler
@@ -199,21 +121,7 @@ CVV: Any 3 digits
 Date: Any future date
 ```
 
-#### PayPal Sandbox
-- Login: https://www.sandbox.paypal.com/
-- Use sandbox buyer account
-
-#### MoMo Test
-- Use test Partner Code from MoMo developer portal
-- Test app: MoMo sandbox app
-
-#### VNPay Test
-- Use test cards provided by VNPay
-- Test merchant from sandbox portal
-
-#### ZaloPay Test
-- Use sandbox credentials
-- Test with ZaloPay sandbox app
+Các mục test khác đã được loại bỏ.
 
 ---
 
@@ -275,13 +183,8 @@ ORDER BY timestamp DESC;
 
 ### Webhook Configuration
 
-Cấu hình webhooks trên các merchant portals:
-
 ```
 Stripe: https://yourdomain.com/api/tokens/payment-webhook?provider=stripe
-MoMo: https://yourdomain.com/api/tokens/payment-webhook?provider=momo
-VNPay: https://yourdomain.com/api/tokens/payment-callback?provider=vnpay
-ZaloPay: https://yourdomain.com/api/tokens/payment-webhook?provider=zalopay
 ```
 
 ---
@@ -310,24 +213,14 @@ ZaloPay: https://yourdomain.com/api/tokens/payment-webhook?provider=zalopay
 ## 📚 Documentation Links
 
 - **Stripe**: https://stripe.com/docs
-- **PayPal**: https://developer.paypal.com/docs
-- **MoMo**: https://developers.momo.vn/v3/
-- **VNPay**: https://sandbox.vnpayment.vn/apis/
-- **ZaloPay**: https://docs.zalopay.vn/
 
 ---
 
 ## 🎯 Roadmap
 
-- [x] Tích hợp 5 phương thức thanh toán
-- [x] Hỗ trợ VND và USD
-- [x] Payment callback & webhook handlers
-- [x] Currency selector UI
-- [ ] Stripe Elements integration (client-side)
-- [ ] Payment history page
-- [ ] Refund functionality
+- [x] Stripe Elements integration
+- [x] Webhook bảo mật cho Stripe
 - [ ] Subscription/recurring payments
-- [ ] Multi-currency auto-detection
 
 ---
 

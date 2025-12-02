@@ -6,4 +6,4 @@ export { default as BodyPartsComposer } from './BodyPartsComposer';
 export { default as CustomAvatarCreator } from './CustomAvatarCreator';
 export { default as VirtualModelForm } from './VirtualModelForm';
 export { default as VirtualModelSelector } from './VirtualModelSelector';
-
+export { default as ProfileSettings } from './ProfileSettings';

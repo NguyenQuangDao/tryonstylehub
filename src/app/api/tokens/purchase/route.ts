@@ -3,6 +3,7 @@ import { TOKEN_CONFIG } from '../../../../config/tokens'
 import { verifyToken } from '../../../../lib/auth'
 import { LogLevel, logPaymentEvent, PaymentEventType } from '../../../../lib/payment-logger'
 import { prisma } from '../../../../lib/prisma'
+import { getTokenPurchaseClient } from '../../../../lib/tokenPurchaseClient'
 
 /**
  * POST /api/tokens/purchase
@@ -11,7 +12,7 @@ import { prisma } from '../../../../lib/prisma'
  * Body: { packageId: string, paymentMethodId: string }
  */
 export async function POST(req: NextRequest) {
-  let userId: number | undefined
+  let userId: string | undefined
 
   try {
     // 1. Authenticate user
@@ -122,7 +123,7 @@ export async function POST(req: NextRequest) {
     // 6. Create transaction record and add tokens
     const result = await prisma.$transaction(async (tx) => {
       // Record purchase
-      const purchase = await tx.tokenPurchase.create({
+      const purchase = await getTokenPurchaseClient(tx).create({
         data: {
           userId: userId!,
           stripePaymentId: paymentResult.transactionId || `fallback_${Date.now()}`,
@@ -199,7 +200,7 @@ export async function POST(req: NextRequest) {
  * Process payment using real payment gateway
  */
 async function processPayment(params: {
-  userId: number
+  userId: string
   packageId: string
   amount: number
   currency: string
@@ -217,16 +218,12 @@ async function processPayment(params: {
   const { createPayment, PaymentProvider } = await import('../../../../lib/payment/payment-manager')
 
   // Map payment method ID to provider
-  let provider: typeof PaymentProvider[keyof typeof PaymentProvider]
-  switch (params.paymentMethodId) {
-    case 'stripe':
-      provider = PaymentProvider.STRIPE
-      break
-    default:
-      return {
-        success: false,
-        error: 'Invalid payment method',
-      }
+  const provider = params.paymentMethodId === 'stripe' ? PaymentProvider.STRIPE : undefined
+  if (!provider) {
+    return {
+      success: false,
+      error: 'Invalid payment method',
+    }
   }
 
   // Get base URL for callbacks
@@ -280,7 +277,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const purchases = await prisma.tokenPurchase.findMany({
+    const purchases = await getTokenPurchaseClient(prisma).findMany({
       where: { userId: payload.userId },
       orderBy: { createdAt: 'desc' },
       take: 50,

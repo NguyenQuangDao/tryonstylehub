@@ -7,9 +7,11 @@ import { TOKEN_CONFIG } from '../../../../config/tokens'
  */
 export async function GET() {
     try {
-        const availableMethods = TOKEN_CONFIG.PAYMENT_METHODS.filter(
-            method => method.enabled
-        )
+        const isStripeReady = !!process.env.STRIPE_SECRET_KEY
+        const availableMethods = TOKEN_CONFIG.PAYMENT_METHODS
+            .filter(m => m.id === 'stripe')
+            .map(m => ({ ...m, enabled: isStripeReady }))
+            .filter(method => method.enabled)
 
         return NextResponse.json({
             success: true,

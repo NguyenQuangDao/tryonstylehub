@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Find all virtual models for user or session
     const virtualModels = await prisma.virtualModel.findMany({
       where: {
-        ...(userId ? { userId: parseInt(userId) } : { sessionId })
+        ...(userId ? { userId } : { sessionId })
       },
       orderBy: {
         updatedAt: 'desc'

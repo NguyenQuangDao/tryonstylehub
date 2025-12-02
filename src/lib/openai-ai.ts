@@ -109,10 +109,10 @@ async function extractStyleContext(style: string): Promise<{
  */
 export async function getRecommendedProductIds(
   style: string,
-  products: Array<{ id: number; name: string; type: string; styleTags: string[] }>
-): Promise<number[]> {
+  products: Array<{ id: string; name: string; type: string; styleTags: string[] }>
+): Promise<string[]> {
   const cacheKey = `recommend:v2:${style}`;
-  const cached = getCache<number[]>(cacheKey);
+  const cached = getCache<string[]>(cacheKey);
 
   if (cached) {
     return cached;
@@ -131,9 +131,11 @@ export async function getRecommendedProductIds(
     }, {} as Record<string, typeof products>);
 
     // Step 3: Create enriched product list with context
-    const enhancedProductList = products.map(p => {
+    // Step 3: Create an indexed product list so the model returns stable IDXs
+    const indexedProducts = products.map((p, idx) => ({ idx: idx + 1, ...p }));
+    const enhancedProductList = indexedProducts.map(p => {
       const tags = p.styleTags.join(', ');
-      return `ID: ${p.id} | Name: ${p.name} | Type: ${p.type} | Style: ${tags}`;
+      return `IDX: ${p.idx} | Name: ${p.name} | Type: ${p.type} | Style: ${tags}`;
     }).join('\n');
 
     // Step 4: Build intelligent prompt with context
@@ -159,7 +161,7 @@ INSTRUCTIONS:
 
 Return ONLY a JSON object with this structure:
 {
-  "productIds": [id1, id2, id3],
+  "idx": [1, 2, 3],
   "reasoning": "Brief explanation of why these items work together"
 }`;
 
@@ -179,15 +181,15 @@ Return ONLY a JSON object with this structure:
       max_tokens: 300,
     });
 
-    const content = response.choices[0]?.message?.content || '{"productIds": []}';
+    const content = response.choices[0]?.message?.content || '{"idx": []}';
 
     // Parse the response
-    let productIds: number[] = [];
+    let idxs: number[] = [];
     let reasoning = '';
 
     try {
       const parsed = JSON.parse(content.trim());
-      productIds = parsed.productIds || parsed.ids || [];
+      idxs = parsed.idx || parsed.productIds || parsed.ids || [];
       reasoning = parsed.reasoning || '';
 
       // Log AI reasoning for debugging
@@ -198,18 +200,18 @@ Return ONLY a JSON object with this structure:
       // Fallback: try to extract array from response
       const arrayMatch = content.match(/\[[\d,\s]+\]/);
       if (arrayMatch) {
-        productIds = JSON.parse(arrayMatch[0]);
+        idxs = JSON.parse(arrayMatch[0]);
       } else {
-        // Extract any numbers found
         const matches = content.match(/\d+/g);
-        productIds = matches ? matches.map(Number) : [];
+        idxs = matches ? matches.map(Number) : [];
       }
     }
 
     // Filter valid IDs and ensure diversity
-    const validIds = productIds.filter(id =>
-      products.some(p => p.id === id)
-    );
+    const idxSet = new Set(idxs.filter((n) => Number.isFinite(n) && n > 0));
+    const validIds = indexedProducts
+      .filter((p) => idxSet.has(p.idx))
+      .map((p) => p.id);
 
     // Track cost
     const usage = response.usage;
@@ -268,4 +270,3 @@ export async function generateOutfitDescription(
     return 'A perfect combination for your style';
   }
 }
-

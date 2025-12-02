@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '../../../../lib/auth'
 import { LogLevel, logPaymentEvent, PaymentEventType } from '../../../../lib/payment-logger'
 import { prisma } from '../../../../lib/prisma'
-import { verifyStripePayment } from '../../../../lib/payment/stripe'
+import { getTokenPurchaseClient } from '../../../../lib/tokenPurchaseClient'
+import { verifyStripePayment, confirmStripePayment } from '../../../../lib/payment/stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,18 +17,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { paymentIntentId, packageId } = body as { paymentIntentId?: string; packageId?: string }
+    const contentType = req.headers.get('content-type') || ''
+    let paymentIntentId: string | undefined
+    let packageId: string | undefined
+    try {
+      if (contentType.includes('application/json')) {
+        const body = await req.json()
+        paymentIntentId = (body as any)?.paymentIntentId
+        packageId = (body as any)?.packageId
+      } else if (contentType.includes('application/x-www-form-urlencoded')) {
+        const text = await req.text()
+        const params = new URLSearchParams(text)
+        paymentIntentId = params.get('paymentIntentId') || undefined
+        packageId = params.get('packageId') || undefined
+      } else {
+        const text = await req.text()
+        try {
+          const body = JSON.parse(text)
+          paymentIntentId = (body as any)?.paymentIntentId
+          packageId = (body as any)?.packageId
+        } catch {}
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
     if (!paymentIntentId || !packageId) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    const verification = await verifyStripePayment(paymentIntentId)
+    let verification = await verifyStripePayment(paymentIntentId)
     if (!verification.success) {
-      return NextResponse.json({ error: 'Payment not completed' }, { status: 400 })
+      const attempt = await confirmStripePayment(paymentIntentId)
+      if (!attempt.success) {
+        return NextResponse.json({ error: attempt.error || 'Payment not completed' }, { status: 400 })
+      }
+      verification = await verifyStripePayment(paymentIntentId)
+      if (!verification.success) {
+        return NextResponse.json({ error: 'Payment not completed' }, { status: 400 })
+      }
     }
 
-    const already = await prisma.tokenPurchase.findFirst({
+    const already = await getTokenPurchaseClient(prisma).findFirst({
       where: { stripePaymentId: paymentIntentId, userId: payload.userId }
     })
     if (already) {
@@ -40,7 +70,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const purchase = await tx.tokenPurchase.create({
+      const purchase = await getTokenPurchaseClient(tx).create({
         data: {
           userId: payload.userId,
           stripePaymentId: paymentIntentId,
@@ -87,6 +117,8 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    console.error('Confirm Stripe error:', error)
+    const message = error instanceof Error ? error.message : 'Internal error'
+    return NextResponse.json({ error: message || 'Internal error' }, { status: 500 })
   }
 }

@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, User, Shield } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Loader2, Search, User, Shield, MoreHorizontal } from 'lucide-react';
 
 interface User {
   id: string;
@@ -151,38 +154,22 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6 border-0 shadow-md hover:shadow-lg transition-shadow rounded-3xl">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="mb-4 border-0 shadow-md hover:shadow-lg transition-shadow rounded-3xl">
+        <CardContent className="pt-4">
+          <div className="flex items-center justify-between">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Tìm kiếm người dùng..."
+                placeholder="Tìm kiếm người dùng"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="h-8 w-[200px] pl-8"
               />
             </div>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="p-2 border rounded-md"
-            >
-              <option value="">Tất cả vai trò</option>
-              <option value="SHOPPER">Người mua</option>
-              <option value="SELLER">Người bán</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedRole('');
-              }}
-            >
-              Xóa bộ lọc
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" className="h-8">View Option</Button>
+              <Button variant="outline" className="h-8">Export</Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -202,73 +189,83 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-4">Người dùng</th>
-                    <th className="text-left p-4">Vai trò</th>
-                    <th className="text-left p-4">Trạng thái</th>
-                    <th className="text-left p-4">Token</th>
-                    <th className="text-left p-4">Ngày tạo</th>
-                    <th className="text-left p-4">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Người dùng</TableHead>
+                    <TableHead>Vai trò</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Token</TableHead>
+                    <TableHead>Ngày tạo</TableHead>
+                    <TableHead>Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredUsers.map((u) => (
-                    <tr key={u.id} className="border-b hover:bg-accent/10">
-                      <td className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="h-5 w-5 text-gray-500" />
-                          </div>
+                    <TableRow key={u.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>{u.name?.charAt(0) || 'U'}</AvatarFallback>
+                          </Avatar>
                           <div>
-                            <p className="font-medium">{u.name}</p>
-                            <p className="text-sm text-gray-500">{u.email}</p>
+                            <p className="font-medium text-sm">{u.name}</p>
+                            <p className="text-xs text-muted-foreground">{u.email}</p>
                           </div>
                         </div>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         {getRoleBadge(u.role)}
-                      </td>
-                      <td className="p-4">
-                        <Badge variant={u.isActive ? 'default' : 'destructive'}>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className="rounded-sm px-1.5 py-0 text-xs font-normal"
+                        >
                           {u.isActive ? 'Hoạt động' : 'Bị khóa'}
                         </Badge>
-                      </td>
-                      <td className="p-4">
-                        <span className="font-medium">{u.tokenBalance}</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm text-gray-500">
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium text-sm">{u.tokenBalance}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-xs text-muted-foreground">
                           {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                         </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <select
-                            value={u.role}
-                            onChange={(e) => updateUserRole(u.id, e.target.value)}
-                            className="text-sm border rounded px-2 py-1"
-                            disabled={String(u.id) === String(user?.id)}
-                          >
-                            <option value="SHOPPER">Người mua</option>
-                            <option value="SELLER">Người bán</option>
-                            <option value="ADMIN">Admin</option>
-                          </select>
-                          <Button
-                            size="sm"
-                            variant={u.isActive ? 'destructive' : 'default'}
-                            onClick={() => updateUserStatus(u.id, !u.isActive)}
-                            disabled={String(u.id) === String(user?.id)}
-                          >
-                            {u.isActive ? 'Khóa' : 'Mở'}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Mở menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              disabled={String(u.id) === String(user?.id)}
+                              onClick={() => updateUserStatus(u.id, !u.isActive)}
+                            >
+                              {u.isActive ? 'Khóa người dùng' : 'Mở khóa người dùng'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => updateUserRole(u.id, 'ADMIN')} disabled={String(u.id) === String(user?.id)}>
+                              Đặt vai trò Admin
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(u.id, 'SELLER')} disabled={String(u.id) === String(user?.id)}>
+                              Đặt vai trò Người bán
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(u.id, 'SHOPPER')} disabled={String(u.id) === String(user?.id)}>
+                              Đặt vai trò Người mua
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

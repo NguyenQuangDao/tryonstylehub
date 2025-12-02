@@ -1,4 +1,5 @@
-import { Navigation } from '../components';
+import AppSidebar from '../components/common/AppSidebar';
+import AppHeader from '../components/common/AppHeader';
 import { AuthProvider } from '../lib/auth-context';
 import { ThemeProvider } from '../lib/theme';
 import './globals.css';
@@ -10,12 +11,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-background font-sans antialiased text-sm">
         <ThemeProvider>
           <AuthProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Navigation />
-              <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">{children}</main>
+            <AppSidebar />
+            <div className="min-h-screen ml-64">
+              <AppHeader />
+              <main className="px-4 py-6">
+                {children}
+              </main>
             </div>
           </AuthProvider>
         </ThemeProvider>

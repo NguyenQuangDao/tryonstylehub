@@ -5,7 +5,7 @@ import { getRecommendedProductIds } from "../../../lib/openai-ai";
 import { prisma } from "../../../lib/prisma";
 
 type OutfitProduct = {
-  id: number;
+  id: string;
   name: string;
   type: string;
   price: number;
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     const products = await prisma.product.findMany({
-      include: { shop: true },
+      include: { shop: true, category: true },
     });
 
     if (!products.length) {
@@ -64,16 +64,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const productsWithParsedTags = products.map(product => ({
-      ...product,
-      styleTags: JSON.parse(product.styleTags || '[]')
-    }));
+    const enrichedProducts = products.map((p) => {
+      const name = (p as any).name ?? (p as any).title ?? '';
+      const type = (p as any).type ?? p.category?.name ?? 'Khác';
+      const price = typeof (p as any).price === 'number' ? (p as any).price : Number((p as any).basePrice ?? 0);
+      const imageUrl = (p as any).imageUrl ?? (Array.isArray((p as any).images) ? (p as any).images[0] : '');
+      const styleTags = [
+        ...String(name).toLowerCase().split(/[^a-zA-Z0-9]+/).filter(Boolean),
+        ...String(type).toLowerCase().split(/[^a-zA-Z0-9]+/).filter(Boolean),
+      ];
 
-    // Get AI recommendations
-    const recommendedIds = await getRecommendedProductIds(style, productsWithParsedTags);
-    let selectedProducts = products.filter(product =>
-      recommendedIds.includes(product.id)
-    );
+      return {
+        id: String(p.id),
+        name,
+        type,
+        price,
+        imageUrl,
+        styleTags,
+        shop: p.shop,
+      };
+    });
+
+    // Get AI recommendations (returns product IDs based on internal indexing)
+    const recommendedIds = await getRecommendedProductIds(style, enrichedProducts);
+    let selectedProducts = enrichedProducts.filter(p => recommendedIds.includes(p.id));
 
     // Smart fallback with semantic matching
     if (!selectedProducts.length) {
@@ -85,8 +99,8 @@ export async function POST(request: NextRequest) {
         .filter(word => word.length > 3);
 
       // Score products based on tag and name matching
-      const scoredProducts = products.map(product => {
-        const tags = JSON.parse(product.styleTags || '[]');
+      const scoredProducts = enrichedProducts.map((product) => {
+        const tags = product.styleTags || [];
         const productText = `${product.name} ${product.type} ${tags.join(' ')}`.toLowerCase();
 
         let score = 0;
@@ -110,11 +124,11 @@ export async function POST(request: NextRequest) {
 
       // Ensure diversity in product types
       const typesSeen = new Set<string>();
-      const diverseProducts: typeof products = [];
+      const diverseProducts: typeof enrichedProducts = [];
 
       for (const { product, score } of scoredProducts) {
         if (score > 0) {
-          const type = product.type.toLowerCase();
+          const type = String(product.type).toLowerCase();
           // Prefer products of different types
           if (!typesSeen.has(type) || diverseProducts.length < 3) {
             diverseProducts.push(product);
@@ -126,7 +140,7 @@ export async function POST(request: NextRequest) {
 
       selectedProducts = diverseProducts.length
         ? diverseProducts
-        : products.slice(0, 4);
+        : enrichedProducts.slice(0, 4);
     }
 
     // Ensure we have a balanced outfit (if we have enough products)
@@ -136,36 +150,19 @@ export async function POST(request: NextRequest) {
         return acc;
       }, {} as Record<string, number>);
 
-      // Log diversity for debugging
       console.log('[Recommend API] Product type distribution:', typeCount);
     }
 
-    const outfitRecord = await prisma.outfit.create({
-      data: {
-        style,
-        products: {
-          connect: selectedProducts.map((product) => ({ id: product.id })),
-        },
-      },
-      include: {
-        products: {
-          include: {
-            shop: true,
-          },
-        },
-      },
-    });
-
-    const outfit = outfitRecord.products.map(product => ({
-      id: product.id,
+    const outfit: OutfitProduct[] = selectedProducts.map((product) => ({
+      id: String(product.id),
       name: product.name,
       type: product.type,
-      price: product.price,
+      price: Number(product.price ?? 0),
       imageUrl: product.imageUrl,
-      styleTags: JSON.parse(product.styleTags || '[]'),
+      styleTags: product.styleTags || [],
       shop: {
-        name: product.shop.name,
-        url: product.shop.url,
+        name: product.shop?.name ?? 'Shop',
+        url: product.shop?.slug ? `/shops/${product.shop.slug}` : '#',
       },
     }));
 
@@ -196,4 +193,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

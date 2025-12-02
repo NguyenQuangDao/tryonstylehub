@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId as number },
+      where: { id: payload.userId as string },
     });
 
     if (!user) {
@@ -42,4 +42,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

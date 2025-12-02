@@ -363,7 +363,7 @@ body.dark {
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
-  font-size: clamp(14px, 1.1vw + 12px, 18px);
+  font-size: 14px;
 }
 
 body {
@@ -1695,6 +1695,6 @@ nav,
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-sm;
   }
 }

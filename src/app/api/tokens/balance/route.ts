@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { getTokenPurchaseClient } from '../../../../lib/tokenPurchaseClient'
 import { verifyToken } from '../../../../lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const purchases = await prisma.tokenPurchase.findMany({
+    const purchases = await getTokenPurchaseClient(prisma).findMany({
       where: { userId: payload.userId },
       orderBy: { createdAt: 'desc' },
       take: 5,

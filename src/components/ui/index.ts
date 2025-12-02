@@ -13,6 +13,7 @@ export { Label } from './label';
 export { Textarea } from './textarea';
 export { Badge } from './badge';
 export { Avatar, AvatarFallback, AvatarImage } from './avatar';
+export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from './table';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 export { Separator } from './separator';
 export { Checkbox } from './checkbox';
@@ -24,4 +25,3 @@ export { Dropdown } from './dropdown';
 export { default as FileInput } from './file-input';
 export { Modal } from './modal';
 export { SearchableSelect } from './SearchableSelect';
-

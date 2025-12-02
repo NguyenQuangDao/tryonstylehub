@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from './lib/auth';
+ 
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -53,8 +54,11 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isSellerArea) {
-    if (role && role !== 'SELLER') {
-      return NextResponse.redirect(new URL('/', request.url));
+    const isRegisterShop = pathname.startsWith('/seller/register-shop');
+    if (!isRegisterShop) {
+      if (role && role !== 'SELLER') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
     }
   }
 

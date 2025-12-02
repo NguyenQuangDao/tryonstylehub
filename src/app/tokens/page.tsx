@@ -1,9 +1,13 @@
-'use client'
+"use client"
 
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Separator } from '@/components/ui/separator'
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js'
-import Link from 'next/link'
+import { Bitcoin, Check, Coins, CreditCard, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface TokenPackage {
     id: string
@@ -44,6 +48,29 @@ export default function TokenPurchasePage() {
     const [clientSecret, setClientSecret] = useState<string | null>(null)
     const [showStripeForm, setShowStripeForm] = useState(false)
     const paymentElementId = 'stripe-payment-element'
+    const paymentElementRef = useRef<any>(null)
+
+    useEffect(() => {
+        if (showStripeForm && elements && !paymentElementRef.current) {
+            const container = document.getElementById(paymentElementId)
+            if (container) {
+                const pe = elements.create('payment')
+                paymentElementRef.current = pe
+                pe.mount(`#${paymentElementId}`)
+            }
+        }
+    }, [showStripeForm, elements])
+
+    useEffect(() => {
+        return () => {
+            if (paymentElementRef.current) {
+                try {
+                    paymentElementRef.current.unmount()
+                } catch {}
+                paymentElementRef.current = null
+            }
+        }
+    }, [])
 
     useEffect(() => {
         fetchData()
@@ -171,11 +198,6 @@ export default function TokenPurchasePage() {
                 setElements(els)
                 setShowStripeForm(true)
                 setProcessing(false)
-                const container = document.getElementById(paymentElementId)
-                if (container && els) {
-                    const pe = els.create('payment')
-                    pe.mount(`#${paymentElementId}`)
-                }
                 return
             }
 
@@ -184,7 +206,7 @@ export default function TokenPurchasePage() {
             setCurrentBalance(data.data?.newBalance || currentBalance)
 
             setTimeout(() => {
-                router.push('/dashboard?purchase=success')
+                router.push('/success?purchase=success')
             }, 2000)
 
         } catch (err) {
@@ -197,300 +219,166 @@ export default function TokenPurchasePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Đang tải...</p>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
+                    <p className="text-sm text-muted-foreground">Loading...</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <Link href="/dashboard" className="text-purple-600 hover:text-purple-700 flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            Quay lại
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            {/* Currency Selector */}
-                            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                                <button
-                                    onClick={() => handleCurrencyChange('VND')}
-                                    className={`px-4 py-2 rounded-md font-medium transition-all ${selectedCurrency === 'VND'
-                                        ? 'bg-white text-purple-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
-                                        }`}
-                                >
-                                    🇻🇳 VND
-                                </button>
-                                <button
-                                    onClick={() => handleCurrencyChange('USD')}
-                                    className={`px-4 py-2 rounded-md font-medium transition-all ${selectedCurrency === 'USD'
-                                        ? 'bg-white text-purple-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
-                                        }`}
-                                >
-                                    🌍 USD
-                                </button>
-                            </div>
-                            <div className="flex items-center gap-3 bg-purple-50 px-4 py-2 rounded-full">
-                                <span className="text-sm text-gray-600">Số dư hiện tại:</span>
-                                <span className="text-xl font-bold text-purple-600">{currentBalance} Token</span>
-                            </div>
-                        </div>
+        <div className="min-h-screen py-8">
+            <div className="mx-auto max-w-7xl px-4">
+                <div className="flex items-start justify-between mb-6">
+                    <div>
+                        <div className="text-xl font-semibold">Refill Balance</div>
+                        <div className="text-sm text-muted-foreground">Choose a package to continue using AI features</div>
+                    </div>
+                    <div className="flex items-center gap-2 border rounded-md px-3 py-2">
+                        <Coins className="size-4 text-yellow-500" />
+                        <div className="text-sm font-medium">Available: {currentBalance.toLocaleString()} Credits</div>
                     </div>
                 </div>
-            </div>
 
-            <div className="container mx-auto px-4 py-12">
-                {/* Success Message */}
-                {success && (
-                    <div className="mb-8 bg-green-50 border border-green-200 rounded-2xl p-6 text-center animate-bounce">
-                        <div className="text-5xl mb-3">🎉</div>
-                        <h3 className="text-2xl font-bold text-green-800 mb-2">Thanh toán thành công!</h3>
-                        <p className="text-green-600">Token đã được thêm vào tài khoản của bạn</p>
-                    </div>
-                )}
-
-                {/* Error Message */}
                 {error && (
-                    <div className="mb-8 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-                        <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                            <h4 className="font-semibold text-red-800">Có lỗi xảy ra</h4>
-                            <p className="text-red-600">{error}</p>
-                        </div>
+                    <div className="mb-4 text-sm text-destructive-foreground bg-destructive/10 border border-destructive rounded-md px-3 py-2">
+                        {error}
+                    </div>
+                )}
+                {success && (
+                    <div className="mb-4 text-sm text-green-700 bg-green-100 border border-green-200 rounded-md px-3 py-2">
+                        Payment succeeded. Credits added.
                     </div>
                 )}
 
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Nạp Token
-                        </h1>
-                        <p className="text-lg text-gray-600">
-                            Chọn gói token phù hợp với nhu cầu của bạn
-                        </p>
-                    </div>
-
-                    {/* Token Packages */}
-                    <div className="mb-12">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Chọn gói token</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {packages.map((pkg) => (
+                <div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {packages.map((pkg) => {
+                            const selected = selectedPackage === pkg.id
+                            return (
                                 <div
                                     key={pkg.id}
                                     onClick={() => setSelectedPackage(pkg.id)}
-                                    className={`
-                    relative cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300
-                    ${selectedPackage === pkg.id
-                                            ? 'border-purple-600 bg-purple-50 shadow-lg scale-105'
-                                            : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
-                                        }
-                    ${pkg.featured ? 'ring-2 ring-purple-400 ring-offset-2' : ''}
-                  `}
+                                    className={`border border-border rounded-xl bg-card p-5 cursor-pointer transition-all ${selected ? 'border-primary bg-primary/5' : 'hover:bg-muted'} relative`}
                                 >
                                     {pkg.featured && (
-                                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                            <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                                                PHỔ BIẾN
-                                            </span>
-                                        </div>
+                                        <Badge className="absolute top-3 right-3 h-5 text-[10px] rounded-full" variant="default">Popular</Badge>
                                     )}
-
-                                    <div className="text-center">
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
-                                        <div className="mb-4">
-                                            <span className="text-4xl font-extrabold text-purple-600">{pkg.tokens}</span>
-                                            <span className="text-gray-500 ml-2">token</span>
-                                        </div>
-                                        <div className="mb-4">
-                                            <span className="text-3xl font-bold text-gray-900">
-                                                {pkg.currency === 'VND'
-                                                    ? `${pkg.price.toLocaleString('vi-VN')}₫`
-                                                    : `$${pkg.price}`
-                                                }
+                                    <div className="flex items-baseline justify-between mb-3">
+                                        <div className="text-2xl font-bold tracking-tight">{pkg.tokens}</div>
+                                        <div className="text-xs text-muted-foreground ml-2">Credits</div>
+                                    </div>
+                                    <div className="mb-3">
+                                        <span className="text-lg font-semibold">
+                                            {pkg.currency === 'VND' ? `${pkg.price.toLocaleString('vi-VN')}₫` : `$${pkg.price}`}
+                                        </span>
+                                        {pkg.savings && pkg.savings > 0 && (
+                                            <span className="text-xs text-muted-foreground line-through ml-2">
+                                                {pkg.currency === 'VND' ? `${(pkg.price * (100 + pkg.savings) / 100).toLocaleString('vi-VN')}₫` : `$${(pkg.price * (100 + pkg.savings) / 100).toFixed(2)}`}
                                             </span>
-                                            {pkg.savings && pkg.savings > 0 && (
-                                                <div className="mt-2">
-                                                    <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                                        Tiết kiệm {pkg.savings}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {pkg.description && (
-                                            <p className="text-sm text-gray-600">{pkg.description}</p>
                                         )}
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Payment Methods */}
-                    <div className="mb-12">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Phương thức thanh toán</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {paymentMethods.map((method) => (
-                                <div
-                                    key={method.id}
-                                    onClick={() => setSelectedPaymentMethod(method.id)}
-                                    className={`
-                    cursor-pointer rounded-xl p-4 border-2 transition-all duration-200
-                    ${selectedPaymentMethod === method.id
-                                            ? 'border-purple-600 bg-purple-50 shadow-md'
-                                            : 'border-gray-200 bg-white hover:border-purple-300'
-                                        }
-                  `}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-3xl">{method.icon}</span>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-gray-900">{method.name}</div>
-                                            {method.description && (
-                                                <div className="text-sm text-gray-500 mt-1">{method.description}</div>
-                                            )}
-                                        </div>
+                                    <Separator className="my-3" />
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> No expiry</div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Priority support</div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Fast processing</div>
+                                    </div>
+                                    <div className="mt-4">
+                                        <Button variant={selected ? 'default' : 'outline'} size="sm" className="w-full h-8" onClick={() => setSelectedPackage(pkg.id)}>
+                                            {selected ? 'Selected' : 'Select'}
+                                        </Button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                        {paymentMethods.length === 0 && (
-                            <div className="mt-3 text-sm text-red-600">Không có phương thức cho loại tiền đã chọn. Vui lòng chuyển sang VND.</div>
-                        )}
-                        
-                        <p className="text-sm text-gray-500 mt-4">
-                            🔒 Tất cả giao dịch được mã hóa và bảo mật
-                        </p>
+                            )
+                        })}
                     </div>
 
-                    {/* Summary and Purchase Button */}
-                    {selectedPackage && selectedPaymentMethod && (
-                        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Xác nhận thanh toán</h3>
-
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between items-center pb-4 border-b">
-                                    <span className="text-gray-600">Gói đã chọn:</span>
-                                    <span className="font-semibold text-gray-900">
-                                        {packages.find(p => p.id === selectedPackage)?.name}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center pb-4 border-b">
-                                    <span className="text-gray-600">Số token:</span>
-                                    <span className="font-semibold text-purple-600 text-xl">
-                                        {packages.find(p => p.id === selectedPackage)?.tokens} token
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center pb-4 border-b">
-                                    <span className="text-gray-600">Phương thức:</span>
-                                    <span className="font-semibold text-gray-900">
-                                        {paymentMethods.find(m => m.id === selectedPaymentMethod)?.name}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center text-xl pt-2">
-                                    <span className="font-bold text-gray-900">Tổng cộng:</span>
-                                    <span className="font-bold text-purple-600">
-                                        {(() => {
-                                            const pkg = packages.find(p => p.id === selectedPackage)
-                                            if (!pkg) return ''
-                                            return pkg.currency === 'VND'
-                                                ? `${pkg.price.toLocaleString('vi-VN')}₫`
-                                                : `$${pkg.price}`
-                                        })()}
-                                    </span>
-                                </div>
+                    <div className="bg-muted/30 rounded-lg p-4 mt-6">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="text-sm font-medium mb-2">Payment Method</div>
+                                <RadioGroup value={selectedPaymentMethod ?? ''} onValueChange={(val) => setSelectedPaymentMethod(val)} className="grid grid-cols-3 gap-2">
+                                    {paymentMethods.map((m) => {
+                                        const isSelected = selectedPaymentMethod === m.id
+                                        const icon = m.name.toLowerCase().includes('paypal')
+                                            ? <Wallet className="size-4" />
+                                            : m.name.toLowerCase().includes('crypto')
+                                            ? <Bitcoin className="size-4" />
+                                            : <CreditCard className="size-4" />
+                                        return (
+                                            <label key={m.id} className={`h-9 px-3 border rounded-md flex items-center gap-2 cursor-pointer ${isSelected ? 'border-primary bg-primary/5 text-primary' : ''}`}>
+                                                {icon}
+                                                <span className="text-sm">{m.name}</span>
+                                                <RadioGroupItem value={m.id} className="sr-only" />
+                                            </label>
+                                        )
+                                    })}
+                                </RadioGroup>
                             </div>
-
-                            <button
-                                onClick={handlePurchase}
-                                disabled={processing}
-                                className="
-                  w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-xl
-                  hover:from-purple-700 hover:to-pink-700 
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-200 transform hover:scale-105
-                  shadow-lg hover:shadow-xl
-                "
-                            >
-                                {processing ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        Đang xử lý...
-                                    </span>
-                                ) : (
-                                    <>Xác nhận thanh toán</>
-                                )}
-                            </button>
-
-                            <p className="text-center text-sm text-gray-500 mt-4">
-                                Token sẽ được thêm vào tài khoản ngay lập tức sau khi thanh toán thành công
-                            </p>
+                            <div className="flex items-center gap-3">
+                                <div className="text-base font-bold">
+                                    Total: {(() => {
+                                        const pkg = packages.find(p => p.id === selectedPackage)
+                                        if (!pkg) return '$0.00'
+                                        return pkg.currency === 'VND' ? `${pkg.price.toLocaleString('vi-VN')}₫` : `$${pkg.price.toFixed(2)}`
+                                    })()}
+                                </div>
+                                <Button className="h-9 px-6" onClick={handlePurchase} disabled={processing || !selectedPackage || !selectedPaymentMethod}>
+                                    {processing ? 'Processing...' : 'Confirm Payment'}
+                                </Button>
+                            </div>
                         </div>
-                    )}
-                    {showStripeForm && clientSecret && (
-                        <div className="mt-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Thanh toán bằng thẻ</h3>
-                            <div id={paymentElementId} className="mb-6"></div>
-                            <button
-                                onClick={async () => {
-                                    if (!stripe || !elements) return
-                                    setProcessing(true)
-                                    setError(null)
-                                    const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
-                                        elements,
-                                        redirect: 'if_required',
-                                    })
-                                    if (stripeErr) {
-                                        setError(stripeErr.message || 'Xác nhận thanh toán thất bại')
-                                        setProcessing(false)
-                                        return
-                                    }
-                                    if (paymentIntent && paymentIntent.status === 'succeeded') {
-                                        const pkgId = selectedPackage
-                                        const res = await fetch('/api/tokens/confirm-stripe', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ paymentIntentId: paymentIntent.id, packageId: pkgId }),
-                                        })
-                                        const d = await res.json()
-                                        if (!res.ok || !d.success) {
-                                            setError(d.error || 'Không thể ghi nhận giao dịch')
-                                            setProcessing(false)
-                                            return
-                                        }
-                                        setSuccess(true)
-                                        setCurrentBalance(d.data?.newBalance || currentBalance)
-                                        setProcessing(false)
-                                        setTimeout(() => {
-                                            router.push('/dashboard?purchase=success')
-                                        }, 1500)
-                                    } else {
-                                        setError('Thanh toán chưa hoàn tất')
-                                        setProcessing(false)
-                                    }
-                                }}
-                                disabled={processing}
-                                className="w-full bg-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {processing ? 'Đang xác nhận...' : 'Thanh toán'}
-                            </button>
-                            <p className="text-sm text-gray-500 mt-3">Dùng thẻ thử Stripe: 4242 4242 4242 4242</p>
-                        </div>
-                    )}
+                {showStripeForm && clientSecret && (
+                    <div className="mt-4">
+                        <Separator className="my-4" />
+                        <div className="text-sm font-medium mb-2">Card Payment</div>
+                        <div id={paymentElementId} className="mb-3" />
+                        <Button className="w-full h-9" onClick={async () => {
+                            if (!stripe || !elements) return
+                            setProcessing(true)
+                            setError(null)
+                            const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
+                                elements,
+                                redirect: 'if_required',
+                            })
+                            if (stripeErr) {
+                                setError(stripeErr.message || 'Payment confirmation failed')
+                                setProcessing(false)
+                                return
+                            }
+                            if (paymentIntent && paymentIntent.status === 'succeeded') {
+                                const pkgId = selectedPackage
+                                const res = await fetch('/api/tokens/confirm-stripe', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ paymentIntentId: paymentIntent.id, packageId: pkgId }),
+                                })
+                                const d = await res.json()
+                                if (!res.ok || !d.success) {
+                                    setError(d.error || 'Could not record transaction')
+                                    setProcessing(false)
+                                    return
+                                }
+                                setSuccess(true)
+                                setCurrentBalance(d.data?.newBalance || currentBalance)
+                                setProcessing(false)
+                                setTimeout(() => {
+                                    router.push('/success?purchase=success')
+                                }, 1500)
+                            } else {
+                                setError('Payment not completed')
+                                setProcessing(false)
+                            }
+                        }} disabled={processing}>
+                            {processing ? 'Confirming...' : 'Pay'}
+                        </Button>
+                        <div className="text-xs text-muted-foreground mt-2">Test card: 4242 4242 4242 4242</div>
+                    </div>
+                )}
+                    </div>
                 </div>
             </div>
         </div>
