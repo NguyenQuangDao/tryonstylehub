@@ -1,10 +1,13 @@
 'use client';
 
 import { FileInput } from '@/components';
+import { TokenDisplay } from '@/components/tokens/TokenComponents';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TOKEN_CONFIG } from '@/config/tokens';
+import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 import { VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
@@ -34,6 +37,8 @@ interface OptimizedHomePageProps {
   garmentImageUpload: ImageUpload;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
+  quality: 'standard' | 'high';
+  setQuality: (q: 'standard' | 'high') => void;
   isLoading: boolean;
   errorMessage: string;
   resultGallery: string[];
@@ -51,6 +56,8 @@ export default function OptimizedHomePage({
   garmentImageUpload,
   selectedCategory,
   setSelectedCategory,
+  quality,
+  setQuality,
   isLoading,
   errorMessage,
   resultGallery,
@@ -60,6 +67,7 @@ export default function OptimizedHomePage({
   onClearSelectedVirtualModel,
   onSubmit
 }: OptimizedHomePageProps) {
+  const { user } = useAuth()
   // Example images
   const personExamples = [
     'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
@@ -102,6 +110,19 @@ export default function OptimizedHomePage({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <form onSubmit={onSubmit} className="space-y-8">
+          <div className="flex items-center justify-between">
+            <TokenDisplay balance={user?.tokenBalance ?? 0} />
+            <div className="flex items-center gap-3">
+              <Button type="button" variant={quality === 'standard' ? 'default' : 'outline'} onClick={() => setQuality('standard')} className="flex items-center gap-2">
+                Chất lượng thường
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">{TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount} token</span>
+              </Button>
+              <Button type="button" variant={quality === 'high' ? 'default' : 'outline'} onClick={() => setQuality('high')} className="flex items-center gap-2">
+                Chất lượng cao
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">{TOKEN_CONFIG.COSTS.TRY_ON_HIGH.amount} token</span>
+              </Button>
+            </div>
+          </div>
           {/* Upload Section */}
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Person/Avatar Section */}

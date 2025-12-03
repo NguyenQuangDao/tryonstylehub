@@ -9,4 +9,4 @@ export { default as Navigation } from './Navigation';
 export { ResponsiveContainer, ResponsiveGrid, ResponsiveImage, ResponsiveText } from './ResponsiveComponents';
 export { ResultsGallery } from './ResultsGallery';
 export { default as Tips } from './Tips';
-
+export { default as ProfileGallery } from './ProfileGallery';

@@ -12,13 +12,18 @@ import { ExternalLink, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
+import { TokenDisplay, InsufficientTokensModal } from '@/components/tokens/TokenComponents'
+import { useAuth } from '@/lib/auth-context'
+import { TOKEN_CONFIG } from '@/config/tokens'
 
 export default function HomePage() {
+  const { user } = useAuth()
   const { createVirtualModel, updateVirtualModel } = useVirtualModels();
   const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const personImageUpload = useImageUpload();
   const garmentImageUpload = useImageUpload();
   const [selectedCategory, setSelectedCategory] = useState<string>('tops');
+  const [quality, setQuality] = useState<'standard' | 'high'>('standard')
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [resultGallery, setResultGallery] = useState<string[]>([]);
@@ -30,6 +35,8 @@ export default function HomePage() {
   const [isVirtualModelSelectorOpen, setIsVirtualModelSelectorOpen] = useState(false);
   const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
+  const [insufficientOpen, setInsufficientOpen] = useState(false)
+  const [insufficientInfo, setInsufficientInfo] = useState<{ required: number; current: number; operation: string }>({ required: TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount, current: 0, operation: 'Phối đồ ảo' })
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,6 +67,7 @@ export default function HomePage() {
       if (garmentImageUpload.imageFile) {
         formData.append('garmentImage', garmentImageUpload.imageFile);
       }
+      formData.append('quality', quality)
 
       const response = await fetch('/api/tryon', {
         method: 'POST',
@@ -68,6 +76,17 @@ export default function HomePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (response.status === 402 && errorData?.insufficientTokens) {
+          const required = quality === 'high' ? TOKEN_CONFIG.COSTS.TRY_ON_HIGH.amount : TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount
+          setInsufficientInfo({
+            required,
+            current: errorData.details?.current || (user?.tokenBalance ?? 0),
+            operation: quality === 'high' ? 'Phối đồ ảo (cao)' : 'Phối đồ ảo (thường)'
+          })
+          setInsufficientOpen(true)
+          setIsLoading(false)
+          return
+        }
         throw new Error(errorData.error || 'Có lỗi xảy ra khi thử đồ ảo');
       }
 
@@ -136,6 +155,8 @@ export default function HomePage() {
         garmentImageUpload={garmentImageUpload}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        quality={quality}
+        setQuality={setQuality}
         isLoading={isLoading}
         errorMessage={errorMessage}
         resultGallery={resultGallery}
@@ -240,6 +261,13 @@ export default function HomePage() {
           </div>
         )}
       </div>
+      <InsufficientTokensModal
+        isOpen={insufficientOpen}
+        onClose={() => setInsufficientOpen(false)}
+        required={insufficientInfo.required}
+        current={insufficientInfo.current}
+        operation={insufficientInfo.operation}
+      />
     </>
   );
 }

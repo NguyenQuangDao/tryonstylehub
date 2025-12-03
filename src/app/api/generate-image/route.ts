@@ -5,11 +5,15 @@ import sharp from "sharp";
 import { verifyToken } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { uploadToS3, generateS3Key, getJSON, putJSON, getPresignedUrl } from "../../../lib/s3";
+import { requireTokens, createInsufficientTokensResponse, chargeTokens } from "../../../lib/token-middleware";
+import { TOKEN_CONFIG } from "../../../config/tokens";
 
 type GenerateImageRequest = {
   prompt: string;
   size?: "1024x1024" | "1024x1792" | "1792x1024";
   quality?: "standard" | "hd";
+  range?: 'upper-body' | 'full-body';
+  pose?: 'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning';
 };
 type GalleryEntry = {
   url: string;
@@ -24,7 +28,7 @@ type GalleryEntry = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as GenerateImageRequest;
-    const { prompt, quality = "standard", size } = body;
+    const { prompt, quality = "standard", size, range = 'full-body', pose = 'standing' } = body;
 
     // Validation
     if (!prompt || typeof prompt !== "string") {
@@ -57,23 +61,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generating image for prompt
+    // Require tokens and get user
+    const tokenCheck = await requireTokens(request, {
+      operation: 'Tạo ảnh AI',
+      tokensRequired: TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
+    })
 
-    const token = request.cookies.get('token')?.value || null;
-    let userId: string = 'anonymous';
-    let userIdStr: string | null = null;
-    if (token) {
-      const payload = await verifyToken(token);
-      if (payload && payload.userId) {
-        userId = String(payload.userId);
-        userIdStr = String(payload.userId);
+    if (!tokenCheck.success) {
+      if (tokenCheck.insufficientTokens) {
+        return createInsufficientTokensResponse(
+          TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
+          tokenCheck.currentBalance || 0,
+          'tạo ảnh AI'
+        )
       }
-    } else {
-      const headerUser = request.headers.get('x-user-id');
-      if (headerUser) {
-        userId = headerUser;
-      }
+      return NextResponse.json({ success: false, error: tokenCheck.error || 'Unauthorized' }, { status: 401 })
     }
+
+    const userId: string = tokenCheck.userId!
+    const userIdStr: string = tokenCheck.userId!
     
     // Enhance prompt for better results
     const fullBodyCues = [
@@ -81,19 +87,75 @@ export async function POST(request: NextRequest) {
       'subject centered',
       'head-to-toe visible',
       'all limbs fully visible (hands and feet in frame)',
-      '4:5 ratio portrait framing'
+      'single subject only',
+      'one person',
+      'solo portrait',
+      'single frame',
+      'plain neutral background',
+      'uncluttered background'
+    ].join(', ');
+    const upperBodyCues = [
+      'upper body portrait',
+      'subject centered',
+      'from head to mid-torso visible',
+      'arms and hands visible in frame',
+      'single subject only',
+      'one person',
+      'solo portrait',
+      'single frame',
+      'plain neutral background',
+      'uncluttered background'
     ].join(', ');
     const negativeCues = [
       'no watermark',
       'no text',
       'no blur',
       'no distortion',
-      'no cropping or cut-off head/hands/feet'
+      'no cropping or cut-off head/hands/feet',
+      'no collage',
+      'no multiple panels',
+      'no split-screen',
+      'no multi-view',
+      'no diagram',
+      'no labels or annotations',
+      'no measurement lines',
+      'no grid overlay',
+      'no text blocks',
+      'no infographic layout',
+      'no reference sheet'
     ].join(', ');
-    const enhancedPrompt = `${prompt}, ${fullBodyCues}, DSLR 50mm prime, f/2.0, ISO 200, 1/200s, soft studio key light with rim light, neutral studio gradient background, photorealistic, professional photography, high quality, high detail, lifelike, ${negativeCues}`;
+    const structureCues = [
+      'grayscale',
+      'high-contrast',
+      'edge-emphasized',
+      'contour-focused',
+      'shape-based representation',
+      'structural morphology',
+      'rotation-invariant depiction',
+      'camera-agnostic orientation',
+      'normalized exposure',
+      'denoised',
+      'artifact-free'
+    ].join(', ');
+    const poseCues = (() => {
+      switch (pose) {
+        case 'walking':
+          return 'natural walking pose, one foot forward, relaxed arms swing';
+        case 'hands-on-hips':
+          return 'standing pose, hands on hips, confident posture';
+        case 'arms-crossed':
+          return 'standing pose, arms crossed, balanced posture';
+        case 'leaning':
+          return 'standing pose, slight lean, relaxed posture';
+        default:
+          return 'natural standing pose, relaxed hands at sides';
+      }
+    })();
+    const rangeCues = range === 'upper-body' ? upperBodyCues : fullBodyCues;
+    const enhancedPrompt = `${prompt}, ${rangeCues}, ${poseCues}, ${structureCues}, ${negativeCues}`;
 
     // Generate image using optimized DALL-E
-    const preferredSize: "1024x1024" | "1024x1792" | "1792x1024" = size || "1024x1792";
+    const preferredSize: "1024x1024" | "1024x1792" | "1792x1024" = size || (range === 'upper-body' ? "1024x1024" : "1024x1792");
     const imageUrl = await generateImageWithDALLE(enhancedPrompt, String(userId), quality, preferredSize);
 
     const response = await fetch(imageUrl);
@@ -173,6 +235,14 @@ export async function POST(request: NextRequest) {
 
     // Get cost information
     const costStats = CostTracker.getStats();
+
+    // Charge tokens after successful generation
+    await chargeTokens(
+      userId,
+      'Tạo ảnh AI',
+      TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
+      { s3Key }
+    )
 
     return NextResponse.json({
       success: true,

@@ -28,6 +28,8 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
+  const [range, setRange] = useState<'upper-body' | 'full-body'>('full-body');
+  const [pose, setPose] = useState<'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning'>('standing');
 
   const generatePromptFromUserInfo = async () => {
     if (!userInfo) {
@@ -66,6 +68,8 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
         body: JSON.stringify({
           prompt: prompt,
           quality,
+          range,
+          pose,
         }),
       });
 
@@ -148,13 +152,16 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
           </div>
           <textarea
             id="avatar-prompt"
-            placeholder="Ví dụ: Một người phụ nữ trẻ với tóc dài màu nâu, mắt xanh, nụ cười tươi..."
+            placeholder="Ví dụ: Mô tả cấu trúc khuôn mặt, dáng đứng, độ cao – tránh từ ngữ về màu sắc, ánh sáng, nền."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
             disabled={isGenerating || isGeneratingPrompt}
             className="w-full min-h-[200px] p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
+          <p className="text-xs text-muted-foreground">
+            Hướng dẫn: Ưu tiên mô tả cấu trúc (grayscale, viền/đường nét), tránh màu sắc, camera, ánh sáng, nền. Chọn phạm vi và tư thế bên dưới.
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -166,6 +173,35 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
             <SelectContent>
               <SelectItem value="standard">Tiêu chuẩn (Nhanh hơn)</SelectItem>
               <SelectItem value="hd">HD (Chất lượng cao)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="range" className="text-sm font-medium">Phạm vi tạo ảnh</Label>
+          <Select value={range} onValueChange={(value: string) => setRange(value as 'upper-body' | 'full-body')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Chọn phạm vi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="upper-body">Nửa thân trên</SelectItem>
+              <SelectItem value="full-body">Toàn thân (đầu đến chân)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="pose" className="text-sm font-medium">Tư thế toàn thân</Label>
+          <Select value={pose} onValueChange={(value: string) => setPose(value as 'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Chọn tư thế" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="standing">Đứng thẳng, tay thả lỏng</SelectItem>
+              <SelectItem value="walking">Bước nhẹ, tay vung tự nhiên</SelectItem>
+              <SelectItem value="hands-on-hips">Đặt tay lên hông</SelectItem>
+              <SelectItem value="arms-crossed">Khoanh tay</SelectItem>
+              <SelectItem value="leaning">Nghiêng người nhẹ</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -187,6 +223,19 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
             </>
           )}
         </Button>
+
+        <div className="rounded-md border p-3 text-xs text-muted-foreground">
+          <div className="font-medium mb-1">Prompt (Tiếng Việt)</div>
+          <div>
+            Phạm vi: {range === 'full-body' ? 'Toàn thân' : 'Nửa thân trên'}; Tư thế: {
+              pose === 'standing' ? 'Đứng thẳng, tay thả lỏng'
+              : pose === 'walking' ? 'Bước nhẹ, tay vung tự nhiên'
+              : pose === 'hands-on-hips' ? 'Đặt tay lên hông'
+              : pose === 'arms-crossed' ? 'Khoanh tay'
+              : 'Nghiêng người nhẹ'
+            }. Mô tả cấu trúc: ảnh grayscale, độ tương phản cao, nhấn mạnh đường viền, tập trung hình dạng; bất biến góc quay; không yêu cầu nền.
+          </div>
+        </div>
 
         {generatedImage && (
           <div className="space-y-4">

@@ -2,17 +2,17 @@
 
 import { motion } from 'framer-motion';
 import {
-    AlertCircle,
-    CheckCircle,
-    Download,
-    Eye,
-    Palette,
-    RefreshCw,
-    Scissors,
-    Settings,
-    Shirt,
-    Sparkles,
-    User
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Eye,
+  Palette,
+  RefreshCw,
+  Scissors,
+  Settings,
+  Shirt,
+  Sparkles,
+  User
 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -59,6 +59,23 @@ export default function CustomAvatarCreator({
     eyeColor: 'brown',
     clothingStyle: 'casual'
   });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('avatarDefaults')
+      if (raw) {
+        const d = JSON.parse(raw)
+        setCustomization(prev => ({
+          ...prev,
+          gender: d.gender || prev.gender,
+          skinTone: d.skinTone || prev.skinTone,
+          hairColor: d.hairColor || prev.hairColor,
+          hairStyle: d.hairStyle || prev.hairStyle,
+          eyeColor: d.eyeColor || prev.eyeColor,
+        }))
+      }
+    } catch {}
+  }, [])
 
   // Ready Player Me API integration
   const createGuestUser = async () => {
@@ -327,7 +344,7 @@ export default function CustomAvatarCreator({
 
           {/* Skin Tone */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <Palette className="w-4 h-4" />
               Màu da
             </label>
@@ -358,7 +375,7 @@ export default function CustomAvatarCreator({
 
           {/* Hair */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <Scissors className="w-4 h-4" />
               Tóc
             </label>
@@ -414,7 +431,7 @@ export default function CustomAvatarCreator({
 
           {/* Eyes */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <Eye className="w-4 h-4" />
               Mắt
             </label>
@@ -446,7 +463,7 @@ export default function CustomAvatarCreator({
 
           {/* Clothing */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <Shirt className="w-4 h-4" />
               Trang phục
             </label>

@@ -16,6 +16,7 @@ import { AlertCircle, Save, User, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 import AvatarGenerator from "./AvatarGenerator";
 import AvatarUpload from "./AvatarUpload";
+import { useEffect } from "react";
 
 interface VirtualModelFormProps {
   onClose: () => void;
@@ -49,6 +50,24 @@ export default function VirtualModelForm({
     editModel?.avatarImage || null
   );
   const [showAvatarGenerator, setShowAvatarGenerator] = useState(false);
+
+  useEffect(() => {
+    if (!editModel) {
+      try {
+        const raw = localStorage.getItem('avatarDefaults')
+        if (raw) {
+          const d = JSON.parse(raw)
+          if (typeof d.height === 'number') setHeight(d.height)
+          if (typeof d.weight === 'number') setWeight(d.weight)
+          if (d.gender) setGender(d.gender)
+          if (d.skinTone) setSkinTone(d.skinTone)
+          if (d.eyeColor) setEyeColor(d.eyeColor)
+          if (d.hairColor) setHairColor(d.hairColor)
+          if (d.hairStyle) setHairStyle(d.hairStyle)
+        }
+      } catch {}
+    }
+  }, [editModel])
 
   const handleImageUploaded = (imageUrl: string) => {
     setAvatarImageUrl(imageUrl);

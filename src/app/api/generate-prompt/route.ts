@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { composePromptFromAll, improveOnly } from '@/lib/promptComposer';
+import { NextRequest, NextResponse } from 'next/server';
 
 interface UserInfo {
   gender: 'male' | 'female' | 'non-binary';
@@ -32,35 +32,33 @@ export async function POST(request: NextRequest) {
     const preferRemote: boolean = typeof body === 'object' && body?.preferRemote ? true : false;
     const model: string = typeof body === 'object' && typeof body?.model === 'string' ? body.model : 'google/gemini-2.0-flash-exp:free';
 
-    const systemMessageForUserInfo = `You are an expert prompt engineer for DALL-E (image generation). Your task is to produce ONE concise but richly detailed English prompt that creates a photorealistic, full-body image of a person based on the provided info.
+    const systemMessageForUserInfo = `You are an expert prompt engineer for DALL-E (image generation). Produce ONE concise but richly detailed English prompt that creates a structure-focused, full-body depiction of a single person based on the provided info.
 
 Strict requirements:
-- Output ONLY the final prompt text (no explanations, no lists).
-- Photorealistic style with lifelike skin texture and realistic lighting.
-- Full-body composition: head-to-toe clearly visible, entire figure in frame, subject centered.
-- All limbs fully visible: face unobstructed, both arms and both hands visible, both legs and feet visible.
-- Include: gender, height impression, body type, skin tone, eye color, hair color and style.
-- Pose: natural standing pose, slight angle toward camera, relaxed hands at sides.
-- Framing: full-length portrait distance, subject occupies ~70% of frame, adequate margins.
-- Camera & lens: DSLR, 50mm prime lens, f/2.0, ISO 200, 1/200s.
-- Lighting: soft studio key light with gentle rim light OR diffuse daylight.
-- Background: neutral studio gradient or minimal clean backdrop.
-- Quality tags: "photorealistic", "professional photography", "high quality", "high detail", "lifelike".
-- Negative cues: no watermark, no text, no blur, no distortion, no cropping, no cut-off head/hands/feet, anatomically accurate proportions.
-- Clothing instruction: Do NOT specify exact garments or brands; avoid detailed clothing descriptions (keep neutral/general only if needed).
+- Output ONLY the final prompt text (no explanations).
+- Color-independent: grayscale, high-contrast, edge-emphasized, contour-focused; avoid color words.
+- Full-body composition: head-to-toe visible, subject centered, all limbs fully visible.
+ - Single subject: one person only, solo portrait, single frame.
+- Include: gender, height impression, body type, hair style silhouette (no color), general facial structure.
+- Pose: natural standing pose, orthographic front view, canonical upright alignment.
+- Background: plain neutral background, uncluttered; avoid specifying scene details.
+- Rotation independence: rotation-invariant depiction; camera-agnostic orientation.
+- Normalization and robustness: normalized exposure, denoised, artifact-free.
+- Negative cues: no watermark, no text, no blur, no distortion, no cropping, no cut-off head/hands/feet, no collage, no multiple panels, no split-screen, no multi-view, no diagram, no labels/annotations, no measurement lines, no grid overlay, no text blocks, no infographic layout, no reference sheet, anatomically accurate proportions.
+- Clothing instruction: Do NOT specify garments or brands; keep neutral/general only if needed.
 
 Return only the single prompt.`;
 
-    const systemMessageForImprove = `You are a senior prompt engineer specialized in DALL-E 3. Improve the user's prompt for fashion image generation.
+    const systemMessageForImprove = `You are a senior prompt engineer specialized in DALL-E 3. Improve the user's prompt for structure-first image generation.
 
 Rules:
 - Output ONLY the improved prompt in English.
 - Preserve the original intent and key subject.
-- Enhance with professional, photorealistic, high-quality photography cues.
-- Add clear composition (subject-centered), lighting, background, and camera details.
+- Replace color- or lighting-dependent terms with grayscale, edge-emphasized, contour-focused cues.
+- Add clear composition (subject-centered, head-to-toe visible), single subject only (one person, solo portrait, single frame), and camera-agnostic, rotation-invariant orientation.
+- Prefer plain neutral background; remove scene/background specifics.
 - Avoid brand names and copyrighted characters; avoid text/watermarks.
-- Avoid overly prescriptive clothing details unless requested.
-- Prefer full-body framing when the subject is a person; otherwise choose suitable framing.
+- Avoid detailed clothing descriptions unless requested explicitly.
 `;
 
     // Helpers để tăng độ chi tiết của mô tả cơ thể
@@ -80,21 +78,21 @@ Rules:
       return 'plus-size build';
     };
 
-    const mapSkinTone = (tone: UserInfo['skinTone']) => {
-      switch (tone) {
-        case 'very-light': return 'very fair skin tone';
-        case 'light': return 'fair skin tone';
-        case 'medium': return 'medium skin tone';
-        case 'tan': return 'tanned skin tone';
-        case 'brown': return 'brown skin tone';
-        case 'dark': return 'deep dark skin tone';
-        default: return 'natural skin tone';
-      }
-    };
+    // const mapSkinTone = (tone: UserInfo['skinTone']) => {
+    //   switch (tone) {
+    //     case 'very-light': return 'very fair skin tone';
+    //     case 'light': return 'fair skin tone';
+    //     case 'medium': return 'medium skin tone';
+    //     case 'tan': return 'tanned skin tone';
+    //     case 'brown': return 'brown skin tone';
+    //     case 'dark': return 'deep dark skin tone';
+    //     default: return 'natural skin tone';
+    //   }
+    // };
 
     const heightImpression = userInfo ? describeHeightImpression(userInfo.height) : undefined;
     const bodyType = userInfo ? describeBodyType(userInfo.height, userInfo.weight) : undefined;
-    const skinToneDesc = userInfo ? mapSkinTone(userInfo.skinTone) : undefined;
+    // const skinToneDesc = userInfo ? mapSkinTone(userInfo.skinTone) : undefined;
 
     const userMessage = (() => {
       if (incomingPrompt && userInfo) {
@@ -105,36 +103,30 @@ Inputs:
 - Gender: ${userInfo.gender}, age: adult
 - Height: ${userInfo.height} cm (${heightImpression})
 - Body type: ${bodyType}
-- Skin tone: ${skinToneDesc}
-- Eye color: ${userInfo.eyeColor}
-- Hair: ${userInfo.hairStyle} ${userInfo.hairColor}
+- Hair: ${userInfo.hairStyle} silhouette
 
 Requirements:
-- Preserve the user's intent and key details.
-- Remove duplicate or unnecessary information.
-- Prioritize subject attributes first, then pose, composition, camera, lighting, background, quality tags, and negative cues.
-- Prefer concise phrasing; avoid brand names or copyrighted terms.
-- Output ONLY the final prompt, one line.`;
+ - Preserve the user's intent and key details.
+ - Remove duplicate or unnecessary information.
+ - Prioritize subject attributes first, then pose, composition, rotation invariance, normalization, and negative cues.
+ - Avoid color terms, camera/lens settings, lighting, and background requirements.
+ - Output ONLY the final prompt, one line.`;
       }
       if (incomingPrompt) {
         return `Original user prompt to improve:\n\n${incomingPrompt}\n\nRewrite it into a single, concise but richly detailed prompt optimized for DALL-E 3, following the rules.`;
       }
-      return `Create a single photorealistic full-body prompt with:
+      return `Create a single structure-focused full-body prompt with:
 Gender: ${userInfo!.gender}, age: adult
 Height: ${userInfo!.height} cm (${heightImpression})
 Body type: ${bodyType}
-Skin tone: ${skinToneDesc}
-Eye color: ${userInfo!.eyeColor}
-Hair: ${userInfo!.hairStyle} ${userInfo!.hairColor}
+Hair: ${userInfo!.hairStyle} silhouette
 
 Additional constraints:
-- Pose: natural standing, slight angle toward camera, relaxed hands at sides
-- Composition: full-length portrait, full body centered, head-to-toe visible, limbs fully visible (hands and feet in frame), 4:5 ratio
-- Camera & lens: DSLR, 50mm prime, f/2.0, ISO 200, 1/200s
-- Lighting: soft studio key light with gentle rim light OR diffuse daylight
-- Background: neutral studio gradient
-- Quality: photorealistic, professional photography, high quality, high detail, lifelike
-- Negative: no watermark, no text, no blur, no distortion, no cropping or cut-off head/hands/feet
+- Pose: natural standing, orthographic front view, canonical upright alignment, relaxed hands at sides
+- Composition: full body centered, head-to-toe visible, limbs fully visible (hands and feet in frame), single subject only, one person, solo portrait, single frame
+- Structure-first cues: grayscale, high-contrast, edge-emphasized, contour-focused; avoid color words
+- Robustness: rotation-invariant depiction, camera-agnostic orientation, normalized exposure, denoised, artifact-free
+- Negative: no watermark, no text, no blur, no distortion, no cropping or cut-off head/hands/feet, no collage, no multiple panels, no split-screen, no multi-view, no diagram, no labels/annotations, no measurement lines, no grid overlay, no text blocks, no infographic layout, no reference sheet
 - Clothing: avoid specifying garments or brands (keep neutral/general only)`;
     })();
 

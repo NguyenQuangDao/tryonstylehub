@@ -118,6 +118,8 @@ export class PromptService {
 
     const bodyType = this.determineBodyType(userInfo.height, userInfo.weight);
 
-    return `Professional full body portrait of a ${bodyType} ${genderTerm} with ${skinToneMap[userInfo.skinTone]} skin tone, ${hairColorMap[userInfo.hairColor]} ${hairStyleMap[userInfo.hairStyle]} hair, ${userInfo.eyeColor} eyes, standing straight in a natural pose, white studio background, professional lighting, high quality, realistic, fashion photography style, minimal clothing, friendly expression, 4K resolution`;
+    const hairStyleDesc = hairStyleMap[userInfo.hairStyle];
+
+    return `Grayscale, edge-emphasized full body depiction of a ${bodyType} ${genderTerm}, ${hairStyleDesc} hair silhouette, neutral facial structure, natural standing pose, orthographic front view, canonical upright alignment, subject centered, head-to-toe visible, all limbs fully visible (hands and feet in frame), high-contrast contours, shape-based representation, structural morphology, rotation-invariant depiction, camera-agnostic orientation, normalized exposure, denoised, artifact-free`;
   }
 }

@@ -1,14 +1,14 @@
 'use client'
 
-import { VirtualModelForm } from '@/components';
+import { ProfileGallery, ProfileSettings, VirtualModelForm } from '@/components';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Edit2, Mail, Plus, Trash2, User as UserIcon, Users } from 'lucide-react';
+import { Edit2, Plus, Trash2, User as UserIcon, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -20,12 +20,17 @@ export default function ProfilePage() {
   const [isVirtualModelFormOpen, setIsVirtualModelFormOpen] = useState(false);
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-  const [gallery, setGallery] = useState<{ url: string; createdAt: string }[]>([]);
+  type GalleryItem = { url: string; key: string; createdAt: string; size?: number; width?: number; height?: number; format?: string };
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [isLoadingGallery, setIsLoadingGallery] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [tryonGallery, setTryonGallery] = useState<GalleryItem[]>([]);
+  const [isLoadingTryon, setIsLoadingTryon] = useState(false);
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const clearDateRange = () => {
+    setDateFrom('');
+    setDateTo('');
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -34,14 +39,8 @@ export default function ProfilePage() {
   }, [user, loading, router]);
 
   // Fetch virtual models
-  useEffect(() => {
-    if (user) {
-      fetchVirtualModels();
-      fetchGallery();
-    }
-  }, [user]);
 
-  const fetchVirtualModels = async () => {
+  const fetchVirtualModels = useCallback(async () => {
     try {
       setIsLoadingModels(true);
       const response = await fetch('/api/virtual-models');
@@ -54,22 +53,62 @@ export default function ProfilePage() {
     } finally {
       setIsLoadingModels(false);
     }
-  };
+  }, []);
 
-  const fetchGallery = async () => {
+  const fetchGallery = useCallback(async () => {
     try {
       setIsLoadingGallery(true);
       const res = await fetch('/api/user/gallery', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        const items = (data.gallery || []) as { url: string; createdAt: string }[];
+        const items = (data.gallery || []) as GalleryItem[];
         setGallery(items);
       }
     } catch {
     } finally {
       setIsLoadingGallery(false);
     }
-  };
+  }, []);
+
+  const fetchTryonGallery = useCallback(async () => {
+    try {
+      setIsLoadingTryon(true);
+      const res = await fetch('/api/user/gallery/tryon', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const items = (data.gallery || []) as GalleryItem[];
+        setTryonGallery(items);
+      }
+    } catch {
+    } finally {
+      setIsLoadingTryon(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchVirtualModels();
+      fetchGallery();
+      fetchTryonGallery();
+    }
+  }, [user, fetchVirtualModels, fetchGallery, fetchTryonGallery]);
+
+  const isFiltering = !!dateFrom || !!dateTo;
+  const displayedGallery = (() => {
+    if (!isFiltering) return gallery;
+    const from = dateFrom ? new Date(dateFrom) : null;
+    const to = dateTo ? new Date(dateTo) : null;
+    if (to) {
+      to.setHours(23, 59, 59, 999);
+    }
+    return gallery.filter((item) => {
+      const d = new Date(item.createdAt);
+      if (Number.isNaN(d.getTime())) return false;
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+  })();
 
   const handleOpenForm = () => {
     setEditingVirtualModel(null);
@@ -165,7 +204,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
-          <div className="flex items-center gap-6 mb-8">
+          <div className="flex items-center gap-6">
             <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center overflow-hidden">
               {user.avatar ? (
                 <Image src={user.avatar} alt={user.name} width={96} height={96} className="w-24 h-24 rounded-full object-cover" />
@@ -178,24 +217,20 @@ export default function ProfilePage() {
               <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Tên</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
-              </div>
-            </div>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 vietnamese-heading">Thông tin cá nhân</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Cập nhật cách mọi người nhìn thấy bạn</p>
           </div>
+          <ProfileSettings
+            initialDisplayName={user.name}
+            initialEmail={user.email}
+            avatarUrl={user.avatar || user.avatarUrl || null}
+            initialUsername={(user.name || '').toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '').slice(0, 20)}
+            initialBio={''}
+          />
         </div>
 
         {/* Virtual Models Section */}
@@ -383,71 +418,79 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Kho ảnh do bạn tạo bằng AI</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="px-3 py-2 border rounded-md text-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <span className="text-gray-500 dark:text-gray-400">đến</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="px-3 py-2 border rounded-md text-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <Button onClick={clearDateRange} variant="secondary">Xóa lọc</Button>
+            </div>
           </div>
-          {isLoadingGallery && (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+          {isLoadingGallery && gallery.length === 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="p-3 border rounded-xl">
+                  <div className="aspect-square">
+                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-          {!isLoadingGallery && gallery.length === 0 && (
-            <div className="text-center py-12 text-gray-600 dark:text-gray-400">Chưa có ảnh nào</div>
+          {!isLoadingGallery && displayedGallery.length === 0 && (
+            <div className="text-center py-12 text-gray-600 dark:text-gray-400">
+              {isFiltering ? 'Không có ảnh trong khoảng thời gian đã chọn' : 'Chưa có ảnh nào'}
+            </div>
           )}
-          {!isLoadingGallery && gallery.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Tìm theo URL/từ khóa"
-                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="desc">Mới nhất</option>
-                  <option value="asc">Cũ nhất</option>
-                </select>
+          {displayedGallery.length > 0 && (
+            <ProfileGallery items={displayedGallery} loading={isLoadingGallery} onRefresh={fetchGallery} />
+          )}
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 mt-8"
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg">
+                <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {gallery
-                  .filter((item) => {
-                    const t = searchTerm.trim().toLowerCase();
-                    const matchesTerm = t === '' || item.url.toLowerCase().includes(t);
-                    const created = new Date(item.createdAt);
-                    const afterStart = startDate ? created >= new Date(startDate) : true;
-                    const beforeEnd = endDate ? created <= new Date(endDate) : true;
-                    return matchesTerm && afterStart && beforeEnd;
-                  })
-                  .sort((a, b) => {
-                    const da = new Date(a.createdAt).getTime();
-                    const db = new Date(b.createdAt).getTime();
-                    return sortOrder === 'desc' ? db - da : da - db;
-                  })
-                  .map((item, idx) => (
-                  <div key={idx} className="relative p-3 border rounded-xl bg-white dark:bg-gray-800">
-                    <div className="aspect-square relative rounded-lg overflow-hidden">
-                      <Image src={item.url} alt="Ảnh đã tạo" fill className="object-cover" />
-                    </div>
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 vietnamese-heading">Ảnh phối đồ ảo</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kho ảnh try-on riêng biệt của bạn</p>
+              </div>
+            </div>
+          </div>
+
+          {isLoadingTryon && tryonGallery.length === 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="p-3 border rounded-xl">
+                  <div className="aspect-square">
+                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 animate-pulse" />
                   </div>
-                ))}
-              </div>
-            </>
+                </div>
+              ))}
+            </div>
+          )}
+          {!isLoadingTryon && tryonGallery.length === 0 && (
+            <div className="text-center py-12 text-gray-600 dark:text-gray-400">Chưa có ảnh try-on nào</div>
+          )}
+          {tryonGallery.length > 0 && (
+            <ProfileGallery items={tryonGallery} loading={isLoadingTryon} onRefresh={() => { fetchTryonGallery(); }} />
           )}
         </div>
       </motion.div>
@@ -465,4 +508,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

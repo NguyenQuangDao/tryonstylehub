@@ -11,8 +11,12 @@ import { motion } from 'framer-motion';
 import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles, Wand2, Shirt, Watch, Backpack, Sun, CloudSun } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
+import { TokenDisplay, InsufficientTokensModal } from '@/components/tokens/TokenComponents'
+import { useAuth } from '@/lib/auth-context'
+import { TOKEN_CONFIG } from '@/config/tokens'
 
 export default function GenerateImagePage() {
+  const { user } = useAuth()
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,8 @@ export default function GenerateImagePage() {
   const [accessories, setAccessories] = useState<{ hat: boolean; bag: boolean; jewelry: boolean; watch: boolean }>(
     { hat: false, bag: false, jewelry: false, watch: false }
   );
+  const [insufficientOpen, setInsufficientOpen] = useState(false)
+  const [insufficientInfo, setInsufficientInfo] = useState<{ required: number; current: number; operation: string }>({ required: TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount, current: 0, operation: 'Tạo ảnh AI' })
 
   const STYLE_PRESETS = ['casual', 'formal', 'streetwear', 'vintage', 'minimalist', 'bohemian'];
   const COLOR_PRESETS = ['pastel', 'neutral', 'monochrome', 'vivid', 'earth tones', 'black & white'];
@@ -79,7 +85,18 @@ export default function GenerateImagePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Không thể tạo ảnh');
+        const data = await response.json()
+        if (response.status === 402 && data?.insufficientTokens) {
+          setInsufficientInfo({
+            required: data.details?.required || TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
+            current: data.details?.current || (user?.tokenBalance ?? 0),
+            operation: 'Tạo ảnh AI'
+          })
+          setInsufficientOpen(true)
+          setLoading(false)
+          return
+        }
+        throw new Error(data.error || 'Không thể tạo ảnh');
       }
 
       const data = await response.json();
@@ -167,7 +184,7 @@ export default function GenerateImagePage() {
                   Nhanh chóng
                 </Badge>
               </div>
-            </CardHeader>
+          </CardHeader>
           </Card>
 
           {/* Usage Guide */}
@@ -248,6 +265,13 @@ export default function GenerateImagePage() {
           <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-gray-200/50 dark:border-gray-800/50">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <TokenDisplay balance={user?.tokenBalance ?? 0} />
+                  <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1">
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16z"/></svg>
+                    <span>Tiêu tốn {TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount} token</span>
+                  </Badge>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Loại trang phục</Label>
@@ -480,6 +504,13 @@ export default function GenerateImagePage() {
           <ToastDescription>Ảnh đã được lưu vào kho ảnh của bạn</ToastDescription>
         </Toast>
         <ToastViewport />
+        <InsufficientTokensModal
+          isOpen={insufficientOpen}
+          onClose={() => setInsufficientOpen(false)}
+          required={insufficientInfo.required}
+          current={insufficientInfo.current}
+          operation={insufficientInfo.operation}
+        />
       </div>
     </ToastProvider>
   );

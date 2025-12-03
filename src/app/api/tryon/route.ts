@@ -1,7 +1,12 @@
 import Fashn from 'fashn';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import sharp from 'sharp';
 import { prisma } from '../../../lib/prisma';
-import { getPresignedUrl } from '../../../lib/s3';
+import { getPresignedUrl, uploadToS3, generateS3Key, getJSON, putJSON } from '../../../lib/s3';
+import { verifyToken } from '../../../lib/auth';
+import { requireTokens, createInsufficientTokensResponse, chargeTokens } from '../../../lib/token-middleware'
+import { TOKEN_CONFIG } from '../../../config/tokens'
 
 const FASHN_ENDPOINT_URL = process.env.FASHN_ENDPOINT_URL || "https://api.fashn.ai";
 const FASHN_API_KEY = process.env.FASHN_API_KEY;
@@ -70,7 +75,7 @@ async function urlToBase64(url: string): Promise<string> {
   return `data:${contentType};base64,${base64}`;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     
@@ -79,6 +84,7 @@ export async function POST(request: Request) {
     const garmentImage = formData.get('garmentImage') as File;
     const virtualModelId = formData.get('virtualModelId') as string;
     const category = formData.get('category') as string;
+    const quality = (formData.get('quality') as string) || 'standard'
     
     // Validate API key (server-side only)
     const finalApiKey = FASHN_API_KEY;
@@ -96,6 +102,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing garment image" }, { status: 400 });
     }
     
+    // Require tokens based on quality tier
+    const requiredTokens = quality === 'high'
+      ? TOKEN_CONFIG.COSTS.TRY_ON_HIGH.amount
+      : TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount
+
+    const tokenCheck = await requireTokens(request as any, {
+      operation: quality === 'high' ? 'Phối đồ ảo (cao)' : 'Phối đồ ảo (thường)',
+      tokensRequired: requiredTokens,
+    })
+
+    if (!tokenCheck.success) {
+      if (tokenCheck.insufficientTokens) {
+        return createInsufficientTokensResponse(
+          requiredTokens,
+          tokenCheck.currentBalance || 0,
+          quality === 'high' ? 'phối đồ ảo chất lượng cao' : 'phối đồ ảo chất lượng thường'
+        )
+      }
+      return NextResponse.json({ error: tokenCheck.error || 'Unauthorized' }, { status: 401 })
+    }
+
+    const userId = String(tokenCheck.userId)
+
     // Convert files to base64
     let modelImageBase64 = '';
     if (personImage) {
@@ -164,6 +193,83 @@ export async function POST(request: Request) {
         // Prediction completed
         // Return array of image URLs for compatibility with client
         const images = statusData.output || [];
+
+        try {
+          const token = cookies().get('token')?.value || null;
+          if (token) {
+            const payload = await verifyToken(token);
+            if (payload && payload.userId) {
+              const userId = String(payload.userId);
+              const prefix = `users/${userId}/tryon`;
+              const newEntries: Array<{ url: string; key: string; createdAt: string; size: number; width: number; height: number; format: string; type: string; tryonPhoto?: boolean; }> = [];
+
+              for (const imageUrl of images) {
+                try {
+                  const res = await fetch(imageUrl);
+                  if (!res.ok) continue;
+                  const arrayBuffer = await res.arrayBuffer();
+                  const inputBuffer = Buffer.from(arrayBuffer);
+                  const meta = await sharp(inputBuffer).metadata();
+                  let processor = sharp(inputBuffer).withMetadata();
+                  const minDim = 1080;
+                  const w = meta.width || minDim;
+                  const h = meta.height || minDim;
+                  if (w < minDim || h < minDim) {
+                    processor = processor.resize({ width: Math.max(w, minDim), height: Math.max(h, minDim), fit: 'inside' });
+                  }
+                  let outputBuffer: Buffer;
+                  let contentType = 'image/jpeg';
+                  let ext = 'jpg';
+                  if (meta.hasAlpha || meta.format === 'png' || meta.format === 'webp') {
+                    outputBuffer = await processor.png({ compressionLevel: 9 }).toBuffer();
+                    contentType = 'image/png';
+                    ext = 'png';
+                  } else {
+                    outputBuffer = await processor.jpeg({ quality: 92 }).toBuffer();
+                  }
+                  const finalMeta = await sharp(outputBuffer).metadata();
+                  const s3Key = generateS3Key(prefix, `tryon.${ext}`);
+                  let savedUrl = await uploadToS3(outputBuffer, s3Key, contentType);
+                  try {
+                    const head = await fetch(savedUrl, { method: 'HEAD' });
+                    if (!head.ok) {
+                      savedUrl = await getPresignedUrl(s3Key, 3600);
+                    }
+                  } catch {
+                    savedUrl = await getPresignedUrl(s3Key, 3600);
+                  }
+                  newEntries.push({
+                    url: savedUrl,
+                    key: s3Key,
+                    createdAt: new Date().toISOString(),
+                    size: outputBuffer.length,
+                    width: finalMeta.width || minDim,
+                    height: finalMeta.height || minDim,
+                    format: contentType,
+                    type: 'tryon',
+                    tryonPhoto: true,
+                  });
+                } catch {}
+              }
+
+              if (newEntries.length > 0) {
+                const galleryKey = `users/${userId}/gallery.json`;
+                const gallery = (await getJSON<typeof newEntries>(galleryKey)) || [] as any[];
+                const updated = [...newEntries, ...gallery];
+                await putJSON(galleryKey, updated);
+              }
+            }
+          }
+        } catch {}
+
+        // Charge tokens after success
+        await chargeTokens(
+          userId,
+          quality === 'high' ? 'Phối đồ ảo (cao)' : 'Phối đồ ảo (thường)',
+          requiredTokens,
+          { count: (statusData.output || []).length }
+        )
+
         return NextResponse.json({ images });
       } else if (statusData.status === "failed") {
         console.error(`Prediction failed with id ${predId}: ${JSON.stringify(statusData.error)}`);

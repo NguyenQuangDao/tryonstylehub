@@ -206,12 +206,19 @@ export const TOKEN_CONFIG = {
 
     // Token costs for different operations with icons and colors
     COSTS: {
-        TRY_ON: {
-            amount: 1,
-            name: 'Thử đồ ảo',
+        TRY_ON_STANDARD: {
+            amount: 2,
+            name: 'Phối đồ ảo (thường)',
             icon: '👔',
             color: DESIGN_TOKENS.colors.secondary.DEFAULT,
             gradient: `linear-gradient(135deg, ${DESIGN_TOKENS.colors.secondary[400]}, ${DESIGN_TOKENS.colors.secondary[600]})`,
+        },
+        TRY_ON_HIGH: {
+            amount: 4,
+            name: 'Phối đồ ảo (cao)',
+            icon: '👔',
+            color: DESIGN_TOKENS.colors.secondary[700],
+            gradient: `linear-gradient(135deg, ${DESIGN_TOKENS.colors.secondary[600]}, ${DESIGN_TOKENS.colors.secondary[800]})`,
         },
         AI_RECOMMENDATION: {
             amount: 1,
@@ -221,7 +228,7 @@ export const TOKEN_CONFIG = {
             gradient: `linear-gradient(135deg, ${DESIGN_TOKENS.colors.accent[400]}, ${DESIGN_TOKENS.colors.accent[600]})`,
         },
         GENERATE_IMAGE: {
-            amount: 2,
+            amount: 1,
             name: 'Tạo hình ảnh AI',
             icon: '🎨',
             color: DESIGN_TOKENS.colors.warning.DEFAULT,

@@ -8,36 +8,33 @@ interface UserInfo {
   hairStyle: 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy';
 }
 
-const QUALITY_KEYWORDS = [
-  'photorealistic',
-  'professional photography',
-  'high quality',
-  'high detail',
-  'lifelike'
+const STRUCTURE_KEYWORDS = [
+  'grayscale',
+  'high-contrast',
+  'edge-emphasized',
+  'contour-focused',
+  'shape-based representation',
+  'structural morphology',
+  'rotation-invariant depiction',
+  'camera-agnostic orientation',
+  'normalized exposure',
+  'denoised',
+  'artifact-free'
 ];
 
 const COMPOSITION_KEYWORDS = [
   'subject centered',
   'full-body composition',
-  'head-to-toe visible'
+  'head-to-toe visible',
+  'single subject only',
+  'one person',
+  'solo portrait',
+  'single frame',
+  'plain neutral background',
+  'uncluttered background'
 ];
 
-const CAMERA_KEYWORDS = [
-  'DSLR',
-  '50mm prime',
-  'f/2.0',
-  'ISO 200',
-  '1/200s'
-];
-
-const LIGHTING_KEYWORDS = [
-  'soft studio key light',
-  'gentle rim light'
-];
-
-const BACKGROUND_KEYWORDS = [
-  'neutral studio gradient background'
-];
+// Camera, lighting, and background cues removed to ensure independence
 
 const NEGATIVE_KEYWORDS = [
   'no watermark',
@@ -45,26 +42,38 @@ const NEGATIVE_KEYWORDS = [
   'no blur',
   'no distortion',
   'no cropping',
-  'no cut-off head/hands/feet'
+  'no cut-off head/hands/feet',
+  'no collage',
+  'no multiple panels',
+  'no split-screen',
+  'no multi-view',
+  'no diagram',
+  'no labels or annotations',
+  'no measurement lines',
+  'no grid overlay',
+  'no text blocks',
+  'no infographic layout',
+  'no reference sheet'
 ];
 
+// Color-dependent descriptors removed
 const skinToneMap: Record<UserInfo['skinTone'], string> = {
-  'very-light': 'very fair skin tone',
-  'light': 'fair skin tone',
-  'medium': 'medium skin tone',
-  'tan': 'tanned skin tone',
-  'brown': 'brown skin tone',
-  'dark': 'deep dark skin tone'
+  'very-light': '',
+  'light': '',
+  'medium': '',
+  'tan': '',
+  'brown': '',
+  'dark': ''
 };
 
 const hairColorMap: Record<UserInfo['hairColor'], string> = {
-  'black': 'black',
-  'brown': 'brown',
-  'blonde': 'blonde',
-  'red': 'red',
-  'white': 'white',
-  'gray': 'gray',
-  'other': 'colorful'
+  'black': '',
+  'brown': '',
+  'blonde': '',
+  'red': '',
+  'white': '',
+  'gray': '',
+  'other': ''
 };
 
 const hairStyleMap: Record<UserInfo['hairStyle'], string> = {
@@ -135,37 +144,31 @@ export function composePromptFromAll(info: UserInfo, incomingPrompt?: string): s
   const bodyType = describeBodyType(info.height, info.weight);
   const gender = genderTerm(info.gender);
 
-  parts.push(`photorealistic full body portrait of a ${bodyType} ${gender}`);
-  parts.push(`${skinToneMap[info.skinTone]}`);
-  parts.push(`${hairColorMap[info.hairColor]} ${hairStyleMap[info.hairStyle]} hair`);
-  parts.push(`${info.eyeColor} eyes`);
+  parts.push(`grayscale, edge-emphasized full body depiction of a ${bodyType} ${gender}`);
+  const hairSilhouette = hairStyleMap[info.hairStyle] ? `${hairStyleMap[info.hairStyle]} hair silhouette` : '';
+  if (hairSilhouette) parts.push(hairSilhouette);
+  parts.push('neutral facial structure');
   parts.push(heightDesc);
-  parts.push('natural standing pose, slight angle toward camera, relaxed hands at sides');
+  parts.push('natural standing pose, orthographic front view, canonical upright alignment, relaxed hands at sides');
 
   parts.push(...COMPOSITION_KEYWORDS);
-  parts.push(...CAMERA_KEYWORDS);
-  parts.push(...LIGHTING_KEYWORDS);
-  parts.push(...BACKGROUND_KEYWORDS);
-  parts.push(...QUALITY_KEYWORDS);
+  parts.push(...STRUCTURE_KEYWORDS);
   parts.push(...NEGATIVE_KEYWORDS);
 
   if (incomingPrompt && incomingPrompt.trim()) {
     const userTags = tokenize(incomingPrompt);
-    const filtered = userTags.filter(tag => !/brand|logo|watermark|copyright|text/i.test(tag));
+    const filtered = userTags.filter(tag => !/brand|logo|watermark|copyright|text|background|studio|DSLR|lens|f\/|ISO|lighting|key light|rim light|color|skin tone|eye color/i.test(tag));
     parts.push(...filtered);
   }
 
-  const final = dedupe(parts).join(', ');
+  const final = dedupe(parts).filter(Boolean).join(', ');
   return clampLength(final, 700);
 }
 
 export function improveOnly(original: string): string {
   const base = [
-    ...QUALITY_KEYWORDS,
     ...COMPOSITION_KEYWORDS,
-    ...CAMERA_KEYWORDS,
-    ...LIGHTING_KEYWORDS,
-    ...BACKGROUND_KEYWORDS,
+    ...STRUCTURE_KEYWORDS,
     ...NEGATIVE_KEYWORDS
   ];
   const parts = dedupe([...tokenize(original), ...base]);

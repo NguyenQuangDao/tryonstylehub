@@ -1,33 +1,89 @@
 "use client";
 
-import { useState } from "react";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Button,
   Input,
   Label,
-  Textarea,
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
   Separator,
+  Textarea,
 } from "@/components/ui";
+import { useEffect, useState } from "react";
 
-export default function ProfileSettings() {
-  const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("name@example.com");
-  const [bio, setBio] = useState("");
-  const isEmailVerified = true;
+interface ProfileSettingsProps {
+  initialDisplayName?: string;
+  initialUsername?: string;
+  initialEmail?: string;
+  initialBio?: string;
+  avatarUrl?: string | null;
+  isEmailVerified?: boolean;
+}
+
+export default function ProfileSettings({
+  initialDisplayName = "",
+  initialUsername = "",
+  initialEmail = "",
+  initialBio = "",
+  avatarUrl = null,
+  isEmailVerified = true,
+}: ProfileSettingsProps) {
+  const [displayName, setDisplayName] = useState(initialDisplayName);
+  const [username, setUsername] = useState(initialUsername);
+  const [email, setEmail] = useState(initialEmail || "name@example.com");
+  const [bio, setBio] = useState(initialBio);
+  const [gender, setGender] = useState<'male' | 'female' | 'non-binary'>('male')
+  const [height, setHeight] = useState<number>(170)
+  const [weight, setWeight] = useState<number>(65)
+  const [skinTone, setSkinTone] = useState<string>('medium')
+  const [eyeColor, setEyeColor] = useState<string>('brown')
+  const [hairColor, setHairColor] = useState<string>('black')
+  const [hairStyle, setHairStyle] = useState<string>('short')
+
+  useEffect(() => {
+    setDisplayName(initialDisplayName);
+  }, [initialDisplayName]);
+  useEffect(() => {
+    setUsername(initialUsername);
+  }, [initialUsername]);
+  useEffect(() => {
+    setEmail(initialEmail || "name@example.com");
+  }, [initialEmail]);
+  useEffect(() => {
+    setBio(initialBio);
+  }, [initialBio]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('avatarDefaults')
+      if (raw) {
+        const d = JSON.parse(raw)
+        if (d.gender) setGender(d.gender)
+        if (typeof d.height === 'number') setHeight(d.height)
+        if (typeof d.weight === 'number') setWeight(d.weight)
+        if (d.skinTone) setSkinTone(d.skinTone)
+        if (d.eyeColor) setEyeColor(d.eyeColor)
+        if (d.hairColor) setHairColor(d.hairColor)
+        if (d.hairStyle) setHairStyle(d.hairStyle)
+      }
+    } catch {}
+  }, [])
 
   const handleUpdate = () => {
     console.log({ displayName, username, email, bio });
   };
 
+  const handleSaveDefaults = () => {
+    const d = { gender, height, weight, skinTone, eyeColor, hairColor, hairStyle }
+    try { localStorage.setItem('avatarDefaults', JSON.stringify(d)) } catch {}
+  }
+
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
-          <AvatarImage src="" alt="Ảnh đại diện" />
+          <AvatarImage src={avatarUrl || undefined} alt="Ảnh đại diện" />
           <AvatarFallback>US</AvatarFallback>
         </Avatar>
         <Button variant="outline" className="h-8">Thay đổi</Button>
@@ -86,6 +142,78 @@ export default function ProfileSettings() {
         </div>
 
         <Separator className="my-2" />
+
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold">Mặc định cho Avatar</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-sm font-medium">Giới tính</Label>
+              <select value={gender} onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'non-binary')} className="h-9 rounded-md border px-2 text-sm w-full mt-1">
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="non-binary">Khác</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Chiều cao (cm)</Label>
+              <Input type="number" value={height} onChange={(e) => setHeight(Number(e.target.value))} className="h-9 mt-1" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Cân nặng (kg)</Label>
+              <Input type="number" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="h-9 mt-1" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-sm font-medium">Màu da</Label>
+              <select value={skinTone} onChange={(e) => setSkinTone(e.target.value)} className="h-9 rounded-md border px-2 text-sm w-full mt-1">
+                <option value="very-light">Rất sáng</option>
+                <option value="light">Sáng</option>
+                <option value="medium">Trung bình</option>
+                <option value="tan">Nâu nhạt</option>
+                <option value="brown">Nâu</option>
+                <option value="dark">Tối</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Màu mắt</Label>
+              <select value={eyeColor} onChange={(e) => setEyeColor(e.target.value)} className="h-9 rounded-md border px-2 text-sm w-full mt-1">
+                <option value="brown">Nâu</option>
+                <option value="black">Đen</option>
+                <option value="blue">Xanh dương</option>
+                <option value="green">Xanh lá</option>
+                <option value="gray">Xám</option>
+                <option value="amber">Hổ phách</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Màu tóc</Label>
+              <select value={hairColor} onChange={(e) => setHairColor(e.target.value)} className="h-9 rounded-md border px-2 text-sm w-full mt-1">
+                <option value="black">Đen</option>
+                <option value="brown">Nâu</option>
+                <option value="blonde">Vàng</option>
+                <option value="red">Đỏ</option>
+                <option value="white">Trắng</option>
+                <option value="gray">Xám</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Kiểu tóc</Label>
+              <select value={hairStyle} onChange={(e) => setHairStyle(e.target.value)} className="h-9 rounded-md border px-2 text-sm w-full mt-1">
+                <option value="short">Ngắn</option>
+                <option value="long">Dài</option>
+                <option value="curly">Xoăn</option>
+                <option value="straight">Thẳng</option>
+                <option value="wavy">Gợn sóng</option>
+                <option value="bald">Hói</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button type="button" className="h-9" onClick={handleSaveDefaults}>Lưu mặc định avatar</Button>
+          </div>
+        </div>
 
         <div className="flex justify-end">
           <Button type="button" className="h-9" onClick={handleUpdate}>
