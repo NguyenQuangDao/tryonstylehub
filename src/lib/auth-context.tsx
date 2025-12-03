@@ -31,15 +31,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Fetch current user on mount
+  // Fetch current user on mount ONLY ONCE
   useEffect(() => {
-    // Tránh gọi /api/auth/me trước khi đăng ký/đăng nhập
-    if (pathname === '/register' || pathname === '/login') {
+    // Don't fetch on login/register pages
+    const isAuthPage = pathname === '/register' || pathname === '/login';
+    if (isAuthPage) {
       setLoading(false);
       return;
     }
+
+    // Fetch user once on mount
     fetchUser();
-  }, [pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
 
   const fetchUser = async () => {
     try {

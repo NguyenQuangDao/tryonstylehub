@@ -2,12 +2,16 @@
 
 export const dynamic = 'force-dynamic';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth-context';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
+import { Edit, Loader2, Plus, Search, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -37,11 +41,7 @@ export default function SellerProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  const categories = [
-    'Áo thun', 'Áo sơ mi', 'Áo khoác', 'Quần jean', 'Quần dài', 'Quần short',
-    'Váy', 'Đầm', 'Chân váy', 'Áo len', 'Áo hoodie', 'Áo blazer',
-    'Đồ thể thao', 'Đồ ngủ', 'Đồ bơi', 'Phụ kiện'
-  ];
+  const categoryOptions = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
 
   useEffect(() => {
     if (loading) return;
@@ -50,13 +50,13 @@ export default function SellerProductsPage() {
       return;
     }
     fetchProducts();
-  }, [loading, user]);
+  }, [loading, user, router]);
 
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/seller/products');
       const data = await response.json();
-      
+
       if (response.ok) {
         setProducts(data.products || []);
       } else {
@@ -69,24 +69,28 @@ export default function SellerProductsPage() {
     }
   };
 
-  const deleteProduct = async (productId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return;
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
+  const deleteProduct = async (productId: string) => {
+    setDeleting(true);
     try {
       const response = await fetch(`/api/seller/products/${productId}`, {
         method: 'DELETE',
       });
-
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
         setProducts(products.filter((p: Product) => p.id !== productId));
         alert('Sản phẩm đã được xóa thành công!');
       } else {
-        const data = await response.json();
-        alert(data.error || 'Có lỗi xảy ra khi xóa sản phẩm');
+        alert((data as { error?: string })?.error || 'Có lỗi xảy ra khi xóa sản phẩm');
       }
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Có lỗi xảy ra khi xóa sản phẩm');
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -101,7 +105,7 @@ export default function SellerProductsPage() {
       });
 
       if (response.ok) {
-        setProducts(products.map((p: Product) => 
+        setProducts(products.map((p: Product) =>
           p.id === productId ? { ...p, isActive: !currentStatus } : p
         ));
       } else {
@@ -116,7 +120,7 @@ export default function SellerProductsPage() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -133,10 +137,17 @@ export default function SellerProductsPage() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Quản lý sản phẩm</h1>
-        <Button onClick={() => router.push('/seller/products/new')}>
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm sản phẩm mới
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => router.push('/seller/products/new')} className="h-11 px-4 transition-transform active:scale-95">
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm sản phẩm mới
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Tạo sản phẩm mới</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Filters */}
@@ -158,7 +169,7 @@ export default function SellerProductsPage() {
               className="p-2 border rounded-md"
             >
               <option value="">Tất cả danh mục</option>
-              {categories.map(category => (
+              {categoryOptions.map((category) => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
@@ -180,10 +191,13 @@ export default function SellerProductsPage() {
         {filteredProducts.map((product) => (
           <Card key={product.id} className="overflow-hidden">
             <div className="aspect-square relative">
-              <img
-                src={product.images?.[0]?.url || '/placeholder-image.jpg'}
+              <Image
+                src={product.images?.[0]?.url || PLACEHOLDER_IMAGE}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover"
+                unoptimized
               />
               {product.isFeatured && (
                 <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
@@ -206,18 +220,15 @@ export default function SellerProductsPage() {
                   <span className="text-xl font-bold text-green-600">
                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
                   </span>
-                  <Badge variant={product.stock > 0 ? 'default' : 'destructive'}>
-                    {product.stock > 0 ? `Còn ${product.stock}` : 'Hết hàng'}
-                  </Badge>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-1">
-                  {product.styleTags.slice(0, 3).map((tag) => (
+                  {product?.styleTags?.slice(0, 3).map((tag) => (
                     <Badge key={tag} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
-                  {product.styleTags.length > 3 && (
+                  {product?.styleTags?.length > 3 && (
                     <Badge variant="outline" className="text-xs">
                       +{product.styleTags.length - 3}
                     </Badge>
@@ -225,30 +236,45 @@ export default function SellerProductsPage() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => router.push(`/seller/products/${product.id}/edit`)}
-                    className="flex-1"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleProductStatus(product.id, !!product.isActive)}
-                    className="flex-1"
-                  >
-                    {product.isActive ? 'Ngừng' : 'Kích hoạt'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => deleteProduct(product.id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push(`/seller/products/${product.id}/edit`)}
+                          className="flex-1 h-11 transition-transform active:scale-95"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Sửa
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Chỉnh sửa sản phẩm</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          onClick={() => toggleProductStatus(product.id, !!product.isActive)}
+                          className="flex-1 h-11 transition-transform active:scale-95"
+                        >
+                          {product.isActive ? 'Ngừng' : 'Kích hoạt'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{product.isActive ? 'Ngừng bán' : 'Kích hoạt bán'}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          onClick={() => setDeleteTarget(product)}
+                          className="h-11 w-11 p-0 transition-transform active:scale-95"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Xóa sản phẩm</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </CardContent>
@@ -262,13 +288,38 @@ export default function SellerProductsPage() {
             <p className="text-gray-500 mb-4">
               {searchTerm || selectedCategory ? 'Không tìm thấy sản phẩm nào phù hợp' : 'Bạn chưa có sản phẩm nào'}
             </p>
-            <Button onClick={() => router.push('/seller/products/new')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Tạo sản phẩm đầu tiên
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => router.push('/seller/products/new')} className="h-11 px-4 transition-transform active:scale-95">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Tạo sản phẩm đầu tiên
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Tạo sản phẩm mới</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xóa sản phẩm</DialogTitle>
+            <DialogDescription>
+              Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa &quot;{deleteTarget?.name}&quot;?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} className="h-11 min-w-[44px] px-4">Hủy</Button>
+            <Button variant="destructive" onClick={() => deleteProduct(deleteTarget!.id)} disabled={deleting} className="h-11 min-w-[44px] px-4">
+              {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Xóa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

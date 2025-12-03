@@ -101,11 +101,7 @@ export async function POST(request: Request) {
     if (personImage) {
       modelImageBase64 = await fileToBase64(personImage);
     } else if (virtualModelId) {
-      const vmIdNum = parseInt(virtualModelId, 10);
-      if (Number.isNaN(vmIdNum)) {
-        return NextResponse.json({ error: 'Invalid virtual model ID' }, { status: 400 });
-      }
-      const virtualModel = await prisma.virtualModel.findUnique({ where: { id: vmIdNum } });
+      const virtualModel = await (prisma as any).virtualModel.findUnique({ where: { id: virtualModelId } });
       if (!virtualModel || !virtualModel.avatarImage) {
         return NextResponse.json({ error: 'Virtual model image not found' }, { status: 404 });
       }

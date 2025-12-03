@@ -17,7 +17,7 @@ export interface TokenCheckResult {
  * Check if user has enough tokens for an operation
  */
 export async function checkTokenBalance(
-    userId: number,
+    userId: string,
     requiredTokens: number
 ): Promise<TokenCheckResult> {
     const user = await prisma.user.findUnique({
@@ -51,7 +51,7 @@ export async function checkTokenBalance(
  * This function is atomic and will rollback if operation fails
  */
 export async function deductTokens(
-    userId: number,
+    userId: string,
     amount: number,
     operation: string,
     metadata?: Record<string, any>
@@ -117,7 +117,7 @@ export async function deductTokens(
  * Refund tokens to user (e.g., if operation failed after deduction)
  */
 export async function refundTokens(
-    userId: number,
+    userId: string,
     amount: number,
     reason: string,
     metadata?: Record<string, any>
@@ -154,7 +154,7 @@ export async function refundTokens(
 /**
  * Get current token balance for user
  */
-export async function getTokenBalance(userId: number): Promise<number> {
+export async function getTokenBalance(userId: string): Promise<number> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { tokenBalance: true },
@@ -167,7 +167,7 @@ export async function getTokenBalance(userId: number): Promise<number> {
  * Add tokens to user balance (after successful purchase)
  */
 export async function addTokens(
-    userId: number,
+    userId: string,
     amount: number,
     source: string,
     metadata?: Record<string, any>

@@ -1,29 +1,51 @@
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { JWTPayload, verifyToken } from '@/lib/auth';
 
 // dùng prisma singleton
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user) {
+
+    const token = request.cookies.get('token')?.value;
+    const payload: JWTPayload | null = token ? await verifyToken(token) : null;
+
+    const tryParseId = (idValue: unknown): string | null => {
+      if (typeof idValue === 'string') return idValue;
+      if (typeof idValue === 'number') return String(idValue);
+      return null;
+    };
+
+    let userId: string | null = tryParseId(session?.user?.id) ?? tryParseId(payload?.userId);
+    if (!userId && payload?.email) {
+      const u = await prisma.user.findUnique({ where: { email: payload.email } });
+      userId = u?.id ?? null;
+    }
+
+    if (!userId) {
       return NextResponse.json(
         { error: 'Bạn cần đăng nhập' },
         { status: 401 }
       );
     }
 
-    if (session.user.role !== 'SELLER') {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Người dùng không tồn tại' }, { status: 404 });
+    }
+
+    if (user.role !== 'SELLER') {
       return NextResponse.json(
         { error: 'Bạn không có quyền truy cập' },
         { status: 403 }
       );
     }
 
-    if (!session.user.shopId) {
+    const shop = await prisma.shop.findUnique({ where: { ownerId: userId } });
+    if (!shop) {
       return NextResponse.json(
         { error: 'Bạn chưa có cửa hàng' },
         { status: 400 }
@@ -32,11 +54,10 @@ export async function GET() {
 
     // Get dashboard stats
 
-    const [totalProducts, totalTryOns, recentProductsRaw] = await Promise.all([
-      prisma.product.count({ where: { shopId: session.user.shopId } }),
-      prisma.tryOnHistory.count(),
+    const [totalProducts, recentProductsRaw] = await Promise.all([
+      prisma.product.count({ where: { shopId: shop.id } }),
       prisma.product.findMany({
-        where: { shopId: session.user.shopId },
+        where: { shopId: shop.id },
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
@@ -44,13 +65,12 @@ export async function GET() {
 
     const recentProducts = recentProductsRaw.map((p) => ({
       ...p,
-      styleTags: (() => { try { return p.styleTags ? JSON.parse(p.styleTags as unknown as string) : []; } catch { return []; } })(),
     }));
 
     return NextResponse.json({
       totalProducts,
       activeProducts: totalProducts,
-      totalTryOns,
+      totalTryOns: 0,
       totalViews: 0,
       recentProducts,
     });

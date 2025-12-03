@@ -353,7 +353,7 @@ export default function RecommendPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {product.styleTags.slice(0, 3).map((tag) => (
+                      {product?.styleTags?.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
                           className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg font-medium"

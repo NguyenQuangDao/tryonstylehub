@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Upload, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { Loader2, Upload, X } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -32,7 +33,10 @@ export default function NewProductPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState<Record<number, boolean>>({});
   
   const [formData, setFormData] = useState({
     name: '',
@@ -52,68 +56,68 @@ export default function NewProductPage() {
     return null;
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
-
-    setUploadingImages(true);
-    const uploadedUrls: string[] = [];
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.urls && data.urls.length > 0) {
-            uploadedUrls.push(...data.urls);
-          } else if (data.url) {
-            uploadedUrls.push(data.url);
-          }
-        }
-      }
-
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedUrls],
-      }));
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      alert('Có lỗi xảy ra khi tải ảnh lên');
-    } finally {
-      setUploadingImages(false);
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const maxSize = 10 * 1024 * 1024;
+    const valid: File[] = [];
+    const previews: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (!allowed.includes(f.type)) continue;
+      if (!f.size || f.size > maxSize) continue;
+      valid.push(f);
+      previews.push(URL.createObjectURL(f));
     }
+    if (valid.length === 0) {
+      alert('Vui lòng chọn ảnh định dạng jpg, png, webp và kích thước ≤ 10MB');
+      return;
+    }
+    setSelectedFiles(prev => [...prev, ...valid]);
+    setImagePreviews(prev => [...prev, ...previews]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setUploadProgress(0);
 
     try {
-      const response = await fetch('/api/seller/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock) || 0,
-        }),
+      const fd = new FormData();
+      fd.append('name', formData.name);
+      fd.append('description', formData.description);
+      fd.append('price', formData.price);
+      fd.append('category', formData.category);
+      fd.append('stock', formData.stock);
+      fd.append('isFeatured', String(formData.isFeatured));
+      selectedFiles.forEach((file) => fd.append('images', file));
+
+      const xhr = new XMLHttpRequest();
+      const responsePromise = new Promise<Response>((resolve, reject) => {
+        xhr.open('POST', '/api/seller/products');
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
+          }
+        };
+        xhr.onload = () => {
+          const blob = new Blob([xhr.response], { type: xhr.getResponseHeader('Content-Type') || 'application/json' });
+          const resp = new Response(blob, { status: xhr.status, statusText: xhr.statusText });
+          resolve(resp);
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send(fd);
       });
 
+      const response = await responsePromise;
+      
       const data = await response.json();
 
       if (response.ok) {
         alert('Sản phẩm đã được tạo thành công!');
-        router.push('/seller/dashboard');
+        router.push('/dashboard/seller');
       } else {
         alert(data.error || 'Có lỗi xảy ra');
       }
@@ -153,10 +157,8 @@ export default function NewProductPage() {
   };
 
   const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -255,29 +257,42 @@ export default function NewProductPage() {
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={handleImageSelect}
                   className="hidden"
                   id="image-upload"
-                  disabled={uploadingImages}
+                  disabled={submitting}
                 />
                 <Label
                   htmlFor="image-upload"
                   className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  {uploadingImages ? 'Đang tải...' : 'Tải ảnh lên'}
+                  {submitting ? 'Đang tải...' : 'Tải ảnh lên'}
                 </Label>
               </div>
               
-              {formData.images.length > 0 && (
+              {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {formData.images.map((image, index) => (
+                  {imagePreviews.map((image, index) => (
                     <div key={index} className="relative group">
-                      <img
-                        src={image}
-                        alt={`Product image ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
+                      <div className="w-full h-32 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
+                        {!imageLoaded[index] && (
+                          <div className="animate-pulse w-full h-full bg-gray-200" />
+                        )}
+                        <Image
+                          src={image}
+                          alt={`Product image ${index + 1}`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
+                          className={imageLoaded[index] ? 'object-cover rounded-lg' : 'hidden'}
+                          unoptimized
+                          onLoadingComplete={() => setImageLoaded(prev => ({ ...prev, [index]: true }))}
+                          onError={() => setImageLoaded(prev => ({ ...prev, [index]: false }))}
+                        />
+                        {imageLoaded[index] === false && (
+                          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">Không thể hiển thị ảnh</div>
+                        )}
+                      </div>
                       <Button
                         type="button"
                         variant="destructive"
@@ -357,12 +372,12 @@ export default function NewProductPage() {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={submitting || formData.images.length === 0 || formData.styleTags.length === 0}
+              disabled={submitting || imagePreviews.length === 0 || formData.styleTags.length === 0}
             >
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang tạo...
+                  Đang tạo... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
                 </>
               ) : (
                 'Tạo sản phẩm'

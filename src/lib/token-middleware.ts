@@ -21,7 +21,7 @@ export async function requireTokens(
     requirement: TokenRequirement
 ): Promise<{
     success: boolean
-    userId?: number
+    userId?: string
     error?: string
     insufficientTokens?: boolean
     currentBalance?: number
@@ -46,7 +46,7 @@ export async function requireTokens(
 
         // 2. Check token balance
         const balanceCheck = await checkTokenBalance(
-            payload.userId,
+            String(payload.userId),
             requirement.tokensRequired
         )
 
@@ -61,7 +61,7 @@ export async function requireTokens(
 
         return {
             success: true,
-            userId: payload.userId,
+            userId: String(payload.userId),
         }
     } catch (error) {
         console.error('Token requirement check error:', error)
@@ -77,7 +77,7 @@ export async function requireTokens(
  * Call this AFTER the operation succeeds
  */
 export async function chargeTokens(
-    userId: number,
+    userId: string,
     operation: string,
     tokensRequired: number,
     metadata?: Record<string, any>

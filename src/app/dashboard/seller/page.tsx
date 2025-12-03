@@ -1,24 +1,27 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BarChart as RBarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { Edit, Eye, Package, Settings, ShoppingCart, Trash2 } from "lucide-react"
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
+import { Edit, Eye, Package, Trash2 } from "lucide-react"
+import NextImage from "next/image"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
+import { Bar, BarChart as RBarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 type Product = {
   id: string
   name: string
+  description: string
   price: number
   category: string
-  status: "ACTIVE" | "INACTIVE" | "DRAFT"
-  isFeatured: boolean
+  status: string
   stock: number
-  images: Array<{ url: string; altText: string }>
-  _count: { tryOnHistory: number; productViews: number; reviews: number }
+  images: Array<{ url: string }>
+  createdAt?: string
+  updatedAt?: string
 }
 
 type SellerStats = {
@@ -43,7 +46,7 @@ function ProductsTab() {
       const response = await fetch("/api/seller/products?page=1&limit=10")
       const data = await response.json()
       if (response.ok) {
-        setProducts(data.products || [])
+        setProducts((data.products || []) as Product[])
       }
     } finally {
       setLoading(false)
@@ -75,10 +78,12 @@ function ProductsTab() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Ảnh</TableHead>
                 <TableHead>Tên</TableHead>
                 <TableHead>Danh mục</TableHead>
                 <TableHead>Tồn kho</TableHead>
                 <TableHead>Giá</TableHead>
+                <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -94,14 +99,29 @@ function ProductsTab() {
               ) : (
                 products.map((p) => (
                   <TableRow key={p.id}>
+                    <TableCell>
+                      <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100">
+                        <NextImage
+                          src={(p.images && p.images[0]?.url) || PLACEHOLDER_IMAGE}
+                          alt={p.name || 'Product image'}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                            e.currentTarget.src = PLACEHOLDER_IMAGE;
+                          }}
+                        />
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell>{p.category}</TableCell>
-                    <TableCell>{p.stock}</TableCell>
-                    <TableCell>{formatCurrency(p.price, "USD")}</TableCell>
+                    <TableCell>{p.category || "—"}</TableCell>
+                    <TableCell>{p.stock ?? 0}</TableCell>
+                    <TableCell>{formatCurrency(p.price ?? 0, "USD")}</TableCell>
+                    <TableCell>{p.status}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/seller/products/${p.id}`}>
+                          <Link href={`/seller/products/${p.id}/edit`}>
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>

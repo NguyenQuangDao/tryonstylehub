@@ -26,13 +26,11 @@ export default function LoginPage() {
   // Redirect if already logged in - but only after loading is complete
   React.useEffect(() => {
     if (!loading && user) {
-      // Add a small delay to prevent immediate redirect issues
-      const timer = setTimeout(() => {
-        router.push(redirectUrl)
-      }, 100)
-      return () => clearTimeout(timer)
+      // Redirect to the intended page or home
+      router.push(redirectUrl);
     }
-  }, [user, loading, router, redirectUrl])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]); // Only depend on user and loading, NOT redirectUrl
 
   // Show loading state while checking auth
   if (loading) {

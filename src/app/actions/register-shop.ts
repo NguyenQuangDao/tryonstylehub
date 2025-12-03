@@ -18,7 +18,8 @@ function slugify(input: string): string {
 }
 
 export async function registerShop(formData: FormData) {
-  const token = cookies().get("token")?.value
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")?.value
   const payload = token ? await verifyToken(token) : null
   const userId = payload?.userId as string | undefined
 

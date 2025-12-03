@@ -5,7 +5,34 @@ import { prisma } from '../../../../lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    let email: string | undefined;
+    let password: string | undefined;
+    const contentType = request.headers.get('content-type') || '';
+    try {
+      if (contentType.includes('application/json')) {
+        const body = await request.json();
+        email = body?.email;
+        password = body?.password;
+      } else if (contentType.includes('application/x-www-form-urlencoded')) {
+        const text = await request.text();
+        const params = new URLSearchParams(text);
+        email = params.get('email') || undefined;
+        password = params.get('password') || undefined;
+      } else if (contentType.includes('multipart/form-data')) {
+        const form = await request.formData();
+        email = (form.get('email') as string) || undefined;
+        password = (form.get('password') as string) || undefined;
+      } else {
+        const body = await request.json().catch(() => ({}));
+        email = body?.email;
+        password = body?.password;
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Dữ liệu gửi lên không hợp lệ' },
+        { status: 400 }
+      );
+    }
 
     // Validation
     if (!email || !password) {
@@ -72,7 +99,7 @@ export async function POST(request: NextRequest) {
         path: '/',
       });
       return response;
-    } catch {
+    } catch (e) {
       // Nếu JWT chưa cấu hình: vẫn trả user, không set cookie
       return NextResponse.json({
         success: true,
@@ -81,15 +108,24 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
-    if (error instanceof Error && error.name === 'PrismaClientInitializationError') {
+    const isDev = process.env.NODE_ENV === 'development';
+    const err = error as any;
+    const message = err?.message ?? 'Đã xảy ra lỗi khi đăng nhập';
+    const stack = err?.stack ?? undefined;
+    if (err?.name === 'PrismaClientInitializationError') {
+      console.error('Login error:', message, '\n', stack);
       return NextResponse.json(
         { error: 'Cơ sở dữ liệu không khả dụng', hint: 'Vui lòng cấu hình DATABASE_URL và khởi động DB' },
         { status: 503 }
       );
     }
-    return NextResponse.json(
-      { error: 'Đã xảy ra lỗi khi đăng nhập' },
-      { status: 500 }
-    );
+    console.error('Login error:', message, '\n', stack);
+    if (isDev) {
+      return NextResponse.json(
+        { error: message, name: err?.name, stack },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({ error: 'Đã xảy ra lỗi khi đăng nhập' }, { status: 500 });
   }
 }

@@ -5,8 +5,7 @@ import { authOptions } from '@/lib/auth-config';
 import { z } from 'zod';
 
 const updateUserSchema = z.object({
-  role: z.enum(['SHOPPER', 'SELLER', 'ADMIN']).optional(),
-  isActive: z.boolean().optional(),
+  role: z.enum(['USER', 'SELLER', 'ADMIN']).optional(),
 });
 
 export async function PATCH(request: NextRequest, context: unknown) {
@@ -17,7 +16,7 @@ export async function PATCH(request: NextRequest, context: unknown) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = parseInt(params.id);
+    const userId = params.id;
 
     if (String(userId) === session.user.id) {
       return NextResponse.json({ error: 'Cannot update your own account' }, { status: 403 });
@@ -30,7 +29,6 @@ export async function PATCH(request: NextRequest, context: unknown) {
       where: { id: userId },
       data: {
         ...(data.role !== undefined ? { role: data.role } : {}),
-        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
       },
     });
 

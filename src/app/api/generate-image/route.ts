@@ -60,13 +60,13 @@ export async function POST(request: NextRequest) {
     // Generating image for prompt
 
     const token = request.cookies.get('token')?.value || null;
-    let userId: string | number = 'anonymous';
-    let userIdNum: number | null = null;
+    let userId: string = 'anonymous';
+    let userIdStr: string | null = null;
     if (token) {
       const payload = await verifyToken(token);
       if (payload && payload.userId) {
-        userId = payload.userId as number;
-        userIdNum = payload.userId as number;
+        userId = String(payload.userId);
+        userIdStr = String(payload.userId);
       }
     } else {
       const headerUser = request.headers.get('x-user-id');
@@ -140,11 +140,11 @@ export async function POST(request: NextRequest) {
     if (!gallery) gallery = [];
     const updatedGallery = [metadata, ...gallery];
     await putJSON(galleryKey, updatedGallery);
-    if (userIdNum) {
+    if (userIdStr) {
       try {
         await prisma.costTracking.create({
           data: {
-            userId: userIdNum,
+            userId: userIdStr,
             service: 'aws-s3',
             operation: 'upload',
             cost: 0,
@@ -212,4 +212,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

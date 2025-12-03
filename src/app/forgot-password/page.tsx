@@ -7,6 +7,7 @@ export default function ForgotPasswordPage() {
   const [message, setMessage] = useState('')
   const [code, setCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +62,7 @@ export default function ForgotPasswordPage() {
         <form
           onSubmit={async (e) => {
             e.preventDefault()
-            setStatus('loading')
+            setResetLoading(true)
             try {
               const res = await fetch('/api/auth/reset-password', {
                 method: 'POST',
@@ -70,14 +71,14 @@ export default function ForgotPasswordPage() {
               })
               const data = await res.json()
               if (res.ok) {
-                setStatus('success')
+                setResetLoading(false)
                 setMessage('Đặt lại mật khẩu thành công. Hãy đăng nhập bằng mật khẩu mới.')
               } else {
-                setStatus('error')
+                setResetLoading(false)
                 setMessage(data.error || 'Đã xảy ra lỗi')
               }
             } catch {
-              setStatus('error')
+              setResetLoading(false)
               setMessage('Không thể gửi yêu cầu, vui lòng thử lại')
             }
           }}
@@ -108,9 +109,9 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             className="w-full bg-green-600 text-white rounded px-3 py-2"
-            disabled={status==='loading'}
+            disabled={resetLoading}
           >
-            {status==='loading' ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
+            {resetLoading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
           </button>
         </form>
       )}

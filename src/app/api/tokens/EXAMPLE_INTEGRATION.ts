@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   // ============================================
   const tokenCheck = await requireTokens(request, {
     operation: 'AI Recommendation',
-    tokensRequired: TOKEN_CONFIG.COSTS.AI_RECOMMENDATION,
+    tokensRequired: TOKEN_CONFIG.COSTS.AI_RECOMMENDATION.amount,
   })
 
   // If token check failed
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Insufficient tokens - show friendly error
     if (tokenCheck.insufficientTokens) {
       return createInsufficientTokensResponse(
-        TOKEN_CONFIG.COSTS.AI_RECOMMENDATION,
+        TOKEN_CONFIG.COSTS.AI_RECOMMENDATION.amount,
         tokenCheck.currentBalance || 0,
         'sử dụng AI Recommendation'
       )
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const chargeResult = await chargeTokens(
       tokenCheck.userId!,
       'AI Recommendation',
-      TOKEN_CONFIG.COSTS.AI_RECOMMENDATION,
+      TOKEN_CONFIG.COSTS.AI_RECOMMENDATION.amount,
       {
         style,
         resultCount: result.outfit.length,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
       tokenInfo: {
-        charged: TOKEN_CONFIG.COSTS.AI_RECOMMENDATION,
+        charged: TOKEN_CONFIG.COSTS.AI_RECOMMENDATION.amount,
         newBalance: chargeResult.newBalance,
       },
     })

@@ -4,6 +4,8 @@ import { deleteCache } from '@/lib/cache';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { JWTPayload, verifyToken } from '@/lib/auth';
 
 const updateSchema = z.object({
   name: z.string().min(3).max(255).optional(),
@@ -23,24 +25,30 @@ const updateSchema = z.object({
 export async function GET(_request: NextRequest, context: unknown) {
   try {
     const session = await getServerSession(authOptions);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    const payload: JWTPayload | null = token ? await verifyToken(token) : null;
     const { params } = context as { params: { id: string } };
-    if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
-    if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
+    const tryParseId = (idValue: unknown): string | null => {
+      if (typeof idValue === 'string') return idValue;
+      if (typeof idValue === 'number') return String(idValue);
+      return null;
+    };
+    let userId: string | null = tryParseId(session?.user?.id) ?? tryParseId(payload?.userId);
+    if (!userId && payload?.email) {
+      const u = await prisma.user.findUnique({ where: { email: payload.email } });
+      userId = u?.id ?? null;
+    }
+    if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
+    const shop = await prisma.shop.findUnique({ where: { ownerId: userId } });
+    if (!shop) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
-    const id = parseInt(params.id);
-    const product = await prisma.product.findFirst({
-      where: { id, shopId: session.user.shopId ?? undefined },
-    });
+    const id = params.id;
+    const product = await prisma.product.findFirst({ where: { id, shopId: shop.id }, include: { category: true } });
 
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
-    const resp = {
-      ...product,
-      styleTags: (() => { try { return product.styleTags ? JSON.parse(product.styleTags as unknown as string) : []; } catch { return []; } })(),
-      isActive: true,
-    };
-
-    return NextResponse.json(resp);
+    return NextResponse.json(product);
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 });
@@ -51,40 +59,50 @@ export async function PATCH(request: NextRequest, context: unknown) {
   try {
     const { params } = context as { params: { id: string } };
     const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
-    if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
-    if (!session.user.shopId) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    const payload: JWTPayload | null = token ? await verifyToken(token) : null;
+    const tryParseId = (idValue: unknown): string | null => {
+      if (typeof idValue === 'string') return idValue;
+      if (typeof idValue === 'number') return String(idValue);
+      return null;
+    };
+    let userId: string | null = tryParseId(session?.user?.id) ?? tryParseId(payload?.userId);
+    if (!userId && payload?.email) {
+      const u = await prisma.user.findUnique({ where: { email: payload.email } });
+      userId = u?.id ?? null;
+    }
+    if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
+    const shop = await prisma.shop.findUnique({ where: { ownerId: userId } });
+    if (!shop) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
-    const id = parseInt(params.id);
+    const id = params.id;
     const body = await request.json();
     const data = updateSchema.parse(body);
 
-    const product = await prisma.product.findFirst({ where: { id, shopId: session.user.shopId } });
+    const product = await prisma.product.findFirst({ where: { id, shopId: shop.id } });
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
-    const updates: Partial<{
-      name: string;
-      description: string;
-      price: number;
-      category: string;
-      styleTags: string;
-      sizes: string;
-      colors: string;
-      stock: number;
-      isFeatured: boolean;
-      status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
-    }> = {};
-    if (data.name !== undefined) updates.name = data.name;
+    const updates: any = {};
+    if (data.name !== undefined) updates.title = data.name;
     if (data.description !== undefined) updates.description = data.description;
-    if (data.price !== undefined) updates.price = data.price;
-    if (data.category !== undefined) updates.category = data.category;
-    if (data.styleTags !== undefined) updates.styleTags = JSON.stringify(data.styleTags);
-    if (data.sizes !== undefined) updates.sizes = JSON.stringify(data.sizes);
-    if (data.colors !== undefined) updates.colors = JSON.stringify(data.colors);
-    if (data.stock !== undefined) updates.stock = data.stock;
-    if (data.isFeatured !== undefined) updates.isFeatured = data.isFeatured;
-    if (data.status !== undefined) updates.status = data.status;
-    if (data.isActive !== undefined) updates.status = data.isActive ? 'ACTIVE' : 'INACTIVE';
+    if (data.price !== undefined) updates.basePrice = data.price;
+    if (data.isActive !== undefined) updates.status = data.isActive ? 'PUBLISHED' : 'ARCHIVED';
+
+    if (data.category !== undefined) {
+      const slugify = (s: string) => s
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      const categorySlug = slugify(data.category);
+      let category = await prisma.category.findUnique({ where: { slug: categorySlug } });
+      if (!category) {
+        category = await prisma.category.create({ data: { name: data.category, slug: categorySlug } });
+      }
+      updates.categoryId = category.id;
+    }
 
     await prisma.product.update({ where: { id }, data: updates });
     deleteCache('products:all');
@@ -104,13 +122,26 @@ export async function PATCH(request: NextRequest, context: unknown) {
 export async function DELETE(_request: NextRequest, context: unknown) {
   try {
     const session = await getServerSession(authOptions);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    const payload: JWTPayload | null = token ? await verifyToken(token) : null;
     const { params } = context as { params: { id: string } };
-    if (!session?.user) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
-    if (session.user.role !== 'SELLER') return NextResponse.json({ error: 'Bạn không có quyền truy cập' }, { status: 403 });
-    if (!session.user.shopId) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
+    const tryParseId = (idValue: unknown): string | null => {
+      if (typeof idValue === 'string') return idValue;
+      if (typeof idValue === 'number') return String(idValue);
+      return null;
+    };
+    let userId: string | null = tryParseId(session?.user?.id) ?? tryParseId(payload?.userId);
+    if (!userId && payload?.email) {
+      const u = await prisma.user.findUnique({ where: { email: payload.email } });
+      userId = u?.id ?? null;
+    }
+    if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 });
+    const shop = await prisma.shop.findUnique({ where: { ownerId: userId } });
+    if (!shop) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
-    const id = parseInt(params.id);
-    const product = await prisma.product.findFirst({ where: { id, shopId: session.user.shopId } });
+    const id = params.id;
+    const product = await prisma.product.findFirst({ where: { id, shopId: shop.id } });
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
     await prisma.product.delete({ where: { id } });

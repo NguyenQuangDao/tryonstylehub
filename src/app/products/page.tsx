@@ -36,7 +36,29 @@ export default function ProductsPage() {
       try {
         const res = await fetch("/api/products")
         const data = await res.json()
-        if (res.ok) setProducts(data.products)
+        if (res.ok) {
+          const list = Array.isArray(data?.data)
+            ? data.data.map((p: any) => {
+                const img = Array.isArray(p?.images) ? p.images[0] : undefined
+                const imageUrl = typeof img === "string" ? img : img?.url || img?.src || img?.path
+                return {
+                  id: p.id,
+                  name: p.title,
+                  type: p?.category?.name || "",
+                  price: Number(p.basePrice) || 0,
+                  imageUrl,
+                  styleTags: Array.isArray(p.styleTags) ? p.styleTags : [],
+                  shop: { name: p?.shop?.name || "", url: "" },
+                  brand: p.brand,
+                } as Product
+              })
+            : []
+          setProducts(list)
+        } else {
+          setProducts([])
+        }
+      } catch {
+        setProducts([])
       } finally {
         setLoading(false)
       }
@@ -45,7 +67,7 @@ export default function ProductsPage() {
   }, [])
 
   const categories = useMemo(() => {
-    return Array.from(new Set(products.map((p) => p.type)))
+    return Array.from(new Set((products || []).map((p) => p.type)))
   }, [products])
 
   const categoryCounts = useMemo(() => {
@@ -283,4 +305,3 @@ export default function ProductsPage() {
     </div>
   )
 }
-

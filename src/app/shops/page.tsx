@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma'
-import { Input } from '@/components/ui/input'
-import { ShopCard } from '@/components/shops/ShopCard'
+import { ShopCard } from '@/components/shops/ShopCard';
+import { Input } from '@/components/ui/input';
+import { prisma } from '@/lib/prisma';
 
 type GetShopsParams = { page?: number; search?: string }
 
@@ -8,11 +8,11 @@ async function getShops({ page = 1, search = '' }: GetShopsParams) {
   const limit = 12
   const where = search
     ? {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ],
+    }
     : undefined
 
   const [items, total] = await Promise.all([
@@ -38,10 +38,11 @@ async function getShops({ page = 1, search = '' }: GetShopsParams) {
 export default async function ShopsPage({
   searchParams,
 }: {
-  searchParams?: { page?: string; search?: string }
+  searchParams?: Promise<{ page?: string; search?: string }>
 }) {
-  const page = Number(searchParams?.page ?? '1') || 1
-  const search = (searchParams?.search ?? '').trim()
+  const params = await searchParams
+  const page = Number(params?.page ?? '1') || 1
+  const search = (params?.search ?? '').trim()
 
   const { items } = await getShops({ page, search })
 

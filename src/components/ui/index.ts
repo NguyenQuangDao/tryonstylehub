@@ -18,6 +18,7 @@ export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 export { Separator } from './separator';
 export { Checkbox } from './checkbox';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel, SelectSeparator } from './select';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './tooltip';
 
 // Legacy UI Components (to be migrated)
 export { Select as AccessibleSelect } from './AccessibleSelect';

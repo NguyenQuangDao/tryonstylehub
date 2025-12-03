@@ -1,8 +1,8 @@
 "use client"
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const params = useSearchParams()
   const email = params.get('email') || ''
   const token = params.get('token') || ''
@@ -68,3 +68,10 @@ export default function ResetPasswordPage() {
   )
 }
 
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="max-w-md mx-auto p-6">Đang tải...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}

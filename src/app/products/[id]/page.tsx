@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { ExternalLink, ImageIcon } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { use, useEffect, useMemo, useRef, useState } from 'react'
 
 interface Product {
   id: number
@@ -16,8 +16,9 @@ interface Product {
   createdAt: string
 }
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const productId = Number(params.id)
+export default function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
+  const productId = Number(params.id);
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 

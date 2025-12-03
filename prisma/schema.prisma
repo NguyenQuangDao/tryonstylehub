@@ -70,6 +70,9 @@ model User {
   reviews      Review[]
   transactions Transaction[]
   tokenPurchases TokenPurchase[]
+  virtualModels VirtualModel[]
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -239,4 +242,46 @@ model CostTracking {
   createdAt DateTime @default(now())
 
   @@index([userId, service])
+}
+
+model VirtualModel {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId     String?
+  avatarName    String
+  avatarImage   String?  @db.LongText
+  isPublic      Boolean  @default(false)
+  
+  height        Float
+  weight        Float
+  gender        String
+  hairColor     String
+  hairStyle     String
+  
+  bodyShape     String?
+  skinTone      String?
+  eyeColor      String?
+  faceShape     String?
+  beardStyle    String?
+  tattoos       String?
+  piercings     String?
+  clothingStyle String?
+  accessories   String?
+  footwearType  String?
+  colorPalette  String?
+  ageAppearance Int?
+  bodyProportionPreset String?
+  muscleLevel   Int?
+  fatLevel      Int?
+  shoulderWidth Float?
+  waistSize     Float?
+  hipSize       Float?
+  legLength     Float?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
 }

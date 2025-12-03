@@ -2,11 +2,12 @@ import { verifyToken } from '../../../lib/auth';
 import { prisma } from '../../../lib/prisma';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+const db = prisma as any;
 
 // Helper function to get user ID and session ID from request
-async function getUserInfoFromRequest(request: NextRequest): Promise<{ userId: number | null; sessionId: string | null }> {
+async function getUserInfoFromRequest(request: NextRequest): Promise<{ userId: string | null; sessionId: string | null }> {
   const token = request.cookies.get('token')?.value;
-  let userId: number | null = null;
+  let userId: string | null = null;
   
   if (token) {
     const payload = await verifyToken(token);
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const virtualModels = await prisma.virtualModel.findMany({
+    const virtualModels = await db.virtualModel.findMany({
       where: {
         ...(userId ? { userId } : { sessionId })
       },
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the virtual model
-    const virtualModel = await prisma.virtualModel.create({
+    const virtualModel = await db.virtualModel.create({
       data: {
         userId: userId || null,
         sessionId: userId ? null : sessionId,
@@ -149,9 +150,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if virtual model belongs to user
-    const virtualModel = await prisma.virtualModel.findFirst({
+    const virtualModel = await db.virtualModel.findFirst({
       where: {
-        id: parseInt(id),
+        id: id,
         ...(userId ? { userId } : { sessionId })
       },
     });
@@ -164,8 +165,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the virtual model
-    await prisma.virtualModel.delete({
-      where: { id: parseInt(id) },
+    await db.virtualModel.delete({
+      where: { id: id },
     });
 
     return NextResponse.json({ 
@@ -203,9 +204,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if virtual model belongs to user
-    const existingModel = await prisma.virtualModel.findFirst({
+    const existingModel = await db.virtualModel.findFirst({
       where: {
-        id: parseInt(id),
+        id: id,
         ...(userId ? { userId } : { sessionId })
       },
     });
@@ -220,8 +221,8 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
 
     // Update the virtual model
-    const virtualModel = await prisma.virtualModel.update({
-      where: { id: parseInt(id) },
+    const virtualModel = await (prisma as any).virtualModel.update({
+      where: { id: id },
       data: {
         avatarName: body.avatarName || existingModel.avatarName,
         avatarImage: body.avatarImage !== undefined ? body.avatarImage : existingModel.avatarImage,
@@ -269,4 +270,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

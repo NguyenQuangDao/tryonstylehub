@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCache, setCache } from "../../../lib/cache";
 import { getRecommendedProductIds } from "../../../lib/openai-ai";
 import { prisma } from "../../../lib/prisma";
+import { getPresignedUrl } from "../../../lib/s3";
 
 type OutfitProduct = {
   id: string;
@@ -64,11 +65,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const enrichedProducts = products.map((p) => {
+    const enrichedProducts = await Promise.all(products.map(async (p) => {
       const name = (p as any).name ?? (p as any).title ?? '';
       const type = (p as any).type ?? p.category?.name ?? 'Khác';
       const price = typeof (p as any).price === 'number' ? (p as any).price : Number((p as any).basePrice ?? 0);
-      const imageUrl = (p as any).imageUrl ?? (Array.isArray((p as any).images) ? (p as any).images[0] : '');
+
+      let rawImage: any = (p as any).imageUrl;
+      if (!rawImage && Array.isArray((p as any).images) && (p as any).images.length > 0) {
+        const first = (p as any).images[0];
+        rawImage = typeof first === 'string' ? first : (first?.url ?? '');
+      }
+
+      let imageUrl = typeof rawImage === 'string' ? rawImage : '';
+      if (imageUrl.startsWith('http://')) {
+        imageUrl = imageUrl.replace(/^http:\/\//, 'https://');
+      }
+
+      if (imageUrl && imageUrl.includes('.s3.') && imageUrl.includes('amazonaws.com')) {
+        try {
+          const u = new URL(imageUrl);
+          const key = u.pathname.replace(/^\//, '');
+          if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+            imageUrl = await getPresignedUrl(key, 900);
+          }
+        } catch {}
+      }
+
       const styleTags = [
         ...String(name).toLowerCase().split(/[^a-zA-Z0-9]+/).filter(Boolean),
         ...String(type).toLowerCase().split(/[^a-zA-Z0-9]+/).filter(Boolean),
@@ -83,7 +105,7 @@ export async function POST(request: NextRequest) {
         styleTags,
         shop: p.shop,
       };
-    });
+    }));
 
     // Get AI recommendations (returns product IDs based on internal indexing)
     const recommendedIds = await getRecommendedProductIds(style, enrichedProducts);

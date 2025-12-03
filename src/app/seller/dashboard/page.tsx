@@ -2,13 +2,14 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Eye, Edit, Trash2, Package, TrendingUp, Users } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
+import { Edit, Eye, Loader2, Package, Plus, Trash2, TrendingUp, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Product {
   id: string;
@@ -227,7 +228,7 @@ export default function SellerDashboardPage() {
                 <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <img
-                      src={product.images?.[0]?.url || '/placeholder-image.jpg'}
+                      src={product.images?.[0]?.url || PLACEHOLDER_IMAGE}
                       alt={product.images?.[0]?.altText || product.name}
                       className="w-16 h-16 object-cover rounded"
                     />
@@ -240,7 +241,7 @@ export default function SellerDashboardPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="font-semibold">
@@ -253,7 +254,7 @@ export default function SellerDashboardPage() {
                         <span>Đánh giá: {product._count.reviews}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex space-x-2">
                       <Button
                         variant="ghost"

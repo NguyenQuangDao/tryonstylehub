@@ -1,74 +1,106 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Create sample users (owners)
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash('seed-password', salt);
   const owner1 = await prisma.user.upsert({
-    where: { id: 1 },
+    where: { email: 'owner1@example.com' },
     update: {},
     create: {
       email: 'owner1@example.com',
       name: 'Seed Owner 1',
-      password: 'seed-password',
+      password: hashedPassword,
+      role: 'SELLER',
     },
   });
 
   const owner2 = await prisma.user.upsert({
-    where: { id: 2 },
+    where: { email: 'owner2@example.com' },
     update: {},
     create: {
       email: 'owner2@example.com',
       name: 'Seed Owner 2',
-      password: 'seed-password',
+      password: hashedPassword,
+      role: 'SELLER',
     },
   });
 
   // Create sample shops
   const shop1 = await prisma.shop.upsert({
-    where: { id: 1 },
+    where: { slug: 'fashion-store' },
     update: {},
     create: {
       name: 'Fashion Store',
-      url: 'https://fashionstore.example.com',
+      slug: 'fashion-store',
+      description: 'The best fashion store',
       ownerId: owner1.id,
+      status: 'ACTIVE',
     },
   });
 
   const shop2 = await prisma.shop.upsert({
-    where: { id: 2 },
+    where: { slug: 'style-hub' },
     update: {},
     create: {
       name: 'Style Hub',
-      url: 'https://stylehub.example.com',
+      slug: 'style-hub',
+      description: 'Your daily style hub',
       ownerId: owner2.id,
+      status: 'ACTIVE',
+    },
+  });
+
+  // Create categories
+  const category1 = await prisma.category.upsert({
+    where: { slug: 'dresses' },
+    update: {},
+    create: {
+      name: 'Dresses',
+      slug: 'dresses',
+    },
+  });
+
+  const category2 = await prisma.category.upsert({
+    where: { slug: 'jackets' },
+    update: {},
+    create: {
+      name: 'Jackets',
+      slug: 'jackets',
     },
   });
 
   // Create sample products
   await prisma.product.upsert({
-    where: { id: 1 },
+    where: { id: 'product-1' },
     update: {},
     create: {
-      name: 'Summer Dress',
-      type: 'dress',
-      imageUrl: '/images/products/summer-dress.jpg',
-      price: 49.99,
-      styleTags: JSON.stringify(['casual', 'summer', 'beach']),
+      id: 'product-1',
+      title: 'Summer Dress',
+      description: 'A beautiful summer dress',
+      images: ['/images/products/summer-dress.jpg'],
+      basePrice: 49.99,
       shopId: shop1.id,
+      categoryId: category1.id,
+      status: 'PUBLISHED',
     },
   });
 
   await prisma.product.upsert({
-    where: { id: 2 },
+    where: { id: 'product-2' },
     update: {},
     create: {
-      name: 'Denim Jacket',
-      type: 'jacket',
-      imageUrl: '/images/products/denim-jacket.jpg',
-      price: 79.99,
-      styleTags: JSON.stringify(['casual', 'streetwear', 'autumn']),
+      id: 'product-2',
+      title: 'Denim Jacket',
+      description: 'A cool denim jacket',
+      images: ['/images/products/denim-jacket.jpg'],
+      basePrice: 79.99,
       shopId: shop2.id,
+      categoryId: category2.id,
+      status: 'PUBLISHED',
     },
   });
 
@@ -83,4 +115,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

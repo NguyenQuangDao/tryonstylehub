@@ -150,6 +150,7 @@ npm run dev:turbo    # Start with Turbopack (faster)
 # Building
 npm run build        # Build for production
 npm run start        # Start production server
+npm run build:ci     # CI build (npm ci + prisma generate + build)
 
 # Code Quality
 npm run lint         # Run ESLint
@@ -258,6 +259,18 @@ npm run test:ui           # Visual test runner
 npm run build
 npm run start
 ```
+
+### Build Requirements
+- Ensure `prisma generate` has been run before building when Prisma schema changes
+- Node.js 18+ recommended; CI uses Node 20
+- Set required environment variables (see .env.example)
+
+### CI/CD Build Test
+- GitHub Actions workflow `.github/workflows/build.yml` runs:
+  - `npm ci`
+  - `npm run prisma:generate`
+  - `npm run build:ci`
+This ensures production build passes on every push/PR.
 
 ### Environment Variables
 Ensure all production environment variables are set:

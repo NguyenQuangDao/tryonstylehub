@@ -1,7 +1,9 @@
 // AWS S3 Integration - Install packages first: npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Initialize S3 Client
 const s3Client = new S3Client({
@@ -13,6 +15,7 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || process.env.AWS_S3_BUCKET_NAME || '';
+const PUBLIC_BASE = process.env.AWS_S3_PUBLIC_BASE_URL || (BUCKET_NAME && process.env.AWS_S3_REGION ? `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com` : '');
 
 /**
  * Upload file to S3
@@ -23,18 +26,40 @@ export async function uploadToS3(
   contentType: string = 'image/jpeg'
 ): Promise<string> {
   try {
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      Body: file as Buffer,
-      ContentType: contentType,
-      ACL: 'public-read', // Make file publicly accessible
-    });
+    if (!BUCKET_NAME || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      const publicDir = path.join(process.cwd(), 'public');
+      const fullPath = path.join(publicDir, key);
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, file as Buffer);
+      return `/${key}`;
+    }
+    const includeAcl = process.env.AWS_S3_USE_ACL !== 'false';
+    try {
+      const command = new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: file as Buffer,
+        ContentType: contentType,
+        ...(includeAcl ? { ACL: 'public-read' as const } : {}),
+      });
+      await s3Client.send(command);
+    } catch (err) {
+      const code = (err as any)?.Code || (err as any)?.name;
+      if (includeAcl && (code === 'AccessControlListNotSupported' || code === 'InvalidRequest')) {
+        const commandNoAcl = new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: key,
+          Body: file as Buffer,
+          ContentType: contentType,
+        });
+        await s3Client.send(commandNoAcl);
+      } else {
+        throw err;
+      }
+    }
 
-    await s3Client.send(command);
-
-    // Return public URL
-    return `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${key}`;
+    const base = PUBLIC_BASE || `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`;
+    return `${base}/${key}`;
   } catch (error) {
     console.error('S3 upload error:', error);
     throw new Error('Failed to upload file to S3');
@@ -132,6 +157,19 @@ export async function getJSON<T>(key: string): Promise<T | null> {
 
 export async function putJSON(key: string, data: unknown): Promise<string> {
   const body = Buffer.from(JSON.stringify(data));
-  await uploadToS3(body, key, 'application/json');
-  return `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${key}`;
+  const url = await uploadToS3(body, key, 'application/json');
+  return url;
+}
+
+export async function deleteFromS3(key: string): Promise<void> {
+  if (!BUCKET_NAME || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+    try {
+      const publicDir = path.join(process.cwd(), 'public');
+      const fullPath = path.join(publicDir, key);
+      await fs.rm(fullPath, { force: true });
+    } catch {}
+    return;
+  }
+  const command = new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+  await s3Client.send(command);
 }

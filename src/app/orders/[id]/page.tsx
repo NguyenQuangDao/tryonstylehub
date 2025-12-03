@@ -1,7 +1,7 @@
 import OrderDetails from "@/components/orders/OrderDetails";
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 function getMockOrder(id: string) {
@@ -45,7 +45,8 @@ function getMockOrder(id: string) {
   };
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page(props: PageProps) {
+  const params = await props.params;
   const order = getMockOrder(params.id);
   return (
     <div className="container mx-auto max-w-3xl py-6">
@@ -53,4 +54,3 @@ export default function Page({ params }: PageProps) {
     </div>
   );
 }
-

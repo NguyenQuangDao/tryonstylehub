@@ -22,7 +22,7 @@ export async function GET() {
     const activeProducts = totalProducts;
 
     // Get total try-ons and views
-    const totalTryOns = await prisma.tryOnHistory.count();
+    const totalTryOns = 0;
     const totalViews = 0;
 
     return NextResponse.json({
