@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '../../../../lib/auth';
-import { getJSON } from '../../../../lib/s3';
+import { getJSON, getPresignedUrl } from '../../../../lib/s3';
 
 type GalleryEntry = {
   url: string;
@@ -26,8 +26,16 @@ export async function GET(request: NextRequest) {
 
     const key = `users/${payload.userId}/gallery.json`;
     const gallery = (await getJSON<GalleryEntry[]>(key)) || [];
+    const mapped = await Promise.all(gallery.map(async (item) => {
+      try {
+        const url = await getPresignedUrl(item.key, 3600);
+        return { ...item, url };
+      } catch {
+        return item;
+      }
+    }));
 
-    return NextResponse.json({ success: true, gallery });
+    return NextResponse.json({ success: true, gallery: mapped });
   } catch {
     return NextResponse.json({ error: 'Không thể lấy danh sách ảnh' }, { status: 500 });
   }

@@ -40,11 +40,12 @@ interface OptimizedHomePageProps {
   isComparisonMode: boolean;
   setIsComparisonMode: (mode: boolean) => void;
   setIsTipsModalOpen?: (open: boolean) => void;
+  onClearSelectedVirtualModel?: () => void;
   onSubmit: (e: FormEvent) => void;
 }
 
 export default function OptimizedHomePage({
-  // selectedVirtualModel,
+  selectedVirtualModel,
   setIsVirtualModelSelectorOpen,
   personImageUpload,
   garmentImageUpload,
@@ -56,6 +57,7 @@ export default function OptimizedHomePage({
   isComparisonMode,
   setIsComparisonMode,
   setIsTipsModalOpen,
+  onClearSelectedVirtualModel,
   onSubmit
 }: OptimizedHomePageProps) {
   // Example images
@@ -138,6 +140,34 @@ export default function OptimizedHomePage({
                           size="icon"
                           onClick={personImageUpload.clearImage}
                           aria-label="Xóa ảnh người mẫu"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : selectedVirtualModel?.avatarImage ? (
+                      <div className="relative group">
+                        <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
+                          <Image
+                            src={selectedVirtualModel.avatarImage}
+                            alt={selectedVirtualModel.avatarName}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => {
+                            if (onClearSelectedVirtualModel) {
+                              onClearSelectedVirtualModel();
+                            } else {
+                              setIsVirtualModelSelectorOpen(true);
+                            }
+                          }}
+                          aria-label="Bỏ chọn người mẫu ảo"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-4 h-4" />

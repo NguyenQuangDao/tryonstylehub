@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadToS3, generateS3Key } from '@/lib/s3';
+import { uploadToS3, generateS3Key, getPresignedUrl } from '@/lib/s3';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +39,15 @@ export async function POST(request: NextRequest) {
 
     try {
       // Upload to S3
-      const s3Url = await uploadToS3(buffer, s3Key, file.type);
+      let s3Url = await uploadToS3(buffer, s3Key, file.type);
+      try {
+        const head = await fetch(s3Url, { method: 'HEAD' });
+        if (!head.ok) {
+          s3Url = await getPresignedUrl(s3Key, 3600);
+        }
+      } catch {
+        s3Url = await getPresignedUrl(s3Key, 3600);
+      }
 
       return NextResponse.json({
         success: true,

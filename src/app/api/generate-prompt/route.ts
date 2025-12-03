@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { composePromptFromAll, improveOnly } from '@/lib/promptComposer';
 
 interface UserInfo {
   gender: 'male' | 'female' | 'non-binary';
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const incomingPrompt: string | undefined = typeof body === 'object' && typeof body.prompt === 'string' ? body.prompt : undefined;
-    const userInfo: UserInfo | undefined = typeof body === 'object' && typeof body.gender === 'string' ? body as UserInfo : undefined;
+    const userInfo: UserInfo | undefined = typeof body === 'object' && typeof body.gender === 'string' ? (body as UserInfo) : undefined;
     const preferRemote: boolean = typeof body === 'object' && body?.preferRemote ? true : false;
     const model: string = typeof body === 'object' && typeof body?.model === 'string' ? body.model : 'google/gemini-2.0-flash-exp:free';
 
@@ -95,15 +96,36 @@ Rules:
     const bodyType = userInfo ? describeBodyType(userInfo.height, userInfo.weight) : undefined;
     const skinToneDesc = userInfo ? mapSkinTone(userInfo.skinTone) : undefined;
 
-    const userMessage = incomingPrompt
-      ? `Original user prompt to improve:\n\n${incomingPrompt}\n\nRewrite it into a single, concise but richly detailed prompt optimized for DALL-E 3, following the rules.`
-      : `Create a single photorealistic full-body prompt with:
-- Gender: ${userInfo!.gender}, age: adult
-- Height: ${userInfo!.height} cm (${heightImpression})
+    const userMessage = (() => {
+      if (incomingPrompt && userInfo) {
+        return `Combine the provided avatar description with the structured user data into ONE clear, detailed English prompt for DALL-E 3.
+
+Inputs:
+- Description: "${incomingPrompt}"
+- Gender: ${userInfo.gender}, age: adult
+- Height: ${userInfo.height} cm (${heightImpression})
 - Body type: ${bodyType}
 - Skin tone: ${skinToneDesc}
-- Eye color: ${userInfo!.eyeColor}
-- Hair: ${userInfo!.hairStyle} ${userInfo!.hairColor}
+- Eye color: ${userInfo.eyeColor}
+- Hair: ${userInfo.hairStyle} ${userInfo.hairColor}
+
+Requirements:
+- Preserve the user's intent and key details.
+- Remove duplicate or unnecessary information.
+- Prioritize subject attributes first, then pose, composition, camera, lighting, background, quality tags, and negative cues.
+- Prefer concise phrasing; avoid brand names or copyrighted terms.
+- Output ONLY the final prompt, one line.`;
+      }
+      if (incomingPrompt) {
+        return `Original user prompt to improve:\n\n${incomingPrompt}\n\nRewrite it into a single, concise but richly detailed prompt optimized for DALL-E 3, following the rules.`;
+      }
+      return `Create a single photorealistic full-body prompt with:
+Gender: ${userInfo!.gender}, age: adult
+Height: ${userInfo!.height} cm (${heightImpression})
+Body type: ${bodyType}
+Skin tone: ${skinToneDesc}
+Eye color: ${userInfo!.eyeColor}
+Hair: ${userInfo!.hairStyle} ${userInfo!.hairColor}
 
 Additional constraints:
 - Pose: natural standing, slight angle toward camera, relaxed hands at sides
@@ -114,42 +136,13 @@ Additional constraints:
 - Quality: photorealistic, professional photography, high quality, high detail, lifelike
 - Negative: no watermark, no text, no blur, no distortion, no cropping or cut-off head/hands/feet
 - Clothing: avoid specifying garments or brands (keep neutral/general only)`;
+    })();
 
-    const localImprovePrompt = (original: string) => {
-      const base = [
-        'photorealistic',
-        'professional photography',
-        'high quality',
-        'high detail',
-        'lifelike',
-        'subject centered',
-        'full-body composition',
-        'head-to-toe visible',
-        'DSLR 50mm prime, f/2.0, ISO 200, 1/200s',
-        'soft studio key light with gentle rim light',
-        'neutral studio gradient background',
-        'no watermark, no text, no blur, no distortion'
-      ].join(', ');
-      return `${original}, ${base}`;
-    };
+    const localImprovePrompt = (original: string) => improveOnly(original);
 
-    const localGenerateFromUserInfo = (info: UserInfo) => {
-      const genderTerm = info.gender === 'male' ? 'man' : info.gender === 'female' ? 'woman' : 'person';
-      const base = [
-        `photorealistic full body portrait of an ${bodyType} ${genderTerm}`,
-        `${skinToneDesc}`,
-        `${info.hairColor} ${info.hairStyle} hair`,
-        `${info.eyeColor} eyes`,
-        'natural standing pose, slight angle toward camera, relaxed hands at sides',
-        'subject centered, head-to-toe visible',
-        'DSLR 50mm prime, f/2.0, ISO 200, 1/200s',
-        'soft studio key light with gentle rim light',
-        'neutral studio gradient background',
-        'professional photography, high quality, high detail, lifelike',
-        'no watermark, no text, no blur, no distortion'
-      ].join(', ');
-      return base;
-    };
+    const localGenerateFromUserInfo = (info: UserInfo) => composePromptFromAll(info);
+
+    const localComposeFromAll = (info: UserInfo, original: string) => composePromptFromAll(info, original);
 
     // Gọi OpenRouter API với retry logic
     let response;
@@ -206,9 +199,11 @@ Additional constraints:
               { status: 429 }
             );
           }
-          const promptOut = incomingPrompt
-            ? localImprovePrompt(incomingPrompt)
-            : localGenerateFromUserInfo(userInfo!);
+          const promptOut = incomingPrompt && userInfo
+            ? localComposeFromAll(userInfo!, incomingPrompt)
+            : incomingPrompt
+              ? localImprovePrompt(incomingPrompt)
+              : localGenerateFromUserInfo(userInfo!);
           return NextResponse.json({ success: true, prompt: promptOut, source: 'local' });
         }
 
@@ -233,9 +228,11 @@ Additional constraints:
             { status: 502 }
           );
         }
-        const promptOut = incomingPrompt
-          ? localImprovePrompt(incomingPrompt)
-          : localGenerateFromUserInfo(userInfo!);
+        const promptOut = incomingPrompt && userInfo
+          ? localComposeFromAll(userInfo!, incomingPrompt)
+          : incomingPrompt
+            ? localImprovePrompt(incomingPrompt)
+            : localGenerateFromUserInfo(userInfo!);
         return NextResponse.json({ success: true, prompt: promptOut, source: 'local' });
       }
     }

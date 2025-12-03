@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Image as ImageIcon, Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface AvatarUploadProps {
   onImageUploaded?: (imageUrl: string) => void;
@@ -26,6 +26,10 @@ export default function AvatarUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(existingImage);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUploadedImage(existingImage);
+  }, [existingImage]);
 
   const validateFile = useCallback((file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {

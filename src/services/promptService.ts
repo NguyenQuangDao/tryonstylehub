@@ -41,6 +41,35 @@ export class PromptService {
   }
 
   /**
+   * Kết hợp thông tin người dùng và mô tả để tạo/tối ưu prompt
+   */
+  async composeAndImprovePrompt(userInfo: UserInfo, description: string): Promise<string> {
+    try {
+      const response = await fetch('/api/generate-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...userInfo, prompt: description }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        if (response.status === 429 || data.errorCode === 'RATE_LIMIT_EXCEEDED') {
+          return this.generateFallbackPrompt(userInfo);
+        }
+        throw new Error(data.error || 'Không thể tạo prompt');
+      }
+
+      return data.prompt;
+    } catch (error) {
+      console.warn('Error calling prompt API (compose):', error);
+      return this.generateFallbackPrompt(userInfo);
+    }
+  }
+
+  /**
    * Xác định dáng người dựa trên chiều cao và cân nặng
    */
   private determineBodyType(height: number, weight: number): string {

@@ -38,7 +38,9 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
     setIsGeneratingPrompt(true);
     try {
       const promptService = new PromptService();
-      const generatedPrompt = await promptService.generatePrompt(userInfo);
+      const generatedPrompt = prompt.trim()
+        ? await promptService.composeAndImprovePrompt(userInfo, prompt)
+        : await promptService.generatePrompt(userInfo);
       setPrompt(generatedPrompt);
     } catch (error) {
       console.error('Error generating prompt:', error);
@@ -62,7 +64,7 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `Portrait of a person: ${prompt}. Professional headshot, clean background, high quality`,
+          prompt: prompt,
           quality,
         }),
       });
@@ -138,7 +140,7 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
                 ) : (
                   <>
                     <Sparkles className="h-3 w-3" />
-                    Tạo tự động
+                    Tạo tự động / Tối ưu prompt
                   </>
                 )}
               </Button>

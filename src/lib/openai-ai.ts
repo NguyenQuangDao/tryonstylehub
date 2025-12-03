@@ -22,9 +22,10 @@ const DALLE3_HD_1792_COST = 0.12;
 export async function generateImageWithDALLE(
   prompt: string,
   userId: string = 'anonymous',
-  quality: 'standard' | 'hd' = 'standard'
+  quality: 'standard' | 'hd' = 'standard',
+  size: '1024x1024' | '1024x1792' | '1792x1024' = '1024x1792'
 ): Promise<string> {
-  const cacheKey = `dalle:${quality}:${prompt}`;
+  const cacheKey = `dalle:${quality}:${size}:${prompt}`;
   const cached = getCache<string>(cacheKey);
 
   if (cached) {
@@ -37,7 +38,7 @@ export async function generateImageWithDALLE(
       model: 'dall-e-3',
       prompt,
       n: 1,
-      size: '1024x1024',
+      size,
       quality,
     });
 
@@ -47,7 +48,10 @@ export async function generateImageWithDALLE(
     }
 
     // Track cost
-    const cost = quality === 'hd' ? DALLE3_HD_1024_COST : DALLE3_STANDARD_1024_COST;
+    let cost = quality === 'hd' ? DALLE3_HD_1024_COST : DALLE3_STANDARD_1024_COST;
+    if (quality === 'hd' && size === '1024x1792') {
+      cost = DALLE3_HD_1792_COST;
+    }
     CostTracker.track(cost, 'openai', 'dalle-3');
 
     // Cache for 1 hour

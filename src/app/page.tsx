@@ -141,6 +141,7 @@ export default function HomePage() {
         resultGallery={resultGallery}
         isComparisonMode={isComparisonMode}
         setIsComparisonMode={setIsComparisonMode}
+        onClearSelectedVirtualModel={() => setSelectedVirtualModel(null)}
         onSubmit={handleSubmit}
       />
 
