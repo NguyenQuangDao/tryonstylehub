@@ -70,8 +70,10 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
                 className="object-cover"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
                 unoptimized
-                onError={(e: any) => {
-                  try { e.currentTarget.src = PLACEHOLDER_IMAGE } catch {}
+                onError={(e) => {
+                  try {
+                    (e.currentTarget as HTMLImageElement).src = PLACEHOLDER_IMAGE
+                  } catch {}
                 }}
               />
             </div>

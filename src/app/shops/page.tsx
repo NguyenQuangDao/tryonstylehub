@@ -65,7 +65,7 @@ export default async function ShopsPage({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((shop) => (
-            <ShopCard key={shop.id} shop={shop as any} />
+            <ShopCard key={shop.id} shop={shop} />
           ))}
         </div>
       )}

@@ -67,6 +67,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  useEffect(() => {
+    const isAuthPage = pathname === '/register' || pathname === '/login';
+    if (loading) return;
+    if (!isAuthPage && !user) {
+      const redirect = pathname && pathname !== '/' ? `?redirect=${encodeURIComponent(pathname)}` : '';
+      router.replace(`/login${redirect}`);
+    }
+  }, [user, loading, pathname, router]);
+
+  useEffect(() => {
+    const isAuthPage = pathname === '/register' || pathname === '/login';
+    if (isAuthPage) return;
+    const id = setInterval(() => {
+      fetchUser();
+    }, 60000);
+    return () => clearInterval(id);
+  }, [pathname]);
+
   const login = async (email: string, password: string) => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',

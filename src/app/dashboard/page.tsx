@@ -122,10 +122,17 @@ export default function EnhancedDashboardPage() {
       href: '/',
     },
     {
-      title: 'AI Recommendations',
-      description: 'Nhận gợi ý trang phục phù hợp. Tốn 1 token/lần.',
+      title: 'Tạo Ảnh AI',
+      description: 'Tạo hình ảnh thời trang ảo từ thông số đầu vào.',
       icon: Sparkles,
       color: 'from-purple-600 to-pink-600',
+      href: '/generate-image',
+    },
+    {
+      title: 'Gợi Ý Đồ',
+      description: 'Đề xuất phối đồ thông minh, cá nhân hóa theo sở thích.',
+      icon: Zap,
+      color: 'from-green-600 to-lime-600',
       href: '/recommend',
     },
     {

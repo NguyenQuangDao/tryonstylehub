@@ -29,6 +29,9 @@ type RecommendationPayload = {
 
 const recommendSchema = z.object({
   style: z.string().min(3, "Mô tả phong cách là bắt buộc"),
+  wishlistIds: z.array(z.union([z.string(), z.number()])).optional().default([]),
+  preferredShops: z.array(z.string()).optional().default([]),
+  recentStyles: z.array(z.string()).optional().default([]),
 });
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -45,9 +48,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { style } = parseResult.data;
+    const { style, wishlistIds, preferredShops, recentStyles } = parseResult.data;
     const normalizedStyle = style.trim().toLowerCase();
-    const cacheKey = `recommend:${normalizedStyle}`;
+    const prefKey = JSON.stringify({ w: wishlistIds, s: preferredShops });
+    const cacheKey = `recommend:${normalizedStyle}:${prefKey}`;
 
     const cached = getCache<RecommendationPayload>(cacheKey);
     if (cached) {
@@ -111,6 +115,29 @@ export async function POST(request: NextRequest) {
     const recommendedIds = await getRecommendedProductIds(style, enrichedProducts);
     let selectedProducts = enrichedProducts.filter(p => recommendedIds.includes(p.id));
 
+    // Re-rank by personalization if available
+    if (selectedProducts.length) {
+      const wl = new Set((wishlistIds || []).map(String));
+      const shopsPref = new Set((preferredShops || []).map(s => s.toLowerCase()));
+      selectedProducts = selectedProducts
+        .map(product => {
+          let boost = 0;
+          if (wl.has(String(product.id))) boost += 5;
+          const slug = (product as any)?.shop?.slug ? String((product as any).shop.slug).toLowerCase() : '';
+          const shopName = (product as any)?.shop?.name ? String((product as any).shop.name).toLowerCase() : '';
+          if (slug && shopsPref.has(slug)) boost += 3;
+          if (shopName && shopsPref.has(shopName)) boost += 2;
+          // Recent style keywords match
+          const rs = (recentStyles || []).join(' ').toLowerCase();
+          const productText = `${product.name} ${product.type} ${(product.styleTags || []).join(' ')}`.toLowerCase();
+          const keywords = rs.split(/\s+/).filter(w => w.length > 3);
+          keywords.forEach(k => { if (productText.includes(k)) boost += 1; });
+          return { product, boost };
+        })
+        .sort((a, b) => b.boost - a.boost)
+        .map(x => x.product);
+    }
+
     // Smart fallback with semantic matching
     if (!selectedProducts.length) {
       console.log('[Recommend API] Using intelligent fallback');
@@ -121,6 +148,9 @@ export async function POST(request: NextRequest) {
         .filter(word => word.length > 3);
 
       // Score products based on tag and name matching
+      const wl = new Set((wishlistIds || []).map(String));
+      const shopsPref = new Set((preferredShops || []).map(s => s.toLowerCase()));
+      const rs = (recentStyles || []).join(' ').toLowerCase();
       const scoredProducts = enrichedProducts.map((product) => {
         const tags = product.styleTags || [];
         const productText = `${product.name} ${product.type} ${tags.join(' ')}`.toLowerCase();
@@ -137,6 +167,15 @@ export async function POST(request: NextRequest) {
             }
           });
         });
+
+        // Personalization boosts
+        if (wl.has(String(product.id))) score += 5;
+        const slug = (product as any)?.shop?.slug ? String((product as any).shop.slug).toLowerCase() : '';
+        const shopName = (product as any)?.shop?.name ? String((product as any).shop.name).toLowerCase() : '';
+        if (slug && shopsPref.has(slug)) score += 3;
+        if (shopName && shopsPref.has(shopName)) score += 2;
+        const rsKeywords = rs.split(/\s+/).filter(w => w.length > 3);
+        rsKeywords.forEach(k => { if (productText.includes(k)) score += 1; });
 
         return { product, score };
       });

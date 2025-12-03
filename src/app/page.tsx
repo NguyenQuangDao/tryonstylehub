@@ -114,6 +114,19 @@ export default function HomePage() {
     run();
   }, []);
 
+  // Prefill from query params for seamless integration
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const garmentImage = url.searchParams.get('garmentImage');
+      const category = url.searchParams.get('category');
+      if (category) setSelectedCategory(category);
+      if (garmentImage) {
+        garmentImageUpload.loadExampleImage(garmentImage);
+      }
+    } catch {}
+  }, []);
+
   return (
     <>
       <OptimizedHomePage

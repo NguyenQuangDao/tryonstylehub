@@ -38,6 +38,10 @@ export default function AppSidebar() {
     return role === "SELLER" || role === "SHOP_ADMIN" || role === "ADMIN"
   }, [user])
 
+  if (pathname === '/login' || pathname === '/register') {
+    return null
+  }
+
   return (
     <aside className="fixed inset-y-0 left-0 z-40 w-64 border-r bg-background">
       <div className="flex h-full flex-col">

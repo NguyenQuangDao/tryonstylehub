@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
 import { motion } from 'framer-motion';
-import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles, Wand2 } from 'lucide-react';
+import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles, Wand2, Shirt, Watch, Backpack, Sun, CloudSun } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function GenerateImagePage() {
   const [prompt, setPrompt] = useState('');
@@ -21,12 +21,49 @@ export default function GenerateImagePage() {
   const [improveError, setImproveError] = useState('');
   const [showGuide, setShowGuide] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStyle, setSelectedStyle] = useState<string>('');
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedBackground, setSelectedBackground] = useState<string>('');
+  const [accessories, setAccessories] = useState<{ hat: boolean; bag: boolean; jewelry: boolean; watch: boolean }>(
+    { hat: false, bag: false, jewelry: false, watch: false }
+  );
+
+  const STYLE_PRESETS = ['casual', 'formal', 'streetwear', 'vintage', 'minimalist', 'bohemian'];
+  const COLOR_PRESETS = ['pastel', 'neutral', 'monochrome', 'vivid', 'earth tones', 'black & white'];
+  const CATEGORY_PRESETS = ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'];
+  const BACKGROUND_PRESETS = ['studio', 'street', 'beach', 'runway', 'boutique'];
+
+  const composedPrompt = useMemo(() => {
+    const parts: string[] = [];
+    if (selectedCategories.length) {
+      parts.push(`Outfit containing: ${selectedCategories.join(', ')}`);
+    }
+    if (selectedStyle) {
+      parts.push(`Style: ${selectedStyle}`);
+    }
+    if (selectedColors.length) {
+      parts.push(`Color palette: ${selectedColors.join(', ')}`);
+    }
+    const acc: string[] = [];
+    if (accessories.hat) acc.push('hat');
+    if (accessories.bag) acc.push('bag');
+    if (accessories.jewelry) acc.push('jewelry');
+    if (accessories.watch) acc.push('watch');
+    if (acc.length) parts.push(`Accessories: ${acc.join(', ')}`);
+    if (selectedBackground) {
+      parts.push(`Background: ${selectedBackground}`);
+    }
+    parts.push('professional photography, high quality');
+    return parts.join('; ');
+  }, [selectedCategories, selectedStyle, selectedColors, accessories, selectedBackground]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (prompt.length < 10) {
-      setError('Vui lòng nhập ít nhất 10 ký tự');
+    const effectivePrompt = (prompt && prompt.length >= 10) ? prompt : composedPrompt;
+    if (!effectivePrompt || effectivePrompt.length < 10) {
+      setError('Vui lòng điền mô tả hoặc chọn thông số tạo ảnh');
       return;
     }
 
@@ -38,7 +75,7 @@ export default function GenerateImagePage() {
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, quality: 'hd' }),
+        body: JSON.stringify({ prompt: effectivePrompt, quality: 'hd' }),
       });
 
       if (!response.ok) {
@@ -211,6 +248,94 @@ export default function GenerateImagePage() {
           <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-gray-200/50 dark:border-gray-800/50">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Loại trang phục</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {CATEGORY_PRESETS.map((cat) => {
+                        const active = selectedCategories.includes(cat);
+                        return (
+                          <Button
+                            key={cat}
+                            type="button"
+                            variant={active ? 'default' : 'outline'}
+                            onClick={() => {
+                              setSelectedCategories((prev) => (
+                                prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+                              ));
+                            }}
+                            className="capitalize"
+                          >
+                            <Shirt className="h-4 w-4 mr-2" />{cat}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Phụ kiện</Label>
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant={accessories.hat ? 'default' : 'outline'} onClick={() => setAccessories(a => ({ ...a, hat: !a.hat }))}>🧢 Mũ</Button>
+                      <Button type="button" variant={accessories.bag ? 'default' : 'outline'} onClick={() => setAccessories(a => ({ ...a, bag: !a.bag }))}><Backpack className="h-4 w-4 mr-2" />Túi</Button>
+                      <Button type="button" variant={accessories.jewelry ? 'default' : 'outline'} onClick={() => setAccessories(a => ({ ...a, jewelry: !a.jewelry }))}>💎 Trang sức</Button>
+                      <Button type="button" variant={accessories.watch ? 'default' : 'outline'} onClick={() => setAccessories(a => ({ ...a, watch: !a.watch }))}><Watch className="h-4 w-4 mr-2" />Đồng hồ</Button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Phong cách</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {STYLE_PRESETS.map((s) => (
+                        <Button
+                          key={s}
+                          type="button"
+                          variant={selectedStyle === s ? 'default' : 'outline'}
+                          onClick={() => setSelectedStyle(selectedStyle === s ? '' : s)}
+                          className="capitalize"
+                        >
+                          {s}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Màu sắc</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {COLOR_PRESETS.map((c) => {
+                        const active = selectedColors.includes(c);
+                        return (
+                          <Button
+                            key={c}
+                            type="button"
+                            variant={active ? 'default' : 'outline'}
+                            onClick={() => setSelectedColors(prev => (
+                              prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+                            ))}
+                            className="capitalize"
+                          >
+                            <Palette className="h-4 w-4 mr-2" />{c}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="space-y-3 md:col-span-2">
+                    <Label className="text-sm font-medium">Bối cảnh</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {BACKGROUND_PRESETS.map((b) => (
+                        <Button
+                          key={b}
+                          type="button"
+                          variant={selectedBackground === b ? 'default' : 'outline'}
+                          onClick={() => setSelectedBackground(selectedBackground === b ? '' : b)}
+                          className="capitalize"
+                        >
+                          {b === 'studio' ? <Camera className="h-4 w-4 mr-2" /> : b === 'beach' ? <Sun className="h-4 w-4 mr-2" /> : <CloudSun className="h-4 w-4 mr-2" />}
+                          {b}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-3">
                   <Label htmlFor="prompt" className="text-sm font-medium">
                     Mô tả ảnh bạn muốn tạo
@@ -321,6 +446,13 @@ export default function GenerateImagePage() {
                       fill
                       className="object-contain"
                     />
+                  </div>
+                  <div className="mt-6 flex justify-center">
+                    <Button asChild variant="default" className="px-6 py-3">
+                      <a href={`/?garmentImage=${encodeURIComponent(imageUrl)}&category=${encodeURIComponent(selectedCategories[0] || 'auto')}`}>
+                        Dùng ảnh này để thử đồ ảo
+                      </a>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

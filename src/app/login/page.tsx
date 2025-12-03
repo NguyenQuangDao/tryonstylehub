@@ -110,11 +110,6 @@ export default function LoginPage() {
                   required
                   disabled={isLoading}
                 />
-                <div className="text-right">
-                  <Link href="/forgot-password" className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                    Quên mật khẩu?
-                  </Link>
-                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

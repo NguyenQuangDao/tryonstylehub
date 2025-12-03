@@ -4,9 +4,14 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export default function AppHeader() {
   const { user } = useAuth()
+  const pathname = usePathname()
+  if (pathname === '/login' || pathname === '/register') {
+    return null
+  }
   return (
     <header className={cn("sticky top-0 z-40 border-b bg-background/80 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60")}>      
       <div className="flex h-14 items-center px-4">

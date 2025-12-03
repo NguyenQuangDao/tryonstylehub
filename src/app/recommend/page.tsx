@@ -39,6 +39,8 @@ export default function RecommendPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [useWishlistPref, setUseWishlistPref] = useState(true);
+  const [useFollowedShopsPref, setUseFollowedShopsPref] = useState(true);
 
   // Load search history from localStorage
   useEffect(() => {
@@ -63,10 +65,17 @@ export default function RecommendPage() {
     setOutfit([]);
 
     try {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      const followedShops = JSON.parse(localStorage.getItem('followedShops') || '[]');
       const response = await fetch('/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ style: searchValue }),
+        body: JSON.stringify({
+          style: searchValue,
+          wishlistIds: useWishlistPref ? wishlist : [],
+          preferredShops: useFollowedShopsPref ? followedShops : [],
+          recentStyles: searchHistory,
+        }),
       });
 
       if (!response.ok) {
@@ -289,6 +298,23 @@ export default function RecommendPage() {
             </Button>
           </div>
 
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setUseWishlistPref(v => !v)}
+              className={`px-4 py-2 rounded-xl text-sm border ${useWishlistPref ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-50 border-gray-300 text-gray-700'} hover:shadow transition`}
+            >
+              Ưu tiên sản phẩm yêu thích
+            </button>
+            <button
+              type="button"
+              onClick={() => setUseFollowedShopsPref(v => !v)}
+              className={`px-4 py-2 rounded-xl text-sm border ${useFollowedShopsPref ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-300 text-gray-700'} hover:shadow transition`}
+            >
+              Ưu tiên cửa hàng theo dõi
+            </button>
+          </div>
+
           {error && (
             <motion.p
               initial={{ opacity: 0 }}
@@ -372,6 +398,14 @@ export default function RecommendPage() {
                       <ExternalLink className="h-4 w-4" />
                       Mua tại {product.shop.name}
                     </a>
+                    <div className="mt-3">
+                      <a
+                        href={`/?garmentImage=${encodeURIComponent(product.imageUrl)}&category=auto`}
+                        className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      >
+                        Thử ngay với AI
+                      </a>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -382,4 +416,3 @@ export default function RecommendPage() {
     </div>
   );
 }
-

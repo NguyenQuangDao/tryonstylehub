@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { prisma } from '@/lib/prisma'
 import { getPresignedUrl } from '@/lib/s3'
+import type { Prisma } from '@prisma/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -31,25 +32,29 @@ export default async function ShopDetailPage({ params }: { params: { slug: strin
   ).size
   const items = await Promise.all(
     prods.map(async (p) => {
-      let imageUrl: string | undefined = undefined
-      const imgs: any[] = Array.isArray((p as any).images) ? ((p as any).images as any[]) : []
-      const first = imgs[0]
+      let imageUrl: string | undefined
+      const images = p.images as Prisma.JsonValue
+      const arr = Array.isArray(images) ? images : []
+      const first = (arr[0] ?? undefined) as unknown
       if (typeof first === 'string') {
         imageUrl = first
-      } else if (first?.key) {
-        try {
-          imageUrl = await getPresignedUrl(first.key, 3600)
-        } catch {
-          imageUrl = first?.url
+      } else if (first && typeof first === 'object') {
+        const obj = first as { key?: string; url?: string }
+        if (obj.key) {
+          try {
+            imageUrl = await getPresignedUrl(obj.key, 3600)
+          } catch {
+            imageUrl = obj.url
+          }
+        } else if (obj.url) {
+          imageUrl = obj.url
         }
-      } else if (first?.url) {
-        imageUrl = first.url
       }
       return {
-        id: p.id as any,
-        title: (p as any).title ?? '',
+        id: p.id,
+        title: p.title,
         imageUrl,
-        price: Number((p as any).basePrice ?? 0),
+        price: Number(p.basePrice ?? 0),
         category: p.category?.name ?? null,
       }
     })
@@ -57,7 +62,7 @@ export default async function ShopDetailPage({ params }: { params: { slug: strin
 
   const initial = shop.name?.charAt(0)?.toUpperCase() || '?'
   const statusVariant = shop.status === 'ACTIVE' ? 'default' : shop.status === 'SUSPENDED' ? 'destructive' : 'secondary'
-  const joinedText = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(shop.createdAt as any)
+  const joinedText = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(shop.createdAt)
 
   return (
     <div className="text-sm">
@@ -85,10 +90,10 @@ export default async function ShopDetailPage({ params }: { params: { slug: strin
               <div className="flex items-center gap-3 text-muted-foreground text-xs">
                 <div className="flex items-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.788 1.401 8.168L12 18.896l-7.335 3.871 1.401-8.168L.132 9.211l8.2-1.193z"/></svg>
-                  <span>{(shop as any).averageRating?.toFixed ? (shop as any).averageRating.toFixed(1) : ((shop as any).averageRating ?? 0)}</span>
+                  <span>{shop.averageRating.toFixed(1)}</span>
                 </div>
                 <div>•</div>
-                <div>{(shop as any).totalSales ?? 0} lượt bán</div>
+                <div>{shop.totalSales} lượt bán</div>
                 <div>•</div>
                 <div>{productCount} sản phẩm</div>
                 <div>•</div>
@@ -122,13 +127,13 @@ export default async function ShopDetailPage({ params }: { params: { slug: strin
           <Card>
             <CardHeader className="p-3">
               <CardTitle className="text-base">Đánh giá</CardTitle>
-              <CardDescription>{(shop as any).averageRating ?? 0}</CardDescription>
+              <CardDescription>{shop.averageRating}</CardDescription>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="p-3">
               <CardTitle className="text-base">Doanh số</CardTitle>
-              <CardDescription>{(shop as any).totalSales ?? 0}</CardDescription>
+              <CardDescription>{shop.totalSales}</CardDescription>
             </CardHeader>
           </Card>
         </div>

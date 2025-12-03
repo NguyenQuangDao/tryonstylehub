@@ -43,7 +43,7 @@ export async function registerShop(formData: FormData) {
   }
 
   let logoUrl: string | null = null
-  if (logo && (typeof (logo as any).size !== "number" || (logo as any).size > 0)) {
+  if (logo && typeof logo.size === "number" && logo.size > 0) {
     logoUrl = await uploadFileToS3(logo, "shops/logos")
   }
 
