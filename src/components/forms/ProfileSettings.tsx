@@ -27,35 +27,35 @@ export default function ProfileSettings() {
     <div className="max-w-xl space-y-6">
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
-          <AvatarImage src="" alt="Avatar" />
+          <AvatarImage src="" alt="Ảnh đại diện" />
           <AvatarFallback>US</AvatarFallback>
         </Avatar>
-        <Button variant="outline" className="h-8">Change</Button>
+        <Button variant="outline" className="h-8">Thay đổi</Button>
       </div>
 
       <form className="space-y-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="displayName" className="text-sm font-medium">Display Name</Label>
+          <Label htmlFor="displayName" className="text-sm font-medium">Tên hiển thị</Label>
           <Input
             id="displayName"
             className="h-9"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Your display name"
+            placeholder="Tên hiển thị của bạn"
           />
-          <p className="text-[12px] text-muted-foreground">Shown on your profile.</p>
+          <p className="text-[12px] text-muted-foreground">Hiển thị trên hồ sơ của bạn.</p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+          <Label htmlFor="username" className="text-sm font-medium">Tên người dùng</Label>
           <Input
             id="username"
             className="h-9"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Choose a username"
+            placeholder="Chọn tên người dùng"
           />
-          <p className="text-[12px] text-muted-foreground">3–20 characters; letters, numbers, underscores.</p>
+          <p className="text-[12px] text-muted-foreground">3–20 ký tự; chữ, số, gạch dưới.</p>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -69,27 +69,27 @@ export default function ProfileSettings() {
             disabled={isEmailVerified}
           />
           <p className="text-[12px] text-muted-foreground">
-            {isEmailVerified ? "Your email is verified." : "We’ll send notifications to this address."}
+            {isEmailVerified ? "Email của bạn đã được xác minh." : "Chúng tôi sẽ gửi thông báo đến địa chỉ này."}
           </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
+          <Label htmlFor="bio" className="text-sm font-medium">Giới thiệu</Label>
           <Textarea
             id="bio"
             className="min-h-[80px]"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell us a bit about yourself"
+            placeholder="Hãy giới thiệu đôi chút về bạn"
           />
-          <p className="text-[12px] text-muted-foreground">You can write a short introduction.</p>
+          <p className="text-[12px] text-muted-foreground">Bạn có thể viết một phần giới thiệu ngắn.</p>
         </div>
 
         <Separator className="my-2" />
 
         <div className="flex justify-end">
           <Button type="button" className="h-9" onClick={handleUpdate}>
-            Update Profile
+            Cập nhật hồ sơ
           </Button>
         </div>
       </form>

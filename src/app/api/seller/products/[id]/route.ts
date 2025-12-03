@@ -1,6 +1,5 @@
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
-import { deleteCache } from '@/lib/cache';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -105,7 +104,6 @@ export async function PATCH(request: NextRequest, context: unknown) {
     }
 
     await prisma.product.update({ where: { id }, data: updates });
-    deleteCache('products:all');
 
     // Images handling is disabled in this version
 
@@ -145,7 +143,6 @@ export async function DELETE(_request: NextRequest, context: unknown) {
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
     await prisma.product.delete({ where: { id } });
-    deleteCache('products:all');
 
     return NextResponse.json({ message: 'Xóa sản phẩm thành công' });
   } catch (error) {

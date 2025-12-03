@@ -40,27 +40,26 @@ export function ShopCard({ shop }: { shop: ShopWithCounts }) {
       <div className="p-4 pt-2">
         <div className="text-base font-bold">{shop.name}</div>
         <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
-          {shop.description || 'No description'}
+          {shop.description || 'Không có mô tả'}
         </div>
 
         <div className="flex gap-4 mt-3">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Star className="size-3" />
-            {rating.toFixed(1)} Star
+            {rating.toFixed(1)} sao
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Package className="size-3" />
-            {products} Products
+            {products} sản phẩm
           </div>
         </div>
       </div>
 
       <div className="p-4 pt-0">
         <Button asChild variant="secondary" className="w-full h-8">
-          <Link href={`/shops/${shop.slug}`}>Visit Store</Link>
+          <Link href={`/shops/${shop.slug}`}>Xem cửa hàng</Link>
         </Button>
       </div>
     </div>
   )
 }
-

@@ -13,24 +13,24 @@ export default function ProfileSettingsPage() {
               variant="ghost"
               className="h-9 justify-start hover:bg-muted bg-muted font-medium"
             >
-              Profile
+              Hồ sơ
             </Button>
             <Button variant="ghost" className="h-9 justify-start hover:bg-muted">
-              Account
+              Tài khoản
             </Button>
             <Button variant="ghost" className="h-9 justify-start hover:bg-muted">
-              Security
+              Bảo mật
             </Button>
             <Button variant="ghost" className="h-9 justify-start hover:bg-muted">
-              Notifications
+              Thông báo
             </Button>
           </nav>
         </aside>
 
         <div className="w-full md:w-3/4">
           <div className="mb-4">
-            <h1 className="text-lg font-medium">Profile Settings</h1>
-            <p className="text-sm text-muted-foreground">Update your personal information and how others see you.</p>
+            <h1 className="text-lg font-medium">Cài đặt hồ sơ</h1>
+            <p className="text-sm text-muted-foreground">Cập nhật thông tin cá nhân và cách người khác nhìn thấy bạn.</p>
           </div>
           <Separator className="mb-6" />
           <ProfileSettings />

@@ -49,19 +49,19 @@ export default async function ShopsPage({
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Marketplace Vendors</h1>
+        <h1 className="text-xl font-semibold">Nhà bán hàng</h1>
         <form action="/shops" method="GET">
           <Input
             name="search"
             defaultValue={search}
-            placeholder="Search vendors"
+            placeholder="Tìm kiếm nhà bán hàng"
             className="h-9 w-[300px]"
           />
         </form>
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">No shops found</div>
+        <div className="text-center py-16 text-muted-foreground">Không tìm thấy cửa hàng</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((shop) => (

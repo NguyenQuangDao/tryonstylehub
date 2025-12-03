@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ShoppingCart } from "lucide-react"
@@ -36,17 +37,17 @@ export function CatalogProductCard({
       )}
     >
       <div className={cn("bg-muted", imageUrl ? "" : "flex items-center justify-center") + " aspect-square relative"}>
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-full h-full" />
-        )}
+        <Image
+          src={imageUrl || PLACEHOLDER_IMAGE}
+          alt={title}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover"
+          unoptimized
+          onError={(e: any) => {
+            try { e.currentTarget.src = PLACEHOLDER_IMAGE } catch {}
+          }}
+        />
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
@@ -55,7 +56,7 @@ export function CatalogProductCard({
             variant="secondary"
             onClick={() => onQuickView?.(id)}
           >
-            Quick View
+            Xem nhanh
           </Button>
         </div>
       </div>
@@ -73,7 +74,7 @@ export function CatalogProductCard({
             variant="secondary"
             className="h-8 w-8 rounded-full"
             onClick={() => onAdd?.(id)}
-            aria-label="Add to cart"
+            aria-label="Thêm vào giỏ"
           >
             <ShoppingCart className="h-4 w-4" />
           </Button>
@@ -82,4 +83,3 @@ export function CatalogProductCard({
     </div>
   )
 }
-

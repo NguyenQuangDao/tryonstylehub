@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Box, Coins, Home, LineChart, LogOut, Settings, ShoppingCart, Store, UploadCloud, Users } from "lucide-react"
+import { Box, Coins, Home, LineChart, LogOut, ShoppingCart, Store, UploadCloud, Users } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -19,12 +19,11 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 const items = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/products", label: "Products", icon: Box },
-  { href: "/shops", label: "Shops", icon: ShoppingCart },
-  { href: "/tokens", label: "Tokens", icon: Coins },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Bảng điều khiển", icon: Home },
+  { href: "/products", label: "Sản phẩm", icon: Box },
+  { href: "/shops", label: "Cửa hàng", icon: ShoppingCart },
+  { href: "/tokens", label: "Token", icon: Coins },
+  { href: "/admin/users", label: "Các tính năng", icon: Users },
 ]
 
 export default function AppSidebar() {
@@ -72,7 +71,7 @@ export default function AppSidebar() {
                 className="w-full justify-start h-9 text-sm font-medium text-muted-foreground hover:text-foreground gap-2"
               >
                 <Store className="h-4 w-4" />
-                <span>Seller Panel</span>
+                <span>Bảng người bán</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="sm:max-w-lg w-full bg-background bg-white shadow-lg border">
@@ -116,11 +115,11 @@ export default function AppSidebar() {
         <div className="mt-auto border-t px-3 py-3">
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar ?? ""} alt={user?.name ?? "User"} />
+              <AvatarImage src={user?.avatar ?? ""} alt={user?.name ?? "Người dùng"} />
               <AvatarFallback>{user?.name?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
             </Avatar>
             <div className="text-sm text-muted-foreground">
-              {user?.name || user?.email || "Guest"}
+              {user?.name || user?.email || "Khách"}
             </div>
           </div>
           <div className="mt-2">
@@ -130,7 +129,7 @@ export default function AppSidebar() {
               onClick={logout}
             >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span>Đăng xuất</span>
             </Button>
           </div>
         </div>

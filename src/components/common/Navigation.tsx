@@ -22,10 +22,10 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const navigationItems = [
   // { href: "/body-parts", label: "Body Parts Composer" },
-  { href: "/generate-image", label: "Generate Image" },
-  { href: "/products", label: "Products" },
-  { href: "/recommend", label: "Recommend" },
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/generate-image", label: "Tạo ảnh" },
+  { href: "/products", label: "Sản phẩm" },
+  { href: "/recommend", label: "Gợi ý" },
+  { href: "/dashboard", label: "Bảng điều khiển" },
 ]
 
 export default function Navigation() {
@@ -73,7 +73,7 @@ export default function Navigation() {
               className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle Menu</span>
+              <span className="sr-only">Mở menu</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="pr-0">
@@ -124,14 +124,14 @@ export default function Navigation() {
                         onClick={() => setOpen(false)}
                         className="block px-2 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground"
                       >
-                        Dashboard
+                        Bảng điều khiển
                       </Link>
                       <Link
                         href="/profile"
                         onClick={() => setOpen(false)}
                         className="block px-2 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground"
                       >
-                        Profile
+                        Hồ sơ
                       </Link>
                       <button
                         onClick={() => {
@@ -141,19 +141,19 @@ export default function Navigation() {
                         className="flex w-full items-center gap-2 px-2 py-1 text-sm text-foreground/70 transition-colors hover:text-foreground"
                       >
                         <LogOut className="h-4 w-4" />
-                        Logout
+                        Đăng xuất
                       </button>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <Link href="/login" onClick={() => setOpen(false)}>
                         <Button variant="outline" size="sm" className="w-full">
-                          Login
+                          Đăng nhập
                         </Button>
                       </Link>
                       <Link href="/register" onClick={() => setOpen(false)}>
                         <Button variant="default" size="sm" className="w-full">
-                          Register
+                          Đăng ký
                         </Button>
                       </Link>
                     </div>
@@ -195,18 +195,18 @@ export default function Navigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
+                    <Link href="/dashboard">Bảng điều khiển</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/tokens">Nạp token</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
+                    <Link href="/profile">Hồ sơ</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -214,12 +214,12 @@ export default function Navigation() {
               <div className="flex items-center space-x-2">
                 <Link href="/login" prefetch={false}>
                   <Button variant="outline" size="sm">
-                    Login
+                    Đăng nhập
                   </Button>
                 </Link>
                 <Link href="/register" prefetch={false}>
                   <Button variant="default" size="sm">
-                    Register
+                    Đăng ký
                   </Button>
                 </Link>
               </div>

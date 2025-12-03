@@ -76,15 +76,15 @@ export default function ShopPage() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-muted-foreground">Total items: {sorted.length}</p>
+        <p className="text-sm text-muted-foreground">Tổng số sản phẩm: {sorted.length}</p>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
           <SelectTrigger className="h-8 w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="newest">Newest</SelectItem>
-            <SelectItem value="price_asc">Price: Low to High</SelectItem>
-            <SelectItem value="price_desc">Price: High to Low</SelectItem>
+            <SelectItem value="newest">Mới nhất</SelectItem>
+            <SelectItem value="price_asc">Giá: Thấp đến cao</SelectItem>
+            <SelectItem value="price_desc">Giá: Cao đến thấp</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -93,7 +93,7 @@ export default function ShopPage() {
         <aside className="lg:w-64 lg:sticky lg:top-4 h-fit">
           <Accordion>
             <AccordionItemRoot>
-              <AccordionTrigger>Categories</AccordionTrigger>
+              <AccordionTrigger>Danh mục</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-2">
                   {categories.map((c) => (
@@ -111,7 +111,7 @@ export default function ShopPage() {
             </AccordionItemRoot>
 
             <AccordionItemRoot>
-              <AccordionTrigger>Price range</AccordionTrigger>
+              <AccordionTrigger>Khoảng giá</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-2">
                   <Slider
@@ -144,7 +144,7 @@ export default function ShopPage() {
               ))}
             </div>
           ) : sorted.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No products found</p>
+            <p className="text-sm text-muted-foreground">Không tìm thấy sản phẩm</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {sorted.map((p) => (
@@ -164,4 +164,3 @@ export default function ShopPage() {
     </div>
   )
 }
-

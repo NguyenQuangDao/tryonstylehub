@@ -110,16 +110,16 @@ export default function ProductsPage() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-xs text-muted-foreground">Home / Products</div>
+        <div className="text-xs text-muted-foreground">Trang chủ / Sản phẩm</div>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
             <SelectTrigger className="h-8 w-[150px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="price_asc">Price: Low to High</SelectItem>
-              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+              <SelectItem value="newest">Mới nhất</SelectItem>
+              <SelectItem value="price_asc">Giá: Thấp đến cao</SelectItem>
+              <SelectItem value="price_desc">Giá: Cao đến thấp</SelectItem>
             </SelectContent>
           </Select>
 
@@ -128,7 +128,7 @@ export default function ProductsPage() {
             size="icon"
             className="h-8 w-8"
             onClick={() => setViewMode("grid")}
-            aria-label="Grid view"
+            aria-label="Xem dạng lưới"
           >
             <Grid3x3 className="h-4 w-4" />
           </Button>
@@ -137,7 +137,7 @@ export default function ProductsPage() {
             size="icon"
             className="h-8 w-8"
             onClick={() => setViewMode("list")}
-            aria-label="List view"
+            aria-label="Xem dạng danh sách"
           >
             <List className="h-4 w-4" />
           </Button>
@@ -146,17 +146,17 @@ export default function ProductsPage() {
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 lg:hidden">
                 <Filter className="h-4 w-4 mr-2" />
-                Filters
+                Bộ lọc
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
+                <SheetTitle>Bộ lọc</SheetTitle>
               </SheetHeader>
               <div className="mt-4 space-y-4">
                 <Accordion>
                   <AccordionItemRoot>
-                    <AccordionTrigger className="text-sm font-semibold">Categories</AccordionTrigger>
+                    <AccordionTrigger className="text-sm font-semibold">Danh mục</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2">
                         {categories.map((c) => (
@@ -174,7 +174,7 @@ export default function ProductsPage() {
                     </AccordionContent>
                   </AccordionItemRoot>
                   <AccordionItemRoot>
-                    <AccordionTrigger className="text-sm font-semibold">Price</AccordionTrigger>
+                    <AccordionTrigger className="text-sm font-semibold">Giá</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2">
                         <Slider
@@ -212,7 +212,7 @@ export default function ProductsPage() {
         <aside className="hidden lg:block w-64 sticky top-20 h-fit">
           <Accordion>
             <AccordionItemRoot>
-              <AccordionTrigger className="text-sm font-semibold">Categories</AccordionTrigger>
+              <AccordionTrigger className="text-sm font-semibold">Danh mục</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-2">
                   {categories.map((c) => (
@@ -231,7 +231,7 @@ export default function ProductsPage() {
             </AccordionItemRoot>
 
             <AccordionItemRoot>
-              <AccordionTrigger className="text-sm font-semibold">Price</AccordionTrigger>
+              <AccordionTrigger className="text-sm font-semibold">Giá</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-2">
                   <Slider
@@ -274,7 +274,7 @@ export default function ProductsPage() {
               ))}
             </div>
           ) : visible.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No products found</p>
+            <p className="text-sm text-muted-foreground">Không tìm thấy sản phẩm</p>
           ) : (
             <div className={viewMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "space-y-4"}>
               {visible.map((p) => (
@@ -294,7 +294,7 @@ export default function ProductsPage() {
           {sorted.length > visible.length && (
             <div className="flex justify-center mt-6">
               <Button variant="outline" className="h-9" onClick={() => setVisibleCount((c) => c + 24)}>
-                Load More
+                Tải thêm
               </Button>
             </div>
           )}

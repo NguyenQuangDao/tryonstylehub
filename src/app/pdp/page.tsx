@@ -62,11 +62,11 @@ export default function Page() {
 
   return (
     <div className="max-w-5xl mx-auto py-6">
-      <div className="text-xs text-muted-foreground mb-4">Home / Apparel / Minimalist Tee</div>
+      <div className="text-xs text-muted-foreground mb-4">Trang chủ / Quần áo / Áo thun tối giản</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
         <div className="space-y-3">
           <div className="relative aspect-square md:aspect-[4/5] rounded-lg border border-border bg-muted overflow-hidden">
-            <Image src={activeImage} alt="Product image" fill className="object-cover" sizes="(min-width: 768px) 40vw, 100vw" priority />
+            <Image src={activeImage} alt="Ảnh sản phẩm" fill className="object-cover" sizes="(min-width: 768px) 40vw, 100vw" priority />
           </div>
           <div className="flex gap-3">
             {images.map((src) => (
@@ -77,7 +77,7 @@ export default function Page() {
                   activeImage === src ? "ring-2 ring-primary" : ""
                 }`}
               >
-                <Image src={src} alt="Thumbnail" fill className="object-cover" sizes="80px" />
+                <Image src={src} alt="Ảnh thu nhỏ" fill className="object-cover" sizes="80px" />
               </button>
             ))}
           </div>
@@ -85,7 +85,7 @@ export default function Page() {
 
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Minimalist Tee</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Áo thun tối giản</h1>
             <div className="text-xl font-semibold mt-2">$38.00</div>
             <div className="mt-2 flex items-center gap-2">
               <div className="flex items-center">
@@ -96,14 +96,14 @@ export default function Page() {
                   />
                 ))}
               </div>
-              <span className="text-sm text-muted-foreground">{rating} • {ratingCount} reviews</span>
+              <span className="text-sm text-muted-foreground">{rating} • {ratingCount} đánh giá</span>
             </div>
           </div>
 
           <Separator />
 
           <div className="space-y-3">
-            <div className="text-sm font-medium">Select Color</div>
+            <div className="text-sm font-medium">Chọn màu</div>
             <div className="flex flex-wrap gap-3">
               {colors.map((c) => {
                 const selected = selectedColor === c.name
@@ -126,7 +126,7 @@ export default function Page() {
           </div>
 
           <div className="space-y-3">
-            <div className="text-sm font-medium">Select Size</div>
+            <div className="text-sm font-medium">Chọn kích cỡ</div>
             <div className="grid grid-cols-5 gap-2">
               {sizes.map((s) => {
                 const selected = selectedSize === s.label
@@ -166,7 +166,7 @@ export default function Page() {
 
             <Button onClick={addToCart} className="h-10 flex-1 font-semibold">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+              Thêm vào giỏ
             </Button>
 
             <Button variant="outline" size="icon" className="h-10 w-10">
@@ -177,10 +177,10 @@ export default function Page() {
           <Accordion className="pt-2">
             <AccordionItem>
               <AccordionItemRoot>
-                <AccordionTrigger>Description</AccordionTrigger>
+                <AccordionTrigger>Mô tả</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    A refined, everyday tee with clean lines and a tailored silhouette. Crafted from premium cotton for comfort and durability.
+                    Chiếc áo thun tinh tế cho ngày thường với đường nét gọn gàng và phom dáng chuẩn. Làm từ cotton cao cấp mang lại cảm giác thoải mái và bền bỉ.
                   </p>
                 </AccordionContent>
               </AccordionItemRoot>
@@ -188,13 +188,13 @@ export default function Page() {
 
             <AccordionItem>
               <AccordionItemRoot>
-                <AccordionTrigger>Features</AccordionTrigger>
+                <AccordionTrigger>Đặc điểm</AccordionTrigger>
                 <AccordionContent>
                   <ul className="text-sm text-muted-foreground leading-relaxed list-disc pl-5 space-y-1">
-                    <li>100% long‑staple cotton</li>
-                    <li>Pre‑shrunk fabric</li>
-                    <li>Minimalist, high‑density finish</li>
-                    <li>Machine washable</li>
+                    <li>100% cotton sợi dài</li>
+                    <li>Vải đã xử lý co rút trước</li>
+                    <li>Phong cách tối giản, hoàn thiện mật độ cao</li>
+                    <li>Có thể giặt máy</li>
                   </ul>
                 </AccordionContent>
               </AccordionItemRoot>
@@ -202,10 +202,10 @@ export default function Page() {
 
             <AccordionItem>
               <AccordionItemRoot>
-                <AccordionTrigger>Shipping & Returns</AccordionTrigger>
+                <AccordionTrigger>Vận chuyển & Đổi trả</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Free domestic shipping over $50. Returns accepted within 30 days in original condition.
+                    Miễn phí vận chuyển nội địa cho đơn hàng trên $50. Chấp nhận đổi trả trong vòng 30 ngày với tình trạng ban đầu.
                   </p>
                 </AccordionContent>
               </AccordionItemRoot>
@@ -216,4 +216,3 @@ export default function Page() {
     </div>
   )
 }
-

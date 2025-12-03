@@ -305,14 +305,14 @@ export default function Page() {
     <div className="px-6 py-4">
       <div className="flex items-center gap-2 mb-4 text-muted-foreground">
         <Package className="h-4 w-4" />
-        <span className="text-sm">Seller Panel</span>
+        <span className="text-sm">Bảng người bán</span>
       </div>
       <Tabs defaultValue="products">
         <TabsList>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="products">Sản phẩm</TabsTrigger>
+          <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
+          <TabsTrigger value="analytics">Phân tích</TabsTrigger>
+          <TabsTrigger value="settings">Cài đặt</TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <ProductsTab />

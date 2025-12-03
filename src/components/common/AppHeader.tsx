@@ -14,11 +14,11 @@ export default function AppHeader() {
           <nav className="text-xs text-muted-foreground">
             <ol className="flex items-center gap-2">
               <li>
-                <Link href="/" className="hover:text-foreground">Home</Link>
+                <Link href="/" className="hover:text-foreground">Trang chủ</Link>
               </li>
               <li className="text-muted-foreground">/</li>
               <li>
-                <span className="text-muted-foreground">Dashboard</span>
+                <span className="text-muted-foreground">Bảng điều khiển</span>
               </li>
             </ol>
           </nav>
@@ -26,7 +26,7 @@ export default function AppHeader() {
         <div className="ml-auto flex items-center gap-2">
           {user?.role === 'SELLER' ? (
             <Button variant="default" className="h-8 px-3" asChild>
-              <Link href="/dashboard/seller">Seller Panel</Link>
+              <Link href="/dashboard/seller">Bảng người bán</Link>
             </Button>
           ) : null}
         </div>

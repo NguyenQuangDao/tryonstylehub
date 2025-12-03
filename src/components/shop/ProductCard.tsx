@@ -36,10 +36,9 @@ export function ProductCard({ id, title, category, price, imageUrl, className, o
           className="h-8 w-full mt-2"
           onClick={() => onAddToCart?.(id)}
         >
-          Add to Cart
+          Thêm vào giỏ
         </Button>
       </CardContent>
     </Card>
   )
 }
-

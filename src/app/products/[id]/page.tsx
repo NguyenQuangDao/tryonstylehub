@@ -89,7 +89,7 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
             {modelSrc ? (
               // User model image
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={modelSrc} alt="model" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={modelSrc} alt="người mẫu" className="absolute inset-0 w-full h-full object-cover" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-gray-500">
                 <ImageIcon className="h-10 w-10" />
@@ -167,4 +167,3 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
     </div>
   )
 }
-

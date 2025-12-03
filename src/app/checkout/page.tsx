@@ -38,46 +38,46 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <section>
-            <h2 className="text-lg font-semibold tracking-tight">Shipping</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Giao hàng</h2>
             <Separator className="my-4" />
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" className="h-9" />
+                <Label htmlFor="firstName">Họ</Label>
+                <Input id="firstName" placeholder="Nguyễn" className="h-9" />
               </div>
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" className="h-9" />
+                <Label htmlFor="lastName">Tên</Label>
+                <Input id="lastName" placeholder="Văn A" className="h-9" />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="123 Main St" className="h-9" />
+                <Label htmlFor="address">Địa chỉ</Label>
+                <Input id="address" placeholder="123 Đường Chính" className="h-9" />
               </div>
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" placeholder="City" className="h-9" />
+                <Label htmlFor="city">Thành phố</Label>
+                <Input id="city" placeholder="Thành phố" className="h-9" />
               </div>
               <div className="col-span-1">
-                <Label htmlFor="state">State</Label>
-                <Input id="state" placeholder="CA" className="h-9" />
+                <Label htmlFor="state">Tỉnh/Bang</Label>
+                <Input id="state" placeholder="TP" className="h-9" />
               </div>
               <div className="col-span-1">
-                <Label htmlFor="zip">ZIP</Label>
-                <Input id="zip" placeholder="90001" className="h-9" />
+                <Label htmlFor="zip">Mã bưu chính</Label>
+                <Input id="zip" placeholder="700000" className="h-9" />
               </div>
               <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="john@example.com" className="h-9" />
               </div>
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" type="tel" placeholder="(555) 000-0000" className="h-9" />
+                <Label htmlFor="phone">Số điện thoại</Label>
+                <Input id="phone" type="tel" placeholder="(0) 000-0000" className="h-9" />
               </div>
             </div>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold tracking-tight">Payment</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Thanh toán</h2>
             <Separator className="my-4" />
 
             <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid gap-3">
@@ -98,7 +98,7 @@ export default function CheckoutPage() {
               <div className="border rounded-lg p-3 cursor-pointer hover:bg-muted/50">
                 <label htmlFor="cod" className="flex items-center gap-3">
                   <RadioGroupItem id="cod" value="cod" />
-                  <span className="text-sm font-medium">Cash on Delivery</span>
+                  <span className="text-sm font-medium">Thanh toán khi nhận hàng</span>
                 </label>
               </div>
             </RadioGroup>
@@ -106,11 +106,11 @@ export default function CheckoutPage() {
             {paymentMethod !== 'cod' && (
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Label htmlFor="cardNumber">Số thẻ</Label>
                   <Input id="cardNumber" placeholder="1234 5678 9012 3456" className="h-9" />
                 </div>
                 <div className="col-span-2 md:col-span-1">
-                  <Label htmlFor="expiry">Expiry</Label>
+                  <Label htmlFor="expiry">Hết hạn</Label>
                   <Input id="expiry" placeholder="MM/YY" className="h-9" />
                 </div>
                 <div className="col-span-2 md:col-span-1">
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
 
         <aside className="lg:col-span-1 lg:sticky lg:top-4">
           <div className="border rounded-lg p-4 bg-muted/30">
-            <h3 className="text-lg font-semibold tracking-tight">Order Summary</h3>
+            <h3 className="text-lg font-semibold tracking-tight">Tóm tắt đơn hàng</h3>
             <Separator className="my-3" />
 
             <div className="space-y-3">
@@ -153,11 +153,11 @@ export default function CheckoutPage() {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
+                <span>Tạm tính</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Shipping</span>
+                <span>Giao hàng</span>
                 <span>${shipping.toFixed(2)}</span>
               </div>
             </div>
@@ -165,15 +165,14 @@ export default function CheckoutPage() {
             <Separator className="my-4" />
 
             <div className="flex justify-between items-center">
-              <span className="text-base font-bold">Total</span>
+              <span className="text-base font-bold">Tổng cộng</span>
               <span className="text-base font-bold">${total.toFixed(2)}</span>
             </div>
 
-            <Button className="mt-4 h-10 w-full font-semibold">Checkout</Button>
+            <Button className="mt-4 h-10 w-full font-semibold">Đặt hàng</Button>
           </div>
         </aside>
       </div>
     </div>
   )
 }
-

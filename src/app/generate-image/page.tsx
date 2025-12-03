@@ -315,9 +315,9 @@ export default function GenerateImagePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-square max-w-2xl mx-auto bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden shadow-lg relative">
-                    <Image
+                      <Image
                       src={imageUrl}
-                      alt="Generated fashion image"
+                      alt="Ảnh thời trang đã tạo"
                       fill
                       className="object-contain"
                     />
@@ -352,4 +352,3 @@ export default function GenerateImagePage() {
     </ToastProvider>
   );
 }
-

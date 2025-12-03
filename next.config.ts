@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      ...(process.env.AWS_S3_BUCKET && process.env.AWS_S3_REGION
+        ? [{
+            protocol: 'https' as const,
+            hostname: `${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`,
+            port: '',
+            pathname: '/**',
+          }]
+        : []),
       {
         protocol: 'https',
         hostname: 'cdn.fashn.ai',

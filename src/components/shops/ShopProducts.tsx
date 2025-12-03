@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Image from "next/image"
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -39,11 +40,11 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
     <div className="flex gap-4 text-sm">
       <div className="w-48 shrink-0">
         <div className="border rounded-md">
-          <div className="p-3 font-semibold">Categories</div>
+          <div className="p-3 font-semibold">Danh mục</div>
           <Separator />
           <div className="p-2 space-y-1">
             {categories.length === 0 ? (
-              <div className="text-muted-foreground">No categories</div>
+              <div className="text-muted-foreground">Không có danh mục</div>
             ) : (
               categories.map((c) => (
                 <button
@@ -62,9 +63,17 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
         {filtered.map((p) => (
           <Card key={p.id} className="overflow-hidden">
             <div className="aspect-square bg-muted relative">
-              {p.imageUrl ? (
-                <Image src={p.imageUrl} alt={p.title} fill className="object-cover" />
-              ) : null}
+              <Image
+                src={p.imageUrl || PLACEHOLDER_IMAGE}
+                alt={p.title || "Sản phẩm"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
+                unoptimized
+                onError={(e: any) => {
+                  try { e.currentTarget.src = PLACEHOLDER_IMAGE } catch {}
+                }}
+              />
             </div>
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
@@ -83,4 +92,3 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
     </div>
   )
 }
-

@@ -69,9 +69,9 @@ export default function LoginPage() {
       <div className="mx-auto flex w-full max-w-sm flex-col justify-center space-y-6">
         <Card className="border border-border shadow-none bg-card">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+            <CardTitle className="text-2xl text-center">Đăng nhập</CardTitle>
             <CardDescription className="text-center">
-              Enter your email and password to access your account
+              Nhập email và mật khẩu để truy cập tài khoản
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -99,12 +99,12 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Password
+                  Mật khẩu
                 </label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu của bạn"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -112,7 +112,7 @@ export default function LoginPage() {
                 />
                 <div className="text-right">
                   <Link href="/forgot-password" className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
               </div>
@@ -121,21 +121,21 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Đang đăng nhập...
                   </>
                 ) : (
                   <>
                     <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
+                    Đăng nhập
                   </>
                 )}
               </Button>
             </form>
 
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              Chưa có tài khoản?{" "}
               <Link href="/register" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                Sign up
+                Đăng ký
               </Link>
             </div>
           </CardContent>

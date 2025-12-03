@@ -1,5 +1,6 @@
 import { createPaginationMeta, handleApiError, successResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
+import { getPresignedUrl } from '@/lib/s3';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -70,28 +71,46 @@ export async function GET(request: NextRequest) {
         ]);
 
         // Transform data to match expected format
-        const formattedProducts = products.map((product) => ({
-            id: product.id,
-            title: product.title,
-            description: product.description,
-            basePrice: Number(product.basePrice),
-            images: Array.isArray(product.images) ? product.images : [],
-            status: product.status,
-            totalStock: product.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
-            category: {
-                id: product.category.id,
-                name: product.category.name,
-                slug: product.category.slug,
-            },
-            shop: {
-                id: product.shop.id,
-                name: product.shop.name,
-                slug: product.shop.slug,
-                rating: product.shop.averageRating,
-            },
-            createdAt: product.createdAt,
-            updatedAt: product.updatedAt,
-        }));
+        const formattedProducts = await Promise.all(products.map(async (product) => {
+            const imgs = Array.isArray(product.images) ? (product.images as any[]) : []
+            const presignedImages = await Promise.all(
+                imgs.map(async (it: any) => {
+                    if (typeof it === 'string') return { url: it }
+                    if (it?.key) {
+                        try {
+                            const url = await getPresignedUrl(it.key, 3600)
+                            return { url }
+                        } catch {
+                            return { url: it?.url || '' }
+                        }
+                    }
+                    return { url: it?.url || '' }
+                })
+            )
+
+            return {
+                id: product.id,
+                title: product.title,
+                description: product.description,
+                basePrice: Number(product.basePrice),
+                images: presignedImages,
+                status: product.status,
+                totalStock: product.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
+                category: {
+                    id: product.category.id,
+                    name: product.category.name,
+                    slug: product.category.slug,
+                },
+                shop: {
+                    id: product.shop.id,
+                    name: product.shop.name,
+                    slug: product.shop.slug,
+                    rating: product.shop.averageRating,
+                },
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
+            }
+        }))
 
         return NextResponse.json(
             successResponse(formattedProducts, {

@@ -126,7 +126,7 @@ export default function OptimizedHomePage({
                         <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
                           <Image
                             src={personImageUpload.imagePreview}
-                            alt="Person preview"
+                            alt="Xem trước người mẫu"
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover"
@@ -177,7 +177,7 @@ export default function OptimizedHomePage({
                           role="button"
                           aria-label={`Chọn ảnh người mẫu ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Person example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <Image src={url} alt={`Ví dụ người mẫu ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                         </div>
                       ))}
                     </div>
@@ -212,7 +212,7 @@ export default function OptimizedHomePage({
                         <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
                           <Image
                             src={garmentImageUpload.imagePreview}
-                            alt="Garment preview"
+                            alt="Xem trước trang phục"
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover"
@@ -250,7 +250,7 @@ export default function OptimizedHomePage({
                           role="button"
                           aria-label={`Chọn ảnh trang phục ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Garment example ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <Image src={url} alt={`Ví dụ trang phục ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                         </div>
                       ))}
                     </div>
@@ -375,7 +375,7 @@ export default function OptimizedHomePage({
                       <div className="aspect-[3/4] md:aspect-[2/3] rounded-lg overflow-hidden bg-muted/20">
                         <Image
                           src={result}
-                          alt={`Try-on result ${index + 1}`}
+                          alt={`Kết quả thử đồ ${index + 1}`}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"

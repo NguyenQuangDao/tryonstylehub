@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { getPresignedUrl } from '@/lib/s3';
 
 // dùng prisma singleton
 
@@ -62,18 +63,43 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    const products = rows.map((p) => ({
-      id: p.id,
-      name: p.title,
-      description: p.description,
-      price: Number(p.basePrice),
-      category: p.category?.name ?? '',
-      status: p.status,
-      stock: p.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
-      images: Array.isArray(p.images) ? p.images : [],
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-    }));
+    const products = await Promise.all(rows.map(async (p) => {
+      const imgs = Array.isArray(p.images) ? (p.images as any[]) : []
+      const first = imgs[0]
+      let firstUrl: string | undefined
+      if (typeof first === 'string') {
+        firstUrl = first
+      } else if (first?.key) {
+        try {
+          firstUrl = await getPresignedUrl(first.key, 3600)
+        } catch {
+          firstUrl = first?.url
+        }
+      } else if (first?.url) {
+        firstUrl = first.url
+      }
+
+      const mappedImages = imgs.map((it: any) => {
+        if (typeof it === 'string') return { url: it }
+        if (it?.key) {
+          return { url: firstUrl && it === first ? firstUrl : (it.url || '') }
+        }
+        return { url: it?.url || '' }
+      })
+
+      return {
+        id: p.id,
+        name: p.title,
+        description: p.description,
+        price: Number(p.basePrice),
+        category: p.category?.name ?? '',
+        status: p.status,
+        stock: p.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
+        images: mappedImages,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      }
+    }))
 
     const totalPages = Math.ceil(total / limit);
     return NextResponse.json({ products, pagination: { page, limit, total, totalPages } });

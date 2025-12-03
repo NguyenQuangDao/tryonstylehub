@@ -120,7 +120,7 @@ export default function AdminUsersPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="destructive">Admin</Badge>;
+        return <Badge variant="destructive">Quản trị</Badge>;
       case 'SELLER':
         return <Badge variant="default">Người bán</Badge>;
       case 'SHOPPER':
@@ -145,7 +145,7 @@ export default function AdminUsersPage() {
         <div className="flex gap-2">
           <Button onClick={() => router.push('/admin/dashboard')}>
             <Shield className="h-4 w-4 mr-2" />
-            Dashboard
+            Bảng điều khiển
           </Button>
           <Button onClick={() => router.push('/admin/seller-applications')}>
             <User className="h-4 w-4 mr-2" />
@@ -167,8 +167,8 @@ export default function AdminUsersPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" className="h-8">View Option</Button>
-              <Button variant="outline" className="h-8">Export</Button>
+              <Button variant="outline" className="h-8">Chế độ xem</Button>
+              <Button variant="outline" className="h-8">Xuất</Button>
             </div>
           </div>
         </CardContent>
