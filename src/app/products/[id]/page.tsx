@@ -1,14 +1,14 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Card } from '@/components/ui/card'
 import { ExternalLink, ImageIcon } from 'lucide-react'
-import { use, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface Product {
-  id: number
+  id: string | number
   name: string
   type: string
   price: number
@@ -18,9 +18,22 @@ interface Product {
   createdAt: string
 }
 
-export default function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
-  const params = use(props.params);
-  const productId = Number(params.id);
+type ApiProduct = {
+  id: string | number
+  title?: string
+  name?: string
+  basePrice?: number
+  price?: number
+  images?: Array<string | { url?: string; src?: string; path?: string }>
+  styleTags?: string[]
+  category?: { name?: string }
+  type?: string
+  shop?: { name?: string; slug?: string }
+}
+
+export default function ProductDetailPage() {
+  const params = useParams() as { id?: string }
+  const productId = params?.id // Keep as string since ID is cuid format
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -36,8 +49,37 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
     const run = async () => {
       try {
         const res = await fetch('/api/products')
+        if (!res.ok) {
+          console.error('Failed to fetch products:', res.status, res.statusText)
+          setProducts([])
+          return
+        }
         const data = await res.json()
-        if (res.ok) setProducts(data.products)
+        if (res.ok) {
+          const productsData = data?.data || data?.products || []
+          const list = Array.isArray(productsData)
+            ? productsData.map((p: ApiProduct) => {
+                const img = Array.isArray(p?.images) ? p.images[0] : undefined
+                const imageUrl = typeof img === 'string' ? img : img?.url || img?.src || img?.path || ''
+                return {
+                  id: p.id,
+                  name: p.title || p.name || 'Unknown Product',
+                  type: p?.category?.name || p?.type || '',
+                  price: Number(p.basePrice || p.price) || 0,
+                  imageUrl: imageUrl || '/placeholder.png',
+                  styleTags: Array.isArray(p.styleTags) ? p.styleTags : [],
+                  shop: { name: p?.shop?.name || 'Unknown Shop', url: p?.shop?.slug ? `/shops/${p.shop.slug}` : '' },
+                  createdAt: new Date().toISOString(),
+                } as Product
+              })
+            : []
+          setProducts(list)
+        } else {
+          setProducts([])
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+        setProducts([])
       } finally {
         setLoading(false)
       }
@@ -45,7 +87,7 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
     run()
   }, [])
 
-  const product = useMemo(() => products.find((p) => p.id === productId), [products, productId])
+  const product = useMemo(() => (Array.isArray(products) ? products.find((p) => p.id === productId) : undefined), [products, productId])
 
   const categoryFromType = (type: string) => {
     const t = (type || '').toLowerCase()
@@ -78,11 +120,17 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
     dragRef.current.dragging = false
   }
 
-  if (loading || !product) {
+  if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-center text-muted-foreground">Không tìm thấy sản phẩm</div>
     )
   }
 
@@ -142,9 +190,8 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
         <div className="w-full md:w-80 space-y-4">
           <Card className="p-4 space-y-3">
             <h1 className="text-xl font-bold">{product.name}</h1>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start">
               <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg">{product.type}</span>
-              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">${product.price.toFixed(2)}</Badge>
             </div>
             <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
               <ImageIcon className="h-4 w-4" />

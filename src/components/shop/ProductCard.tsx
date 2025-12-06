@@ -4,6 +4,7 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { formatVND } from "@/utils/currency"
 
 export interface ProductCardProps {
   id: number | string
@@ -29,7 +30,7 @@ export function ProductCard({ id, title, category, price, imageUrl, className, o
       <CardContent className="p-3">
         <div className="text-xs text-muted-foreground mb-1">{category}</div>
         <div className="text-sm font-medium leading-tight line-clamp-2">{title}</div>
-        <div className="mt-1 text-sm font-bold">${price.toFixed(2)}</div>
+        <div className="mt-1 text-sm font-bold">{formatVND(price)}</div>
         <Button
           variant="outline"
           size="sm"

@@ -1,5 +1,7 @@
 import { FollowButton } from '@/components/shops/FollowButton'
 import { ShopProducts } from '@/components/shops/ShopProducts'
+import { ShopReviewForm } from '@/components/shops/ShopReviewForm'
+import { ShopReviews } from '@/components/shops/ShopReviews'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -93,8 +95,6 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
                   <span>{shop.averageRating.toFixed(1)}</span>
                 </div>
                 <div>•</div>
-                <div>{shop.totalSales} lượt bán</div>
-                <div>•</div>
                 <div>{productCount} sản phẩm</div>
                 <div>•</div>
                 <div>Tham gia: {joinedText}</div>
@@ -130,12 +130,7 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
               <CardDescription>{shop.averageRating}</CardDescription>
             </CardHeader>
           </Card>
-          <Card>
-            <CardHeader className="p-3">
-              <CardTitle className="text-base">Doanh số</CardTitle>
-              <CardDescription>{shop.totalSales}</CardDescription>
-            </CardHeader>
-          </Card>
+          
         </div>
 
         <Separator />
@@ -162,15 +157,10 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
             </Card>
           </TabsContent>
           <TabsContent value="reviews" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Đánh giá</CardTitle>
-                <CardDescription>Phản hồi từ khách hàng</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-muted-foreground">Chưa có đánh giá nào</div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <ShopReviewForm shopId={shop.id} />
+              <ShopReviews shopId={shop.id} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

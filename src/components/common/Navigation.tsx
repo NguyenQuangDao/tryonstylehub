@@ -2,6 +2,7 @@
 
 import { LogOut, Menu, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import {
@@ -31,6 +32,7 @@ const navigationItems = [
 export default function Navigation() {
   const [open, setOpen] = React.useState(false)
   const { user, logout, loading } = useAuth()
+  const router = useRouter()
 
   const handleLogout = async () => {
     try {
@@ -38,6 +40,14 @@ export default function Navigation() {
     } catch (error) {
       console.error('Logout failed:', error)
     }
+  }
+
+  const resetAuthAndGo = async (path: string) => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {}
+    setOpen(false)
+    router.push(path)
   }
 
   return (
@@ -146,12 +156,12 @@ export default function Navigation() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Link href="/login" onClick={() => setOpen(false)}>
+                      <Link href="/login" onClick={(e) => { e.preventDefault(); resetAuthAndGo('/login') }}>
                         <Button variant="outline" size="sm" className="w-full">
                           Đăng nhập
                         </Button>
                       </Link>
-                      <Link href="/register" onClick={() => setOpen(false)}>
+                      <Link href="/register" onClick={(e) => { e.preventDefault(); resetAuthAndGo('/register') }}>
                         <Button variant="default" size="sm" className="w-full">
                           Đăng ký
                         </Button>
@@ -212,12 +222,12 @@ export default function Navigation() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link href="/login" prefetch={false}>
+                <Link href="/login" prefetch={false} onClick={(e) => { e.preventDefault(); resetAuthAndGo('/login') }}>
                   <Button variant="outline" size="sm">
                     Đăng nhập
                   </Button>
                 </Link>
-                <Link href="/register" prefetch={false}>
+                <Link href="/register" prefetch={false} onClick={(e) => { e.preventDefault(); resetAuthAndGo('/register') }}>
                   <Button variant="default" size="sm">
                     Đăng ký
                   </Button>

@@ -3,7 +3,7 @@
 import { cn } from '@/app/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Zap } from 'lucide-react';
+import { Save, X, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -26,6 +26,7 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
 }) => {
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   // Handle navigating results in modal
   const navigateResult = useCallback((direction: 'prev' | 'next') => {
@@ -65,6 +66,34 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
   const openResultsModal = (index: number) => {
     setCurrentResultIndex(index);
     setIsResultsModalOpen(true);
+  };
+
+  // Handle saving result to gallery
+  const handleSaveResult = async (imageUrl: string) => {
+    setSaving(true);
+    try {
+      const response = await fetch('/api/user/gallery/tryon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl,
+          type: 'tryon'
+        }),
+      });
+
+      if (response.ok) {
+        alert('Đã lưu ảnh vào bộ sưu tập!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Không thể lưu ảnh');
+      }
+    } catch {
+      alert('Có lỗi xảy ra khi lưu ảnh');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleResultSelection = (index: number) => {
@@ -341,6 +370,21 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
                 <Zap className="h-4 w-4" />
                 Tải Xuống
               </motion.a>
+
+              {/* Save button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveResult(results[currentResultIndex]);
+                }}
+                disabled={saving}
+                className="absolute bottom-4 right-32 z-10 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 backdrop-blur-sm transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? 'Đang lưu...' : 'Lưu'}
+              </motion.button>
 
               {/* Dots indicator for multiple results */}
               {results.length > 1 && (

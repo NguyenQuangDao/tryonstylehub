@@ -1,12 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import Image from "next/image"
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ShoppingCart } from "lucide-react"
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
+import { formatVND } from "@/utils/currency"
+import Image from "next/image"
+import { useMemo, useState } from "react"
 
 type ProductItem = {
   id: string
@@ -80,12 +79,9 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="truncate text-sm">{p.title}</div>
-                <div className="font-bold">${p.price.toFixed(2)}</div>
               </div>
-              <div className="flex items-center justify-end mt-2">
-                <Button size="icon" variant="secondary" className="size-8">
-                  <ShoppingCart />
-                </Button>
+              <div className="flex items-center justify-start mt-2">
+                <div className="font-bold">{formatVND(p.price)}</div>
               </div>
             </CardContent>
           </Card>

@@ -9,8 +9,9 @@ function tryParseId(idValue: unknown): string | null {
   return null
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     const payload: JWTPayload | null = token ? await verifyToken(token) : null
@@ -21,17 +22,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
     if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 })
 
-    const existing = await prisma.blogSave.findUnique({ where: { postId_userId: { postId: params.id, userId } } })
+    const existing = await prisma.blogSave.findUnique({ where: { postId_userId: { postId: id, userId } } })
     if (existing) {
       await prisma.blogSave.delete({ where: { id: existing.id } })
-      await prisma.blogPost.update({ where: { id: params.id }, data: { savesCount: { decrement: 1 } } })
+      await prisma.blogPost.update({ where: { id }, data: { savesCount: { decrement: 1 } } })
       return NextResponse.json({ saved: false })
     } else {
-      await prisma.blogSave.create({ data: { postId: params.id, userId } })
-      await prisma.blogPost.update({ where: { id: params.id }, data: { savesCount: { increment: 1 } } })
+      await prisma.blogSave.create({ data: { postId: id, userId } })
+      await prisma.blogPost.update({ where: { id }, data: { savesCount: { increment: 1 } } })
       return NextResponse.json({ saved: true })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }

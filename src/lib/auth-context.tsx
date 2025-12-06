@@ -154,7 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    try {
+      document.cookie = 'token=; Max-Age=0; path=/';
+    } catch {}
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     setUser(null);
     setExpiry(null);
     if (expiryTimeout.current) {

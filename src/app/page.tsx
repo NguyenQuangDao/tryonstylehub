@@ -3,6 +3,7 @@
 import { VirtualModelForm, VirtualModelSelector } from '@/components/forms';
 import OptimizedHomePage from '@/components/home/OptimizedHomePage';
 import { Badge } from '@/components/ui/badge';
+import { formatVND } from '@/utils/currency';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -249,7 +250,7 @@ export default function HomePage() {
                     </div>
                   )}
                   <Badge className="absolute top-4 right-4">
-                    ${product.price.toFixed(2)}
+                    {formatVND(product.price)}
                   </Badge>
                 </div>
                 <div className="p-4 space-y-2">

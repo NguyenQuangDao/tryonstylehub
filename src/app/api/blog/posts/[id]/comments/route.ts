@@ -9,21 +9,23 @@ function tryParseId(idValue: unknown): string | null {
   return null
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const comments = await prisma.blogComment.findMany({
-      where: { postId: params.id },
+      where: { postId: id },
       orderBy: { createdAt: 'desc' },
       include: { user: true },
     })
     return NextResponse.json({ comments })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     const payload: JWTPayload | null = token ? await verifyToken(token) : null
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const validFiles = files.filter((file) => allowedImages.includes(file.type) && file.size > 0 && file.size <= maxImageSize)
 
     const toRollback: string[] = []
-    const uploaded: any[] = []
+    const uploaded: Array<{ url: string; key: string; size: number; type: string }> = []
 
     if (validFiles.length > 0) {
       const { uploadToS3 } = await import('@/lib/s3')
@@ -63,18 +65,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     try {
       const comment = await prisma.blogComment.create({
-        data: { postId: params.id, userId, content, media: uploaded },
+        data: { postId: id, userId, content, media: uploaded },
       })
-      await prisma.blogPost.update({ where: { id: params.id }, data: { commentsCount: { increment: 1 } } })
+      await prisma.blogPost.update({ where: { id }, data: { commentsCount: { increment: 1 } } })
       return NextResponse.json({ success: true, comment })
-    } catch (err) {
+    } catch {
       try {
         const { deleteFromS3 } = await import('@/lib/s3')
         await Promise.all(toRollback.map((k) => deleteFromS3(k)))
       } catch {}
       return NextResponse.json({ error: 'Có lỗi xảy ra khi tạo bình luận' }, { status: 500 })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }

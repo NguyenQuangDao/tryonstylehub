@@ -63,6 +63,24 @@
   }
 }
 
+@layer components {
+  .blog-content {
+    overflow: hidden;
+  }
+  .blog-content img,
+  .blog-content video,
+  .blog-content iframe {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  .blog-content figure,
+  .blog-content .image-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

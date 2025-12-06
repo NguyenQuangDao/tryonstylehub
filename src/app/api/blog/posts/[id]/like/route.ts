@@ -9,8 +9,9 @@ function tryParseId(idValue: unknown): string | null {
   return null
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     const payload: JWTPayload | null = token ? await verifyToken(token) : null
@@ -21,17 +22,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
     if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 })
 
-    const existing = await prisma.blogLike.findUnique({ where: { postId_userId: { postId: params.id, userId } } })
+    const existing = await prisma.blogLike.findUnique({ where: { postId_userId: { postId: id, userId } } })
     if (existing) {
       await prisma.blogLike.delete({ where: { id: existing.id } })
-      await prisma.blogPost.update({ where: { id: params.id }, data: { likesCount: { decrement: 1 } } })
+      await prisma.blogPost.update({ where: { id }, data: { likesCount: { decrement: 1 } } })
       return NextResponse.json({ liked: false })
     } else {
-      await prisma.blogLike.create({ data: { postId: params.id, userId } })
-      await prisma.blogPost.update({ where: { id: params.id }, data: { likesCount: { increment: 1 } } })
+      await prisma.blogLike.create({ data: { postId: id, userId } })
+      await prisma.blogPost.update({ where: { id }, data: { likesCount: { increment: 1 } } })
       return NextResponse.json({ liked: true })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }

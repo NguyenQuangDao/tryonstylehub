@@ -9,27 +9,29 @@ function tryParseId(idValue: unknown): string | null {
   return null
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const post = await prisma.blogPost.findUnique({ where: { id: params.id }, include: { author: true } })
+    const { id } = await params
+    const post = await prisma.blogPost.findUnique({ where: { id }, include: { author: true } })
     if (!post) return NextResponse.json({ error: 'Không tìm thấy bài viết' }, { status: 404 })
     const related = await prisma.blogPost.findMany({
       where: {
-        id: { not: params.id },
+        id: { not: id },
         status: 'PUBLISHED',
-        OR: Array.isArray(post.tags) && (post.tags as any[]).length > 0 ? (post.tags as any[]).map((t: any) => ({ tags: { array_contains: t } })) : [],
+        OR: Array.isArray(post.tags) && (post.tags as string[]).length > 0 ? (post.tags as string[]).map((t: string) => ({ tags: { array_contains: t } })) : [],
       },
       orderBy: { createdAt: 'desc' },
       take: 8,
     })
     return NextResponse.json({ post, related })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     const payload: JWTPayload | null = token ? await verifyToken(token) : null
@@ -40,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
     if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 })
 
-    const post = await prisma.blogPost.findUnique({ where: { id: params.id } })
+    const post = await prisma.blogPost.findUnique({ where: { id } })
     if (!post) return NextResponse.json({ error: 'Không tìm thấy bài viết' }, { status: 404 })
     if (post.authorId !== userId) return NextResponse.json({ error: 'Bạn không có quyền chỉnh sửa' }, { status: 403 })
 
@@ -64,7 +66,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     })
 
     const toRollback: string[] = []
-    const uploaded: any[] = []
+    const uploaded: Array<{ url: string; key: string; size: number; type: string }> = []
 
     if (validFiles.length > 0) {
       const { uploadToS3 } = await import('@/lib/s3')
@@ -83,30 +85,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     try {
       const tags = tagsStr ? tagsStr.split(',').map((t) => t.trim()).filter(Boolean) : []
       const updated = await prisma.blogPost.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           title: title || undefined,
           content: content || undefined,
           category: category || undefined,
           tags: tags.length ? tags : undefined,
-          media: uploaded.length ? [...(Array.isArray(post.media) ? (post.media as any[]) : []), ...uploaded] : undefined,
+          media: uploaded.length ? [...(Array.isArray(post.media) ? (post.media as Array<{ url: string; key: string; size: number; type: string }>) : []), ...uploaded] : undefined,
         },
       })
       return NextResponse.json({ success: true, post: updated })
-    } catch (err) {
+    } catch {
       try {
         const { deleteFromS3 } = await import('@/lib/s3')
         await Promise.all(toRollback.map((k) => deleteFromS3(k)))
       } catch {}
       return NextResponse.json({ error: 'Có lỗi xảy ra khi cập nhật bài viết' }, { status: 500 })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     const payload: JWTPayload | null = token ? await verifyToken(token) : null
@@ -117,20 +120,20 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     if (!userId) return NextResponse.json({ error: 'Bạn cần đăng nhập' }, { status: 401 })
 
-    const post = await prisma.blogPost.findUnique({ where: { id: params.id } })
+    const post = await prisma.blogPost.findUnique({ where: { id } })
     if (!post) return NextResponse.json({ error: 'Không tìm thấy bài viết' }, { status: 404 })
     if (post.authorId !== userId) return NextResponse.json({ error: 'Bạn không có quyền xóa' }, { status: 403 })
 
-    const media = Array.isArray(post.media) ? (post.media as any[]) : []
+    const media = Array.isArray(post.media) ? (post.media as Array<{ key?: string }>) : []
     try {
-      await prisma.blogPost.delete({ where: { id: params.id } })
+      await prisma.blogPost.delete({ where: { id } })
       const { deleteFromS3 } = await import('@/lib/s3')
       await Promise.all(media.map((m) => m?.key ? deleteFromS3(m.key) : Promise.resolve()))
       return NextResponse.json({ success: true })
-    } catch (err) {
+    } catch {
       return NextResponse.json({ error: 'Có lỗi xảy ra khi xóa bài viết' }, { status: 500 })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 })
   }
 }

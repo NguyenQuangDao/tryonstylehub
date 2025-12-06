@@ -1,8 +1,11 @@
-import Link from 'next/link'
-import Image from 'next/image'
+"use client"
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Package, Star } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useState } from 'react'
 
 type ShopWithCounts = {
   id: string
@@ -19,19 +22,43 @@ export function ShopCard({ shop }: { shop: ShopWithCounts }) {
   const rating = typeof shop.averageRating === 'number' ? shop.averageRating : 0
   const products = shop._count?.products ?? 0
   const initial = shop.name?.charAt(0)?.toUpperCase() || '?'
+  
+  // State for handling image loading errors
+  const [bannerError, setBannerError] = useState(false)
+  const [logoError, setLogoError] = useState(false)
+  
+  // Fallback banner URL
+  const fallbackBannerUrl = `https://via.placeholder.com/400x120/e5e7eb/6b7280?text=${encodeURIComponent(shop.name)}`
 
   return (
     <div className="border border-border rounded-lg bg-card">
       <div className="relative h-20 bg-muted overflow-hidden rounded-t-lg">
-        {shop.bannerUrl ? (
-          <Image src={shop.bannerUrl} alt={shop.name} fill className="object-cover" />
-        ) : null}
+        {(shop.bannerUrl && !bannerError) ? (
+          <Image 
+            src={shop.bannerUrl} 
+            alt={shop.name} 
+            fill 
+            className="object-cover"
+            onError={() => setBannerError(true)}
+          />
+        ) : (
+          <Image 
+            src={fallbackBannerUrl} 
+            alt={shop.name} 
+            fill 
+            className="object-cover"
+          />
+        )}
       </div>
 
       <div className="-mt-6 ml-4">
         <Avatar className="size-12 rounded-full border-2 border-background">
-          {shop.logoUrl ? (
-            <AvatarImage src={shop.logoUrl} alt={shop.name} />
+          {(shop.logoUrl && !logoError) ? (
+            <AvatarImage 
+              src={shop.logoUrl} 
+              alt={shop.name} 
+              onError={() => setLogoError(true)}
+            />
           ) : null}
           <AvatarFallback>{initial}</AvatarFallback>
         </Avatar>

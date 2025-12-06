@@ -8,8 +8,7 @@ import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { Edit, Eye, Package, Trash2 } from "lucide-react"
 import NextImage from "next/image"
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
-import { Bar, BarChart as RBarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { useEffect, useState } from "react"
 
 type Product = {
   id: string
@@ -146,46 +145,7 @@ function ProductsTab() {
   )
 }
 
-function OrdersTab() {
-  const rows = useMemo(
-    () => [
-      { id: "ORD-1001", customer: "Nguyen Van A", total: 125.5, status: "Đang xử lý", date: "2025-11-22" },
-      { id: "ORD-1002", customer: "Tran Thi B", total: 89.99, status: "Đã giao", date: "2025-11-20" },
-    ],
-    []
-  )
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Đơn hàng</h2>
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã đơn</TableHead>
-                <TableHead>Khách hàng</TableHead>
-                <TableHead>Tổng</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Ngày</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.id}</TableCell>
-                  <TableCell>{r.customer}</TableCell>
-                  <TableCell>{formatCurrency(r.total, "USD")}</TableCell>
-                  <TableCell>{r.status}</TableCell>
-                  <TableCell>{r.date}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+
 
 function AnalyticsTab() {
   const [stats, setStats] = useState<SellerStats | null>(null)
@@ -222,12 +182,7 @@ function AnalyticsTab() {
       ) : stats ? (
         <div className="space-y-4">
           <div className="grid grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-xs text-muted-foreground">Doanh thu</div>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue, stats.currency)}</div>
-              </CardContent>
-            </Card>
+            
             <Card>
               <CardContent className="p-4">
                 <div className="text-xs text-muted-foreground">Đơn hàng</div>
@@ -247,21 +202,7 @@ function AnalyticsTab() {
               </CardContent>
             </Card>
           </div>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-xs text-muted-foreground">Doanh thu theo tháng</div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RBarChart data={stats.monthlyRevenue}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                  </RBarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
       ) : (
         <div className="py-8 text-center">Không có dữ liệu</div>
@@ -310,15 +251,11 @@ export default function Page() {
       <Tabs defaultValue="products">
         <TabsList>
           <TabsTrigger value="products">Sản phẩm</TabsTrigger>
-          <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
           <TabsTrigger value="analytics">Phân tích</TabsTrigger>
           <TabsTrigger value="settings">Cài đặt</TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <ProductsTab />
-        </TabsContent>
-        <TabsContent value="orders">
-          <OrdersTab />
         </TabsContent>
         <TabsContent value="analytics">
           <AnalyticsTab />
