@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Clock, ExternalLink, Heart, Info, Loader2, Palette, Sparkles, Star, Wand2, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -264,67 +265,65 @@ export default function RecommendPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-8">
-          <Label htmlFor="style" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Mô tả phong cách bạn muốn
-          </Label>
-
-          <div className="flex gap-4">
-            <Input
-              id="style"
-              type="text"
-              value={style}
-              onChange={(e) => setStyle(e.target.value)}
-              className="flex-1 px-6 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 placeholder-gray-400"
-              placeholder="Ví dụ: casual summer beach style with pastel colors..."
-            />
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span>Đang tạo...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-6 w-6" />
-                  <span>Tạo Gợi Ý</span>
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setUseWishlistPref(v => !v)}
-              className={`px-4 py-2 rounded-xl text-sm border ${useWishlistPref ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-50 border-gray-300 text-gray-700'} hover:shadow transition`}
-            >
-              Ưu tiên sản phẩm yêu thích
-            </button>
-            <button
-              type="button"
-              onClick={() => setUseFollowedShopsPref(v => !v)}
-              className={`px-4 py-2 rounded-xl text-sm border ${useFollowedShopsPref ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-300 text-gray-700'} hover:shadow transition`}
-            >
-              Ưu tiên cửa hàng theo dõi
-            </button>
-          </div>
-
-          {error && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4 text-sm text-red-600 dark:text-red-400"
-            >
-              {error}
-            </motion.p>
-          )}
-        </form>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              <CardTitle>Gợi ý phong cách</CardTitle>
+            </div>
+            <CardDescription>Nhập mô tả phong cách để nhận gợi ý sản phẩm</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="style">Mô tả phong cách bạn muốn</Label>
+                <Input
+                  id="style"
+                  type="text"
+                  value={style}
+                  onChange={(e) => setStyle(e.target.value)}
+                  placeholder="Ví dụ: casual summer beach style with pastel colors..."
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {POPULAR_STYLES.map((styleItem) => (
+                  <Button key={styleItem.value} type="button" variant="outline" size="sm" onClick={() => handleQuickSearch(styleItem.value)}>
+                    <span className="mr-1">{styleItem.icon}</span>
+                    {styleItem.label.replace(/^.\s/, '')}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant={useWishlistPref ? 'secondary' : 'outline'} size="sm" onClick={() => setUseWishlistPref((v) => !v)}>
+                  {useWishlistPref ? 'Ưu tiên sản phẩm yêu thích' : 'Không ưu tiên sản phẩm yêu thích'}
+                </Button>
+                <Button type="button" variant={useFollowedShopsPref ? 'secondary' : 'outline'} size="sm" onClick={() => setUseFollowedShopsPref((v) => !v)}>
+                  {useFollowedShopsPref ? 'Ưu tiên cửa hàng theo dõi' : 'Không ưu tiên cửa hàng theo dõi'}
+                </Button>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang tạo...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Tạo Gợi Ý
+                    </>
+                  )}
+                </Button>
+                {error && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-destructive">
+                    {error}
+                  </motion.p>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
         {outfit.length > 0 && (
           <motion.div

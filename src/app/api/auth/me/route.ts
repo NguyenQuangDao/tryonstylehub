@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ user });
+    const exp = (payload as any).exp ?? null;
+    return NextResponse.json({ user, exp });
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json(

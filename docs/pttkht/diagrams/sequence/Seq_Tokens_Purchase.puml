@@ -1,0 +1,22 @@
+@startuml
+title Mua Tokens
+actor User
+boundary WebApp
+control Backend
+entity Stripe
+database DB
+
+User -> WebApp: Chọn gói tokens
+WebApp -> Backend: POST /api/tokens/purchase {planId}
+Backend -> Backend: Tra cấu hình gói
+alt Gói hợp lệ
+  Backend -> Stripe: Tạo session/intent
+  Stripe --> Backend: {paymentUrl/clientSecret}
+  Backend --> WebApp: 200 {paymentUrl/clientSecret}
+  WebApp --> User: Điều hướng thanh toán
+else Gói không hợp lệ
+  Backend --> WebApp: 400 Bad Request
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

@@ -21,16 +21,16 @@ export default function ProfilePage() {
   const [editingVirtualModel, setEditingVirtualModel] = useState<VirtualModel | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   type GalleryItem = { url: string; key: string; createdAt: string; size?: number; width?: number; height?: number; format?: string };
-  const [gallery, setGallery] = useState<GalleryItem[]>([]);
-  const [isLoadingGallery, setIsLoadingGallery] = useState(false);
+  // const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  // const [isLoadingGallery, setIsLoadingGallery] = useState(false);
   const [tryonGallery, setTryonGallery] = useState<GalleryItem[]>([]);
   const [isLoadingTryon, setIsLoadingTryon] = useState(false);
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
-  const clearDateRange = () => {
-    setDateFrom('');
-    setDateTo('');
-  };
+  // const [dateFrom, setDateFrom] = useState<string>('');
+  // const [dateTo, setDateTo] = useState<string>('');
+  // const clearDateRange = () => {
+  //   setDateFrom('');
+  //   setDateTo('');
+  // };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -55,20 +55,20 @@ export default function ProfilePage() {
     }
   }, []);
 
-  const fetchGallery = useCallback(async () => {
-    try {
-      setIsLoadingGallery(true);
-      const res = await fetch('/api/user/gallery', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        const items = (data.gallery || []) as GalleryItem[];
-        setGallery(items);
-      }
-    } catch {
-    } finally {
-      setIsLoadingGallery(false);
-    }
-  }, []);
+  // const fetchGallery = useCallback(async () => {
+  //   try {
+  //     setIsLoadingGallery(true);
+  //     const res = await fetch('/api/user/gallery', { credentials: 'include' });
+  //     if (res.ok) {
+  //       const data = await res.json();
+  //       const items = (data.gallery || []) as GalleryItem[];
+  //       setGallery(items);
+  //     }
+  //   } catch {
+  //   } finally {
+  //     setIsLoadingGallery(false);
+  //   }
+  // }, []);
 
   const fetchTryonGallery = useCallback(async () => {
     try {
@@ -88,27 +88,27 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       fetchVirtualModels();
-      fetchGallery();
+      // fetchGallery();
       fetchTryonGallery();
     }
-  }, [user, fetchVirtualModels, fetchGallery, fetchTryonGallery]);
+  }, [user, fetchVirtualModels, fetchTryonGallery]);
 
-  const isFiltering = !!dateFrom || !!dateTo;
-  const displayedGallery = (() => {
-    if (!isFiltering) return gallery;
-    const from = dateFrom ? new Date(dateFrom) : null;
-    const to = dateTo ? new Date(dateTo) : null;
-    if (to) {
-      to.setHours(23, 59, 59, 999);
-    }
-    return gallery.filter((item) => {
-      const d = new Date(item.createdAt);
-      if (Number.isNaN(d.getTime())) return false;
-      if (from && d < from) return false;
-      if (to && d > to) return false;
-      return true;
-    });
-  })();
+  // const isFiltering = !!dateFrom || !!dateTo;
+  // const displayedGallery = (() => {
+  //   if (!isFiltering) return gallery;
+  //   const from = dateFrom ? new Date(dateFrom) : null;
+  //   const to = dateTo ? new Date(dateTo) : null;
+  //   if (to) {
+  //     to.setHours(23, 59, 59, 999);
+  //   }
+  //   return gallery.filter((item) => {
+  //     const d = new Date(item.createdAt);
+  //     if (Number.isNaN(d.getTime())) return false;
+  //     if (from && d < from) return false;
+  //     if (to && d > to) return false;
+  //     return true;
+  //   });
+  // })();
 
   const handleOpenForm = () => {
     setEditingVirtualModel(null);
@@ -402,7 +402,7 @@ export default function ProfilePage() {
         </div>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6 mt-8"
@@ -455,7 +455,7 @@ export default function ProfilePage() {
             <ProfileGallery items={displayedGallery} loading={isLoadingGallery} onRefresh={fetchGallery} />
           )}
         </div>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

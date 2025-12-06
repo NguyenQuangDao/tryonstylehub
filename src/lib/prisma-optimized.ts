@@ -1,9 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 
-declare global {
-    var prisma: PrismaClient | undefined;
-}
-
 // Connection pool configuration
 const prismaClientOptions: Prisma.PrismaClientOptions = {
     log: process.env.NODE_ENV === 'development'
@@ -12,10 +8,12 @@ const prismaClientOptions: Prisma.PrismaClientOptions = {
     errorFormat: 'pretty',
 };
 
-export const prisma = global.prisma || new PrismaClient(prismaClientOptions);
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient(prismaClientOptions);
 
 if (process.env.NODE_ENV !== 'production') {
-    global.prisma = prisma;
+    globalForPrisma.prisma = prisma;
 }
 
 // Graceful shutdown

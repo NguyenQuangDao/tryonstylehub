@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
     // Get files and other data from FormData
     const personImage = formData.get('personImage') as File;
     const garmentImage = formData.get('garmentImage') as File;
+    const garmentImageUrl = formData.get('garmentImageUrl') as string | null;
     const virtualModelId = formData.get('virtualModelId') as string;
     const category = formData.get('category') as string;
     const quality = (formData.get('quality') as string) || 'standard'
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
     if (!personImage && !virtualModelId) {
       return NextResponse.json({ error: "Missing person image or virtual model" }, { status: 400 });
     }
-    if (!garmentImage) {
+    if (!garmentImage && !garmentImageUrl) {
       return NextResponse.json({ error: "Missing garment image" }, { status: 400 });
     }
     
@@ -137,7 +138,12 @@ export async function POST(request: NextRequest) {
       modelImageBase64 = await urlToBase64(virtualModel.avatarImage);
     }
     
-    const garmentImageBase64 = await fileToBase64(garmentImage);
+    let garmentImageBase64 = '';
+    if (garmentImage) {
+      garmentImageBase64 = await fileToBase64(garmentImage);
+    } else if (garmentImageUrl) {
+      garmentImageBase64 = await urlToBase64(garmentImageUrl);
+    }
     
     // Set default parameters
     const garmentPhotoType = 'flat-lay';
@@ -195,7 +201,7 @@ export async function POST(request: NextRequest) {
         const images = statusData.output || [];
 
         try {
-          const token = cookies().get('token')?.value || null;
+          const token = (await cookies()).get('token')?.value || null;
           if (token) {
             const payload = await verifyToken(token);
             if (payload && payload.userId) {

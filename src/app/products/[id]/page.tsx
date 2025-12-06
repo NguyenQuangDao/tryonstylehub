@@ -2,6 +2,8 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { ExternalLink, ImageIcon } from 'lucide-react'
 import { use, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -44,6 +46,15 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
   }, [])
 
   const product = useMemo(() => products.find((p) => p.id === productId), [products, productId])
+
+  const categoryFromType = (type: string) => {
+    const t = (type || '').toLowerCase()
+    if (t.includes('dress') || t.includes('đầm')) return 'dress'
+    if (t.includes('coat') || t.includes('jacket') || t.includes('outer')) return 'outerwear'
+    if (t.includes('pant') || t.includes('quần') || t.includes('skirt') || t.includes('váy') || t.includes('bottom')) return 'bottoms'
+    if (t.includes('accessor') || t.includes('phụ kiện')) return 'accessories'
+    return 'tops'
+  }
 
   const onUploadModel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -149,6 +160,11 @@ export default function ProductDetailPage(props: { params: Promise<{ id: string 
                 <ExternalLink className="h-4 w-4" />
                 Đi đến shop
               </a>
+              <Button asChild variant="outline" className="min-w-[140px]">
+                <Link href={`/?garmentImage=${encodeURIComponent(product.imageUrl)}&category=${categoryFromType(product.type)}`}>
+                  Thử đồ online
+                </Link>
+              </Button>
             </div>
           </Card>
 

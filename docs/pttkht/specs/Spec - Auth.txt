@@ -1,0 +1,58 @@
+Spec: Đăng nhập/OAuth (Auth)
+
+---
+Auth_EmailPwd
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Đăng nhập bằng email/mật khẩu |
+| Đầu vào | Email, mật khẩu đã băm khi truyền |
+| Xử lý | Kiểm tra tồn tại; xác thực; giới hạn thử sai |
+| Đầu ra | `accessToken`, `refreshToken` |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Hash/muối; bảo vệ brute-force; MFA (tùy chọn) |
+| Lỗi | `INVALID_CREDENTIALS`, `ACCOUNT_LOCKED` |
+| KPI | Tỉ lệ đăng nhập thành công; số lần khoá |
+
+---
+Auth_OAuth
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Đăng nhập qua nhà cung cấp OAuth |
+| Đầu vào | `authCode`/`idToken` từ nhà cung cấp |
+| Xử lý | Xác thực token; liên kết/xuất bản tài khoản |
+| Đầu ra | `accessToken`, `refreshToken` |
+| Tích hợp ngoài | `actorAuth` (Nhà cung cấp đăng nhập) |
+| Ràng buộc | PKCE; kiểm tra `aud`, `iss`, `exp` |
+| Lỗi | `OAUTH_INVALID_TOKEN`, `LINK_CONFLICT` |
+| KPI | Thời gian đăng nhập; tỉ lệ liên kết thành công |
+
+---
+Auth_Token
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Làm mới access token |
+| Đầu vào | `refreshToken` hợp lệ |
+| Xử lý | Kiểm tra thu hồi; xoay khóa; ghi nhận thiết bị |
+| Đầu ra | `accessToken` mới |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | TTL; thu hồi theo thiết bị |
+| Lỗi | `TOKEN_REVOKED`, `TOKEN_EXPIRED` |
+| KPI | Tỉ lệ refresh thành công; số phiên hoạt động |
+
+---
+Auth_Profile
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Quản lý hồ sơ tài khoản |
+| Đầu vào | Tên, avatar, tuỳ chọn riêng tư |
+| Xử lý | Xác thực; cập nhật từng phần; audit trail |
+| Đầu ra | Hồ sơ cập nhật |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Quyền truy cập; kiểm soát PII |
+| Lỗi | `PROFILE_UPDATE_FAILED` |
+| KPI | Tỉ lệ cập nhật hồ sơ; thời gian phản hồi |
+

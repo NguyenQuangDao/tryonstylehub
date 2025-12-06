@@ -1,0 +1,16 @@
+@startuml
+skinparam linetype ortho
+actor Admin
+actor User
+rectangle TryOnStyleHub {
+  usecase "Upload ảnh sản phẩm" as UC_Upload_Image
+}
+User --> UC_Upload_Image
+Admin --> UC_Upload_Image
+note right of UC_Upload_Image
+Trigger: Gửi FormData chứa file
+Post: 200 trả danh sách URL đã tải lên S3
+Exceptions: 400 NO_FILE/IMAGE_INVALID; 500 UPLOAD_FAILED
+end note
+@enduml
+

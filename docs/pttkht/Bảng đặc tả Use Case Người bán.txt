@@ -1,0 +1,70 @@
+Tên Use Case: Quản lý sản phẩm
+
+Actors: Người bán
+
+Mô tả: Tạo, cập nhật, ẩn/hiển thị sản phẩm; quản lý biến thể, giá và hình ảnh.
+
+Tiền điều kiện: Tài khoản Người bán hợp lệ; quyền truy cập chức năng; dữ liệu sản phẩm tuân thủ chính sách.
+
+Luồng sự kiện chính:
+1. Người bán mở trang quản lý sản phẩm.
+2. Tạo sản phẩm mới hoặc chọn sản phẩm để chỉnh sửa.
+3. Cập nhật thuộc tính (tên, mô tả, danh mục, giá, biến thể).
+4. Tải ảnh lên CDN và gán cho sản phẩm.
+5. Lưu thay đổi; hệ thống cập nhật trạng thái hiển thị.
+
+Luồng sự kiện phụ:
+A. Nhân bản sản phẩm: sao chép và chỉnh sửa nhanh.
+B. Ẩn sản phẩm tạm thời: không hiển thị với khách hàng.
+
+Ngoại lệ/Lỗi:
+- Ảnh không hợp lệ/không tải được.
+- Dữ liệu vi phạm chính sách: bị từ chối/kiểm duyệt.
+
+----------------------------------------
+
+Tên Use Case: Quản lý đơn hàng
+
+Actors: Người bán
+
+Mô tả: Xem, xử lý, cập nhật trạng thái đơn hàng; quản lý hoàn/đổi.
+
+Tiền điều kiện: Đơn hàng tồn tại; quyền xử lý; chính sách hoàn/đổi áp dụng.
+
+Luồng sự kiện chính:
+1. Mở danh sách đơn hàng và lọc theo trạng thái.
+2. Xem chi tiết đơn, xác nhận và chuẩn bị giao.
+3. Cập nhật trạng thái (đã xác nhận/đang giao/hoàn tất).
+4. Ghi nhận ghi chú nội bộ và thông báo cho khách hàng.
+
+Luồng sự kiện phụ:
+A. Xử lý yêu cầu hoàn/đổi: xác minh điều kiện và cập nhật.
+B. In tem/phiếu đóng gói.
+
+Ngoại lệ/Lỗi:
+- Đơn không tìm thấy/không thuộc quyền.
+- Trạng thái không hợp lệ để chuyển tiếp.
+
+----------------------------------------
+
+Tên Use Case: Báo cáo
+
+Actors: Người bán
+
+Mô tả: Xem báo cáo doanh số, tồn kho, hiệu suất sản phẩm và hành vi khách hàng.
+
+Tiền điều kiện: Dữ liệu analytics khả dụng; quyền truy cập báo cáo.
+
+Luồng sự kiện chính:
+1. Chọn loại báo cáo và phạm vi thời gian.
+2. Hệ thống tổng hợp dữ liệu và hiển thị biểu đồ/bảng.
+3. Người bán lọc/sắp xếp và tải về (CSV/PDF) nếu cần.
+
+Luồng sự kiện phụ:
+A. Thiết lập báo cáo định kỳ gửi qua email.
+B. Ghim dashboard tùy chỉnh.
+
+Ngoại lệ/Lỗi:
+- Dữ liệu thiếu/đồng bộ trễ.
+- Lỗi tạo file tải về.
+

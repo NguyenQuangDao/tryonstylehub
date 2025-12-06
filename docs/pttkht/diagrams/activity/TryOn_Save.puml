@@ -1,0 +1,10 @@
+@startuml
+skinparam linetype ortho
+start
+:Chuẩn bị entries {url,key,createdAt,size,w,h,format,type};
+:Đọc gallery.json hiện có;
+:Ghép entries mới lên đầu danh sách;
+:putJSON(galleryKey, updated);
+:200: Lưu lịch sử thành công / share TTL;
+end
+@enduml

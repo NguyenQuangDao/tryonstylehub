@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Box, Coins, Home, LineChart, LogOut, ShoppingCart, Store, UploadCloud, User, Users } from "lucide-react"
+import { Box, Coins, Home, LineChart, LogOut, ShoppingCart, Store, UploadCloud, User, Users, Newspaper } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -23,6 +23,7 @@ const items = [
   { href: "/profile", label: "Thông tin cá nhân", icon: User },
   { href: "/products", label: "Sản phẩm", icon: Box },
   { href: "/shops", label: "Cửa hàng", icon: ShoppingCart },
+  { href: "/blog", label: "Blog", icon: Newspaper },
   { href: "/tokens", label: "Token", icon: Coins },
   { href: "/admin/users", label: "Các tính năng", icon: Users },
 ]

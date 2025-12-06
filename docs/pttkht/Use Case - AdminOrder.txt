@@ -1,0 +1,17 @@
+flowchart LR
+
+    subgraph System[Hệ thống TryOnStyleHub]
+        subgraph AdminOrder[Quản lý đơn hàng - chi tiết]
+            Order_List([Danh sách/chi tiết])
+            Order_Status([Cập nhật trạng thái])
+            Order_Returns([Hủy/trả hàng])
+            Order_Fulfill([Giao hàng/fulfillment])
+            Order_List --> Order_Status --> Order_Fulfill --> Order_Returns
+        end
+    end
+
+    subgraph External[Hệ thống tích hợp]
+        actorStore([Kho/Inventory])
+    end
+
+    Order_Fulfill -.-> actorStore

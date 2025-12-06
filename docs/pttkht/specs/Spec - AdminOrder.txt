@@ -1,0 +1,58 @@
+Spec: Quản lý đơn hàng (AdminOrder)
+
+---
+Order_List
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Xem danh sách/chi tiết đơn |
+| Đầu vào | Bộ lọc, phân trang |
+| Xử lý | Truy vấn; tổng hợp; ủy quyền |
+| Đầu ra | Danh sách đơn; chi tiết |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Phân quyền theo vai trò |
+| Lỗi | `ORDER_QUERY_FAILED` |
+| KPI | Thời gian truy vấn; độ chính xác |
+
+---
+Order_Status
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Cập nhật trạng thái đơn |
+| Đầu vào | `orderId`, trạng thái mới |
+| Xử lý | Valid chuyển trạng thái; ghi log |
+| Đầu ra | Trạng thái cập nhật |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Idempotent; kiểm toán |
+| Lỗi | `STATUS_TRANSITION_INVALID` |
+| KPI | Tỉ lệ cập nhật thành công |
+
+---
+Order_Fulfill
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Xử lý giao hàng/fulfillment |
+| Đầu vào | `orderId`, chi tiết vận chuyển |
+| Xử lý | Tạo lệnh giao; in nhãn; theo dõi |
+| Đầu ra | Mã vận đơn; trạng thái giao |
+| Tích hợp ngoài | `actorStore` |
+| Ràng buộc | SLA giao; đồng bộ tồn kho |
+| Lỗi | `FULFILLMENT_FAILED` |
+| KPI | Tỉ lệ giao đúng hạn |
+
+---
+Order_Returns
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Hủy/trả hàng |
+| Đầu vào | `orderId`, lý do, tình trạng sản phẩm |
+| Xử lý | Xác thực; cập nhật tồn; hoàn tiền |
+| Đầu ra | Trạng thái trả hàng; biên nhận |
+| Tích hợp ngoài | PSP/kho (tuỳ) |
+| Ràng buộc | Chính sách hoàn trả |
+| Lỗi | `RETURN_DENIED`, `REFUND_FAILED` |
+| KPI | Tỉ lệ xử lý trả hàng |
+

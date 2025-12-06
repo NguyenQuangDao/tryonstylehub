@@ -1,0 +1,14 @@
+@startuml
+skinparam linetype ortho
+start
+:Kiểm tra ảnh người dùng (JPEG/PNG ≤10MB);
+if (Hợp lệ?) then (Có)
+  :Loại bỏ EXIF, quét virus;
+  :Phát sinh imageId tạm và URL nội bộ;
+  :200: Trả về imageId/URL;
+  end
+else (Không)
+  :400: INVALID_FORMAT / FILE_TOO_LARGE;
+  end
+endif
+@enduml

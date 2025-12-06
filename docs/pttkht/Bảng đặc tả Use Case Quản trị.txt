@@ -1,0 +1,139 @@
+Tên Use Case: Quản lý sản phẩm
+
+Actors: Quản trị viên
+
+Mô tả: Tạo/cập nhật/xóa sản phẩm; kiểm duyệt nội dung và quản lý hình ảnh.
+
+Tiền điều kiện: Quyền quản trị; chính sách nội dung và danh mục đã thiết lập.
+
+Luồng sự kiện chính:
+1. Mở bảng quản trị sản phẩm.
+2. Tạo/sửa/xóa sản phẩm và biến thể.
+3. Tải lên/duyệt/xóa hình ảnh sản phẩm.
+4. Áp chính sách hiển thị/kiểm duyệt.
+
+Luồng sự kiện phụ:
+A. Khóa sản phẩm vi phạm chính sách.
+B. Gắn nhãn/thuộc tính đặc biệt (nổi bật, khuyến mãi).
+
+Ngoại lệ/Lỗi:
+- Nội dung vi phạm: yêu cầu chỉnh sửa.
+- Lỗi CDN/đồng bộ tồn kho.
+
+----------------------------------------
+
+Tên Use Case: Quản lý đơn hàng
+
+Actors: Quản trị viên
+
+Mô tả: Giám sát và can thiệp đơn hàng; xử lý hoàn tiền, hủy đơn, và khiếu nại.
+
+Tiền điều kiện: Quản trị có quyền thao tác; đơn hàng tồn tại.
+
+Luồng sự kiện chính:
+1. Xem tình trạng đơn theo thời gian thực.
+2. Cập nhật trạng thái hoặc can thiệp khi lỗi.
+3. Phê duyệt/khởi tạo hoàn tiền theo chính sách.
+4. Ghi nhật ký thao tác.
+
+Luồng sự kiện phụ:
+A. Xử lý khiếu nại: tạo và giải quyết ticket.
+B. Điều chỉnh phí/giá khi cần thiết theo quy trình.
+
+Ngoại lệ/Lỗi:
+- Quyền không đủ để thao tác.
+- Trạng thái không cho phép cập nhật.
+
+----------------------------------------
+
+Tên Use Case: Quản lý người dùng & phân quyền
+
+Actors: Quản trị viên
+
+Mô tả: Tạo vai trò, gán quyền, khóa/mở khóa tài khoản và xem nhật ký truy cập.
+
+Tiền điều kiện: Mô hình vai trò/quyền được định nghĩa; quy trình bảo mật.
+
+Luồng sự kiện chính:
+1. Tạo/sửa/xóa vai trò và quyền.
+2. Gán vai trò cho người dùng và nhóm.
+3. Khóa/mở khóa tài khoản khi vi phạm.
+4. Xem nhật ký đăng nhập/thao tác.
+
+Luồng sự kiện phụ:
+A. Thiết lập 2FA bắt buộc cho vai trò nhạy cảm.
+B. Xuất báo cáo tuân thủ.
+
+Ngoại lệ/Lỗi:
+- Xung đột quyền/chuỗi thừa kế không hợp lệ.
+- Lỗi xác minh danh tính.
+
+----------------------------------------
+
+Tên Use Case: Khuyến mãi/Mã giảm giá
+
+Actors: Quản trị viên
+
+Mô tả: Tạo chiến dịch khuyến mãi, mã giảm giá, điều kiện áp dụng và giám sát hiệu quả.
+
+Tiền điều kiện: Chính sách giá/khuyến mãi; lịch áp dụng.
+
+Luồng sự kiện chính:
+1. Tạo chiến dịch và cấu hình tham số (thời gian, phạm vi, điều kiện).
+2. Sinh mã giảm giá hoặc thiết lập tự động áp dụng.
+3. Công bố và theo dõi hiệu quả.
+
+Luồng sự kiện phụ:
+A. Thu hồi/tạm dừng chiến dịch.
+B. Xuất danh sách mã và nhật ký sử dụng.
+
+Ngoại lệ/Lỗi:
+- Điều kiện mâu thuẫn/dễ lạm dụng.
+- Mã giảm giá trùng/lỗi sinh mã.
+
+----------------------------------------
+
+Tên Use Case: Kiểm duyệt nội dung
+
+Actors: Quản trị viên
+
+Mô tả: Kiểm duyệt đánh giá/bình luận, hình ảnh người dùng, và nội dung người bán.
+
+Tiền điều kiện: Bộ quy tắc nội dung; công cụ phát hiện spam/xâm hại.
+
+Luồng sự kiện chính:
+1. Xem hàng chờ kiểm duyệt theo loại nội dung.
+2. Phê duyệt/từ chối với lý do.
+3. Áp biện pháp (ẩn nội dung, cảnh báo người dùng/ người bán).
+
+Luồng sự kiện phụ:
+A. Tự động gắn cờ bằng mô hình ML rồi duyệt thủ công.
+B. Kháng nghị: quy trình xem xét lại.
+
+Ngoại lệ/Lỗi:
+- Quy tắc mơ hồ/dễ sai; cần điều chỉnh.
+- Lỗi lưu trữ/khôi phục nội dung.
+
+----------------------------------------
+
+Tên Use Case: Báo cáo
+
+Actors: Quản trị viên
+
+Mô tả: Báo cáo hệ thống: doanh thu, tồn kho, hành vi người dùng, chất lượng dịch vụ.
+
+Tiền điều kiện: Dữ liệu analytics; quyền xem.
+
+Luồng sự kiện chính:
+1. Chọn báo cáo và phạm vi thời gian.
+2. Hệ thống tổng hợp và hiển thị bảng/biểu đồ.
+3. Lọc, sắp xếp, tải về.
+
+Luồng sự kiện phụ:
+A. Lập lịch gửi báo cáo định kỳ qua email.
+B. Dashboard tùy chỉnh theo vai trò.
+
+Ngoại lệ/Lỗi:
+- Dữ liệu thiếu/đồng bộ trễ.
+- Lỗi xuất báo cáo.
+

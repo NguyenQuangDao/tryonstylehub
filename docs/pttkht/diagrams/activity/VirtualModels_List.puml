@@ -1,0 +1,14 @@
+@startuml
+skinparam linetype ortho
+start
+:Đọc cookie token;
+if (Hợp lệ?) then (Có)
+  :Prisma: lấy danh sách virtual models theo userId;
+  :200: Trả danh sách models;
+  end
+else (Không)
+  :401: Unauthorized;
+  end
+endif
+@enduml
+

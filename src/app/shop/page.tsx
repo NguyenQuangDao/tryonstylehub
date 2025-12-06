@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { ProductCard } from '@/components/shop/ProductCard'
 import { Accordion, AccordionContent, AccordionItemRoot, AccordionTrigger } from '@/components/ui/accordion'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ProductCard } from '@/components/shop/ProductCard'
+import { Slider } from '@/components/ui/slider'
+import { useEffect, useMemo, useState } from 'react'
 
 type Product = {
   id: number
@@ -74,7 +74,7 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6">
+    <div className="w-full mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-muted-foreground">Tổng số sản phẩm: {sorted.length}</p>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>

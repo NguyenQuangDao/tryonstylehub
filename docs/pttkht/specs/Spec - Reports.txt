@@ -1,0 +1,44 @@
+Spec: Báo cáo (Reports)
+
+---
+Reports_Sales
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Báo cáo doanh thu |
+| Đầu vào | Đơn hàng; thanh toán; thời gian |
+| Xử lý | Tổng hợp; nhóm theo kênh/sku |
+| Đầu ra | Bảng/biểu đồ doanh thu |
+| Tích hợp ngoài | `actorAnalytics` |
+| Ràng buộc | Độ trễ dữ liệu; tính nhất quán |
+| Lỗi | `REPORT_QUERY_FAILED` |
+| KPI | Độ chính xác; thời gian tạo báo cáo |
+
+---
+Reports_TryOnUsage
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Báo cáo sử dụng Try-On |
+| Đầu vào | Sự kiện dùng AI/render/share |
+| Xử lý | Chuẩn hoá; loại bot; phân cụm |
+| Đầu ra | Chỉ số sử dụng, tỉ lệ thành công |
+| Tích hợp ngoài | `actorAnalytics` |
+| Ràng buộc | Ẩn danh; tuân thủ riêng tư |
+| Lỗi | `EVENT_PIPELINE_FAILED` |
+| KPI | Độ phủ sự kiện; độ trễ |
+
+---
+Reports_Funnel
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Phân tích chuyển đổi/funnel |
+| Đầu vào | Sự kiện phiên; bước kênh chuyển đổi |
+| Xử lý | Tính tỉ lệ drop; tìm điểm nghẽn |
+| Đầu ra | Bảng funnel; gợi ý tối ưu |
+| Tích hợp ngoài | `actorAnalytics` |
+| Ràng buộc | Đồng bộ thời gian; định nghĩa sự kiện |
+| Lỗi | `FUNNEL_INCONSISTENT` |
+| KPI | Tỉ lệ chuyển đổi tổng; cải thiện theo thử nghiệm |
+

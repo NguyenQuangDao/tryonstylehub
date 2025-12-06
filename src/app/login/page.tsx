@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   // Get redirect URL from query params
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const redirectUrl = searchParams?.get('redirect') || '/'
+  const redirectUrl = searchParams?.get('redirect') || '/blog'
 
   // Redirect if already logged in - but only after loading is complete
   React.useEffect(() => {

@@ -1,0 +1,34 @@
+Tên Use Case: Đăng ký
+
+Actors: Khách hàng; Người bán; Quản trị viên
+
+Mô tả: Người dùng tạo tài khoản mới bằng email/mật khẩu hoặc thông qua OAuth; yêu cầu xác minh email và chấp nhận điều khoản trước khi hoàn tất.
+
+Tiền điều kiện: Email chưa được sử dụng; nhà cung cấp OAuth khả dụng; trình duyệt cho phép cookie.
+
+Luồng sự kiện chính:
+1. Người dùng mở trang Đăng ký.
+2. Chọn phương thức đăng ký: email/mật khẩu hoặc OAuth.
+3. Nếu email/mật khẩu: nhập thông tin và chấp nhận điều khoản.
+4. Hệ thống kiểm tra định dạng, chính sách mật khẩu và chống spam.
+5. Hệ thống tạo tài khoản ở trạng thái chờ xác minh.
+6. Gửi email xác minh; người dùng nhấn liên kết.
+7. Tài khoản được kích hoạt; hệ thống tạo phiên/tokens.
+8. Người dùng thực hiện thiết lập hồ sơ ban đầu (tên, địa chỉ, tùy chọn).
+
+Luồng sự kiện phụ:
+A. Đăng ký qua OAuth:
+1. Chuyển hướng tới nhà cung cấp đăng nhập.
+2. Nhận mã ủy quyền, trao đổi token.
+3. Lấy thông tin cơ bản và tạo/ánh xạ tài khoản.
+
+B. Mời đăng ký qua liên kết mời (nếu áp dụng):
+1. Người dùng mở liên kết mời; hệ thống điền sẵn thông tin.
+2. Hoàn tất đăng ký theo quy trình chuẩn.
+
+C. Ngoại lệ/Lỗi:
+- Email đã tồn tại: gợi ý đăng nhập hoặc quên mật khẩu.
+- Mật khẩu không đạt chính sách: yêu cầu sửa.
+- Lỗi/timeout OAuth: thông báo và cho phép thử lại.
+- Liên kết xác minh hết hạn: gửi lại email xác minh.
+

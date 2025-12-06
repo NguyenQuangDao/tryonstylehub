@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+actor "Người bán" as actorSeller
+rectangle "Chức năng Người bán" {
+  usecase "Quản lý sản phẩm" as UC_AdminProduct
+  usecase "Quản lý đơn hàng" as UC_AdminOrder
+  usecase "Báo cáo" as UC_Reports
+}
+rectangle "Hệ thống bên ngoài" {
+  actor "Kho/Inventory" as actorStore
+  actor "Phân tích/Tracking" as actorAnalytics
+  actor "Lưu trữ hình ảnh/CDN" as actorCDN
+}
+actorSeller --> UC_AdminProduct
+actorSeller --> UC_AdminOrder
+actorSeller --> UC_Reports
+UC_AdminProduct ..> actorStore
+UC_AdminOrder ..> actorStore
+UC_AdminProduct ..> actorCDN
+UC_Reports ..> actorAnalytics
+@enduml

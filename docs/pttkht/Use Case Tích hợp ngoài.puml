@@ -1,0 +1,92 @@
+@startuml
+left to right direction
+rectangle "Hệ thống tích hợp" {
+  actor "Dịch vụ AI Try-On" as actorAI
+  actor "Cổng thanh toán" as actorPayment
+  actor "Kho/Inventory" as actorStore
+  actor "Lưu trữ hình ảnh/CDN" as actorCDN
+  actor "Phân tích/Tracking" as actorAnalytics
+}
+rectangle "Hệ thống TryOnStyleHub" {
+  usecase "Thử đồ ảo" as UC_TryOn
+  usecase "Gợi ý trang phục" as UC_Recommend
+  usecase "Đăng nhập/Đăng ký" as UC_Auth
+  usecase "Thanh toán" as UC_Checkout
+  usecase "Quản lý sản phẩm" as UC_AdminProduct
+  usecase "Quản lý đơn hàng" as UC_AdminOrder
+  usecase "Tải ảnh/Body scan" as UC_Upload
+  usecase "Báo cáo" as UC_Reports
+  rectangle "Thử đồ ảo - chi tiết" {
+    usecase "Tải ảnh đầu vào" as TryOn_Upload
+    usecase "Chọn trang phục" as TryOn_Select
+    usecase "Xử lý AI fitting" as TryOn_AI
+    usecase "Tạo ảnh/video kết quả" as TryOn_Render
+    usecase "Lưu/Chia sẻ" as TryOn_Save
+    TryOn_Upload --> TryOn_Select --> TryOn_AI --> TryOn_Render --> TryOn_Save
+  }
+  rectangle "Gợi ý trang phục - chi tiết" {
+    usecase "Hồ sơ sở thích" as Rec_Profile
+    usecase "Suy luận kích cỡ" as Rec_Size
+    usecase "Xếp hạng/gợi ý" as Rec_Rerank
+    usecase "Nguồn đề xuất cá nhân hóa" as Rec_Feed
+    Rec_Profile --> Rec_Size --> Rec_Rerank --> Rec_Feed
+  }
+  rectangle "Đăng nhập - chi tiết" {
+    usecase "Email/Mật khẩu" as Auth_EmailPwd
+    usecase "Quản lý token (JWT cookie)" as Auth_Token
+    usecase "Quản lý hồ sơ" as Auth_Profile
+    Auth_EmailPwd --> Auth_Token
+    Auth_Token --> Auth_Profile
+  }
+  rectangle "Thanh toán - chi tiết" {
+    usecase "Thêm/xóa giỏ hàng" as Cart_Add
+    usecase "Tạo phiên thanh toán" as Pay_Create
+    usecase "Xác nhận/ghi nhận thanh toán" as Pay_Capture
+    usecase "Xác nhận đơn hàng" as Order_Confirm
+    usecase "Xử lý webhook" as Webhook_Handle
+    Cart_Add --> Pay_Create --> Pay_Capture --> Order_Confirm --> Webhook_Handle
+  }
+  rectangle "Quản lý sản phẩm - chi tiết" {
+    usecase "Tạo/Sửa/Xóa sản phẩm" as Prod_CRUD
+    usecase "Đồng bộ tồn kho" as Prod_InventorySync
+    usecase "Tải ảnh sản phẩm" as Prod_ImageUpload
+    usecase "Giá/khuyến mãi" as Prod_Pricing
+    Prod_CRUD --> Prod_ImageUpload --> Prod_InventorySync --> Prod_Pricing
+  }
+  rectangle "Quản lý đơn hàng - chi tiết" {
+    usecase "Danh sách/chi tiết" as Order_List
+    usecase "Cập nhật trạng thái" as Order_Status
+    usecase "Hủy/trả hàng" as Order_Returns
+    usecase "Giao hàng/fulfillment" as Order_Fulfill
+    Order_List --> Order_Status --> Order_Fulfill --> Order_Returns
+  }
+  rectangle "Tải ảnh/Body scan - chi tiết" {
+    usecase "Tải ảnh" as Upload_Image
+    usecase "Quét cơ thể" as Upload_BodyScan
+    usecase "Xóa nền" as Upload_BGRemove
+    usecase "Lưu trữ CDN" as Upload_CDNStore
+    Upload_Image --> Upload_BGRemove --> Upload_CDNStore
+    Upload_BodyScan --> Upload_CDNStore
+  }
+  rectangle "Báo cáo - chi tiết" {
+    usecase "Doanh thu" as Reports_Sales
+    usecase "Sử dụng Try-On" as Reports_TryOnUsage
+    usecase "Chuyển đổi/funnel" as Reports_Funnel
+    Reports_Sales --> Reports_Funnel
+    Reports_TryOnUsage --> Reports_Funnel
+  }
+}
+TryOn_AI ..> actorAI
+Rec_Rerank ..> actorAI
+Pay_Create ..> actorPayment
+Pay_Capture ..> actorPayment
+Prod_InventorySync ..> actorStore
+Order_Fulfill ..> actorStore
+Upload_BGRemove ..> actorAI
+Upload_BodyScan ..> actorAI
+Upload_CDNStore ..> actorCDN
+TryOn_Render ..> actorCDN
+TryOn_Save ..> actorCDN
+Reports_Sales ..> actorAnalytics
+Reports_TryOnUsage ..> actorAnalytics
+@enduml

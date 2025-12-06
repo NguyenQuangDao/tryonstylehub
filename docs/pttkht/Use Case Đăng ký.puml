@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+actor "Khách hàng" as actorUser
+actor "Người bán" as actorSeller
+actor "Quản trị viên" as actorAdmin
+rectangle "Chức năng Đăng ký" {
+  usecase "Đăng ký bằng email/mật khẩu" as UC_RegisterPwd
+  usecase "Chấp nhận điều khoản" as UC_Terms
+  usecase "Thiết lập hồ sơ" as UC_ProfileSetup
+}
+rectangle "Hệ thống bên ngoài" {
+}
+actorUser --> UC_RegisterPwd
+actorUser --> UC_Terms
+actorUser --> UC_ProfileSetup
+actorSeller --> UC_RegisterPwd
+actorSeller --> UC_Terms
+actorAdmin --> UC_RegisterPwd
+@enduml

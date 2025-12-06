@@ -32,7 +32,7 @@ describe('AppSidebar', () => {
 
   it('opens Seller Panel sheet and shows tabs', async () => {
     render(<AppSidebar />)
-    const trigger = screen.getAllByRole('button', { name: /Seller Panel/i })[0]
+    const trigger = screen.getAllByRole('button', { name: /Bảng người bán|Seller Panel/i })[0]
     fireEvent.click(trigger)
     expect(await screen.findByText(/Đăng ký shop/i)).toBeInTheDocument()
     expect(screen.getByText(/Đăng sản phẩm/i)).toBeInTheDocument()
@@ -41,7 +41,7 @@ describe('AppSidebar', () => {
 
   it('validates register form inputs', async () => {
     render(<AppSidebar />)
-    const trigger = screen.getAllByRole('button', { name: /Seller Panel/i })[0]
+    const trigger = screen.getAllByRole('button', { name: /Bảng người bán|Seller Panel/i })[0]
     fireEvent.click(trigger)
     const submit = await screen.findByRole('button', { name: /Gửi đăng ký/i })
     fireEvent.click(submit)

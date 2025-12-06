@@ -1,0 +1,39 @@
+@startuml
+skinparam linetype ortho
+start
+:Đọc cookie token và verify;
+if (Hợp lệ?) then (Có)
+  :Parse JSON: packageId, paymentMethodId, preferredMethods;
+  if (Thiếu trường?) then (Có)
+    :400: Missing required fields;
+    end
+  else (Không)
+    :Tìm gói trong TOKEN_CONFIG;
+    if (Tồn tại gói?) then (Có)
+      :Log PURCHASE_INITIATED;
+      :processPayment(provider→Stripe,...);
+      if (Kết quả thanh toán) then (requiresRedirect)
+        :200: Trả paymentUrl để redirect;
+        end
+      elseif (Kết quả thanh toán) then (requiresClientConfirmation)
+        :200: Trả clientSecret để confirm;
+        end
+      elseif (Kết quả thanh toán) then (success ngay)
+        :Prisma transaction: tạo purchase + tăng tokenBalance;
+        :Log PURCHASE_COMPLETED;
+        :200: Trả newBalance, purchase;
+        end
+      else (failed)
+        :402: Payment failed;
+        end
+      endif
+    else (Không)
+      :404: Package not found;
+      end
+    endif
+  endif
+else (Không)
+  :401: Unauthorized;
+  end
+endif
+@enduml

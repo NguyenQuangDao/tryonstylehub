@@ -13,8 +13,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export default async function ShopDetailPage({ params }: { params: { slug: string } }) {
-  const slug = params?.slug ?? ''
+export default async function ShopDetailPage(props: { params: Promise<{ slug: string }> }) {
+  const { slug } = await props.params
   if (!slug) return notFound()
   const shop = await prisma.shop.findUnique({
     where: { slug },

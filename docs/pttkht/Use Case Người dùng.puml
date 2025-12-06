@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+actor "Khách hàng" as actorUser
+rectangle "Chức năng Người dùng" {
+  usecase "Duyệt & Tìm kiếm" as UC_Browse
+  usecase "Thử đồ ảo" as UC_TryOn
+  usecase "Tải ảnh/Body scan" as UC_Upload
+  usecase "Gợi ý trang phục" as UC_Recommend
+  usecase "Yêu thích" as UC_Wishlist
+  usecase "Giỏ hàng" as UC_Cart
+  usecase "Thanh toán" as UC_Checkout
+  usecase "Theo dõi đơn" as UC_Track
+  usecase "Đánh giá/Bình luận" as UC_Review
+  usecase "Quản lý tài khoản" as UC_Account
+  usecase "Đăng nhập/Đăng ký" as UC_Auth
+}
+rectangle "Hệ thống bên ngoài" {
+  actor "Dịch vụ AI Try-On" as actorAI
+  actor "Cổng thanh toán" as actorPayment
+  actor "Lưu trữ hình ảnh/CDN" as actorCDN
+  actor "Phân tích/Tracking" as actorAnalytics
+}
+actorUser --> UC_Browse
+actorUser --> UC_TryOn
+actorUser --> UC_Upload
+actorUser --> UC_Recommend
+actorUser --> UC_Wishlist
+actorUser --> UC_Cart
+actorUser --> UC_Checkout
+actorUser --> UC_Track
+actorUser --> UC_Review
+actorUser --> UC_Account
+actorUser --> UC_Auth
+UC_TryOn ..> actorAI
+UC_Recommend ..> actorAI
+UC_Checkout ..> actorPayment
+UC_Upload ..> actorCDN
+UC_TryOn ..> actorCDN
+UC_Track ..> actorAnalytics
+UC_Review ..> actorAnalytics
+@enduml

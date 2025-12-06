@@ -1,28 +1,34 @@
-import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/rbac';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const admin = await requireAdmin(req as any);
+    if (!admin.ok) return admin.response!;
 
     // Get total users and sellers
-    const totalUsers = await prisma.user.count();
-    const totalProducts = await prisma.product.count();
-    const totalSellers = 0;
-    const pendingApplications = 0;
-    const activeProducts = totalProducts;
+    const [totalUsers, totalProducts, totalSellers, pendingApplications, activeProducts] = await Promise.all([
+      prisma.user.count(),
+      prisma.product.count(),
+      prisma.user.count({ where: { role: 'SELLER' } }),
+      prisma.shop.count({ where: { status: 'PENDING' } }),
+      prisma.product.count({ where: { status: 'PUBLISHED' } }),
+    ]);
 
     // Get total try-ons and views
-    const totalTryOns = 0;
+    let totalTryOns = 0;
+    try {
+      const logs = await (prisma as any).costTracking.findMany({
+        where: {
+          service: 'payment',
+          operation: 'TOKEN_DEDUCTED',
+          details: { contains: 'Phối đồ ảo' },
+        },
+        select: { id: true },
+      });
+      totalTryOns = logs.length;
+    } catch {}
     const totalViews = 0;
 
     return NextResponse.json({

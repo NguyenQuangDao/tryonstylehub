@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 interface User {
   id: number;
@@ -28,8 +28,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expiry, setExpiry] = useState<number | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const expiryTimeout = useRef<number | null>(null);
 
   // Fetch current user on mount ONLY ONCE
   useEffect(() => {
@@ -53,10 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
+        if (typeof data.exp === 'number') {
+          setExpiry(data.exp);
+        }
       } else {
         // Only set user to null if we get a clear 401/403, not on network errors
         if (response.status === 401 || response.status === 403) {
           setUser(null);
+          setExpiry(null);
         }
       }
     } catch (error) {
@@ -85,6 +91,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, [pathname]);
 
+  useEffect(() => {
+    const isAuthPage = pathname === '/register' || pathname === '/login';
+    if (isAuthPage) return;
+    if (!user || !expiry) return;
+    if (expiryTimeout.current) {
+      clearTimeout(expiryTimeout.current);
+      expiryTimeout.current = null;
+    }
+    const ms = expiry * 1000 - Date.now();
+    if (ms <= 0) {
+      const redirect = pathname && pathname !== '/' ? `?redirect=${encodeURIComponent(pathname)}` : '';
+      router.replace(`/login${redirect}`);
+      return;
+    }
+    const id = setTimeout(() => {
+      const redirect = pathname && pathname !== '/' ? `?redirect=${encodeURIComponent(pathname)}` : '';
+      setUser(null);
+      router.replace(`/login${redirect}`);
+    }, ms);
+    expiryTimeout.current = id as unknown as number;
+    return () => {
+      if (expiryTimeout.current) {
+        clearTimeout(expiryTimeout.current);
+        expiryTimeout.current = null;
+      }
+    };
+  }, [expiry, user, pathname, router]);
+
   const login = async (email: string, password: string) => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
@@ -99,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
+    await fetchUser();
   };
 
   const register = async (email: string, name: string, password: string) => {
@@ -115,11 +150,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
+    await fetchUser();
   };
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
+    setExpiry(null);
+    if (expiryTimeout.current) {
+      clearTimeout(expiryTimeout.current);
+      expiryTimeout.current = null;
+    }
     router.push('/login');
   };
 

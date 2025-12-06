@@ -16,15 +16,14 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'SHOPPER' | 'SELLER' | 'ADMIN';
-  isActive: boolean;
+  role: 'USER' | 'SELLER' | 'ADMIN';
   tokenBalance: number;
   createdAt: string;
   updatedAt: string;
   shop?: {
     id: string;
     name: string;
-    isActive: boolean;
+    status: 'PENDING' | 'ACTIVE' | 'SUSPENDED';
   };
 }
 
@@ -62,30 +61,6 @@ export default function AdminUsersPage() {
     }
   };
 
-  const updateUserStatus = async (userId: string, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isActive }),
-      });
-
-      if (response.ok) {
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, isActive } : user
-        ));
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Có lỗi xảy ra');
-      }
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      alert('Có lỗi xảy ra khi cập nhật trạng thái người dùng');
-    }
-  };
-
   const updateUserRole = async (userId: string, role: string) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -98,7 +73,7 @@ export default function AdminUsersPage() {
 
       if (response.ok) {
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, role: role as 'SHOPPER' | 'SELLER' | 'ADMIN' } : user
+          user.id === userId ? { ...user, role: role as 'USER' | 'SELLER' | 'ADMIN' } : user
         ));
       } else {
         const data = await response.json();
@@ -123,7 +98,7 @@ export default function AdminUsersPage() {
         return <Badge variant="destructive">Quản trị</Badge>;
       case 'SELLER':
         return <Badge variant="default">Người bán</Badge>;
-      case 'SHOPPER':
+      case 'USER':
         return <Badge variant="outline">Người mua</Badge>;
       default:
         return <Badge>{role}</Badge>;
@@ -194,7 +169,6 @@ export default function AdminUsersPage() {
                   <TableRow>
                     <TableHead>Người dùng</TableHead>
                     <TableHead>Vai trò</TableHead>
-                    <TableHead>Trạng thái</TableHead>
                     <TableHead>Token</TableHead>
                     <TableHead>Ngày tạo</TableHead>
                     <TableHead>Thao tác</TableHead>
@@ -218,14 +192,6 @@ export default function AdminUsersPage() {
                         {getRoleBadge(u.role)}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="rounded-sm px-1.5 py-0 text-xs font-normal"
-                        >
-                          {u.isActive ? 'Hoạt động' : 'Bị khóa'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
                         <span className="font-medium text-sm">{u.tokenBalance}</span>
                       </TableCell>
                       <TableCell>
@@ -243,12 +209,6 @@ export default function AdminUsersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-                            <DropdownMenuItem
-                              disabled={String(u.id) === String(user?.id)}
-                              onClick={() => updateUserStatus(u.id, !u.isActive)}
-                            >
-                              {u.isActive ? 'Khóa người dùng' : 'Mở khóa người dùng'}
-                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => updateUserRole(u.id, 'ADMIN')} disabled={String(u.id) === String(user?.id)}>
                               Đặt vai trò Admin
@@ -256,7 +216,7 @@ export default function AdminUsersPage() {
                             <DropdownMenuItem onClick={() => updateUserRole(u.id, 'SELLER')} disabled={String(u.id) === String(user?.id)}>
                               Đặt vai trò Người bán
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateUserRole(u.id, 'SHOPPER')} disabled={String(u.id) === String(user?.id)}>
+                            <DropdownMenuItem onClick={() => updateUserRole(u.id, 'USER')} disabled={String(u.id) === String(user?.id)}>
                               Đặt vai trò Người mua
                             </DropdownMenuItem>
                           </DropdownMenuContent>

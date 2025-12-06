@@ -94,12 +94,12 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="py-2">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold">Bảng điều khiển quản trị</h1>
-            <p className="text-gray-600">Quản lý người dùng, người bán và nội dung</p>
+            <h1 className="text-3xl md:text-4xl font-bold modern-gradient-text">Bảng điều khiển quản trị</h1>
+            <p className="text-gray-600 dark:text-gray-300">Quản lý người dùng, người bán và nội dung</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => router.push('/admin/users')}>
@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Recent Applications */}
-      <Card>
+      <Card className="rounded-3xl border-0 shadow-md">
         <CardHeader>
           <CardTitle>Đơn đăng ký gần đây</CardTitle>
         </CardHeader>

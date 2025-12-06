@@ -1,0 +1,15 @@
+@startuml
+skinparam linetype ortho
+start
+:Người dùng chọn productId, biến thể, size;
+:Kiểm tra hợp lệ danh mục/giá và tồn kho;
+if (Item khả dụng?) then (Có)
+  :Ánh xạ size theo brand;
+  :Sinh cấu hình item đã chọn;
+  :200: Trả về danh sách lựa chọn;
+  end
+else (Không)
+  :409: ITEM_NOT_FOUND / SIZE_UNAVAILABLE;
+  end
+endif
+@enduml

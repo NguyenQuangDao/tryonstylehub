@@ -1,0 +1,16 @@
+@startuml
+skinparam linetype ortho
+actor User
+actor Stripe as PSP
+rectangle TryOnStyleHub {
+  usecase "Mua token" as UC_Tokens_Purchase
+}
+User --> UC_Tokens_Purchase
+UC_Tokens_Purchase --> PSP
+note right of UC_Tokens_Purchase
+Trigger: Chọn gói token, phương thức thanh toán
+Post: 200 trả paymentUrl/clientSecret hoặc cập nhật số dư ngay
+Exceptions: 401 Unauthorized; 404 Package not found; 402 Payment failed
+end note
+@enduml
+

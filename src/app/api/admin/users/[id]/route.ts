@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth-config';
 import { z } from 'zod';
+import { requireAdmin } from '@/lib/rbac';
 
 const updateUserSchema = z.object({
   role: z.enum(['USER', 'SELLER', 'ADMIN']).optional(),
@@ -11,14 +10,12 @@ const updateUserSchema = z.object({
 export async function PATCH(request: NextRequest, context: unknown) {
   try {
     const { params } = context as { params: { id: string } };
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const admin = await requireAdmin(request);
+    if (!admin.ok || !admin.user) return admin.response!;
 
     const userId = params.id;
 
-    if (String(userId) === session.user.id) {
+    if (String(userId) === String(admin.user.id)) {
       return NextResponse.json({ error: 'Cannot update your own account' }, { status: 403 });
     }
 

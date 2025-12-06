@@ -1,0 +1,23 @@
+@startuml
+title Virtual Models - Create
+actor User
+boundary WebApp
+control Backend
+entity S3
+database DB
+
+WebApp -> Backend: POST /api/virtual-models {data, images}
+Backend -> Backend: Validate input + quyền
+alt Hợp lệ
+  Backend -> S3: Upload ảnh avatar/source
+  S3 --> Backend: URLs
+  Backend -> DB: Tạo bản ghi model
+  DB --> Backend: Model
+  Backend --> WebApp: 201 {model}
+  WebApp --> User: Tạo thành công
+else Không hợp lệ/Thiếu quyền
+  Backend --> WebApp: 400/401
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

@@ -1,15 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { CatalogProductCard } from "@/components/products/CatalogProductCard"
 import { Accordion, AccordionContent, AccordionItemRoot, AccordionTrigger } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Slider } from "@/components/ui/slider"
-import { CatalogProductCard } from "@/components/products/CatalogProductCard"
-import { Grid3x3, List, Filter } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
+import { Filter, Grid3x3, List } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 
 type Product = {
   id: number
@@ -20,9 +24,11 @@ type Product = {
   styleTags: string[]
   shop: { name: string; url: string }
   brand?: string
+  description?: string
 }
 
 export default function ProductsPage() {
+  const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -30,6 +36,10 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">("newest")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [visibleCount, setVisibleCount] = useState(24)
+  const [quickViewOpen, setQuickViewOpen] = useState(false)
+  const [quickProduct, setQuickProduct] = useState<Product | null>(null)
+  const [selectedSize, setSelectedSize] = useState<string>("")
+  const [sizeEditorValue, setSizeEditorValue] = useState("")
 
   useEffect(() => {
     const run = async () => {
@@ -48,8 +58,9 @@ export default function ProductsPage() {
                   price: Number(p.basePrice) || 0,
                   imageUrl,
                   styleTags: Array.isArray(p.styleTags) ? p.styleTags : [],
-                  shop: { name: p?.shop?.name || "", url: "" },
+                  shop: { name: p?.shop?.name || "", url: p?.shop?.slug ? `/shops/${p.shop.slug}` : "" },
                   brand: p.brand,
+                  description: typeof p?.description === "string" ? p.description : "",
                 } as Product
               })
             : []
@@ -107,8 +118,45 @@ export default function ProductsPage() {
     setSelectedCategories((prev) => (checked ? [...prev, c] : prev.filter((x) => x !== c)))
   }
 
+  const getStoredSizesKey = (id: number) => `productSizes:${id}`
+  const loadSizes = (id: number, fallbackTags: string[] = []) => {
+    try {
+      const raw = localStorage.getItem(getStoredSizesKey(id))
+      if (raw) {
+        const arr = JSON.parse(raw)
+        if (Array.isArray(arr)) return arr as string[]
+      }
+    } catch {}
+    const defaults = fallbackTags.filter((t) => /^(xxs|xs|s|m|l|xl|xxl)$/i.test(t)).map((t) => t.toUpperCase())
+    return defaults.length ? defaults : ["S", "M", "L", "XL"]
+  }
+  const saveSizes = (id: number, sizes: string[]) => {
+    try {
+      localStorage.setItem(getStoredSizesKey(id), JSON.stringify(sizes))
+    } catch {}
+  }
+
+  const categoryFromType = (type: string) => {
+    const t = (type || "").toLowerCase()
+    if (t.includes("dress") || t.includes("đầm")) return "dress"
+    if (t.includes("coat") || t.includes("jacket") || t.includes("outer")) return "outerwear"
+    if (t.includes("pant") || t.includes("quần") || t.includes("skirt") || t.includes("váy") || t.includes("bottom")) return "bottoms"
+    if (t.includes("accessor") || t.includes("phụ kiện")) return "accessories"
+    return "tops"
+  }
+
+  const openQuickView = (id: number) => {
+    const p = products.find((x) => x.id === id) || null
+    setQuickProduct(p)
+    if (p) {
+      const sizes = loadSizes(p.id, p.styleTags)
+      setSelectedSize(sizes[0] || "")
+    }
+    setQuickViewOpen(true)
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6">
+    <div className="w-full mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="text-xs text-muted-foreground">Trang chủ / Sản phẩm</div>
         <div className="flex items-center gap-2">
@@ -263,7 +311,7 @@ export default function ProductsPage() {
 
         <main>
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="rounded-lg border bg-card overflow-hidden">
                   <div className="aspect-square bg-muted" />
@@ -276,7 +324,7 @@ export default function ProductsPage() {
           ) : visible.length === 0 ? (
             <p className="text-sm text-muted-foreground">Không tìm thấy sản phẩm</p>
           ) : (
-            <div className={viewMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "space-y-4"}>
+            <div className={viewMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4" : "space-y-4"}>
               {visible.map((p) => (
                 <CatalogProductCard
                   key={p.id}
@@ -286,6 +334,7 @@ export default function ProductsPage() {
                   category={p.type}
                   price={p.price}
                   imageUrl={p.imageUrl}
+                  onQuickView={openQuickView}
                 />
               ))}
             </div>
@@ -302,6 +351,97 @@ export default function ProductsPage() {
       </div>
 
       <Separator className="mt-6" />
+
+      <Dialog open={quickViewOpen} onOpenChange={setQuickViewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết sản phẩm</DialogTitle>
+          </DialogHeader>
+          {quickProduct && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={quickProduct.imageUrl || "/placeholder.png"}
+                  alt={quickProduct.name}
+                  className="w-full aspect-[3/4] object-cover rounded-lg"
+                />
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm px-2 py-1 bg-muted rounded-md">{quickProduct.type}</span>
+                  <Badge className="text-sm">${quickProduct.price.toFixed(2)}</Badge>
+                </div>
+                <h2 className="text-lg font-semibold">{quickProduct.name}</h2>
+                {quickProduct.description ? (
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{quickProduct.description}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Chưa có mô tả chi tiết</p>
+                )}
+
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold">Kích cỡ khả dụng</div>
+                  <div className="flex flex-wrap gap-2">
+                    {(loadSizes(quickProduct.id, quickProduct.styleTags)).map((size) => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? "default" : "outline"}
+                        size="sm"
+                        className="h-8"
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {(user?.role === "ADMIN" || user?.role === "SELLER") && (
+                    <div className="mt-3 space-y-2">
+                      <div className="text-xs text-muted-foreground">Quản trị kích cỡ (chỉ admin/seller)</div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={sizeEditorValue}
+                          onChange={(e) => setSizeEditorValue(e.target.value.toUpperCase())}
+                          placeholder="VD: XS, S, M, L, XL"
+                          className="h-8 rounded-md border bg-background px-2 text-xs flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          className="h-8"
+                          onClick={() => {
+                            const current = loadSizes(quickProduct.id, quickProduct.styleTags)
+                            const next = Array.from(new Set([...current, ...(sizeEditorValue.split(/[,\s]+/).filter(Boolean))]))
+                            saveSizes(quickProduct.id, next)
+                            setSizeEditorValue("")
+                          }}
+                        >
+                          Lưu
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  {quickProduct.shop.url ? (
+                    <Link href={quickProduct.shop.url} className="flex-1">
+                      <Button className="w-full" variant="secondary">Đến cửa hàng</Button>
+                    </Link>
+                  ) : (
+                    <Button className="w-full" variant="secondary" disabled>
+                      Cửa hàng chưa khả dụng
+                    </Button>
+                  )}
+                  <Link href={`/?garmentImage=${encodeURIComponent(quickProduct.imageUrl || "")}&category=${categoryFromType(quickProduct.type)}`}>
+                    <Button variant="outline" className="min-w-[140px]">Thử đồ online</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,0 +1,15 @@
+@startuml
+title Try-On Lưu vào Gallery
+actor User
+boundary WebApp
+control Backend
+database DB
+
+WebApp -> Backend: POST /api/tryon/save {resultUrls}
+Backend -> Backend: Ghép entries
+Backend -> DB: putJSON gallery
+DB --> Backend: Ok
+Backend --> WebApp: 200 Saved
+WebApp --> User: Đã lưu vào bộ sưu tập
+@enduml
+

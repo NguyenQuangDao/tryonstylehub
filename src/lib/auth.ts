@@ -7,6 +7,10 @@ function getJwtSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+function getJwtExpires(): string {
+  return '7d';
+}
+
 export interface JWTPayload {
   userId: string;
   email: string;
@@ -36,7 +40,7 @@ export async function createToken(payload: JWTPayload): Promise<string> {
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(getJwtExpires())
     .sign(getJwtSecret());
   return token;
 }

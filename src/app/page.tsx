@@ -12,7 +12,7 @@ import { ExternalLink, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { TokenDisplay, InsufficientTokensModal } from '@/components/tokens/TokenComponents'
+import { InsufficientTokensModal } from '@/components/tokens/TokenComponents'
 import { useAuth } from '@/lib/auth-context'
 import { TOKEN_CONFIG } from '@/config/tokens'
 
@@ -22,6 +22,7 @@ export default function HomePage() {
   const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const personImageUpload = useImageUpload();
   const garmentImageUpload = useImageUpload();
+  const [prefilledGarmentUrl, setPrefilledGarmentUrl] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('tops');
   const [quality, setQuality] = useState<'standard' | 'high'>('standard')
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +47,7 @@ export default function HomePage() {
       return;
     }
 
-    if (!garmentImageUpload.imagePreview) {
+    if (!garmentImageUpload.imagePreview && !prefilledGarmentUrl) {
       setErrorMessage('Vui lòng chọn ảnh trang phục');
       return;
     }
@@ -66,6 +67,8 @@ export default function HomePage() {
 
       if (garmentImageUpload.imageFile) {
         formData.append('garmentImage', garmentImageUpload.imageFile);
+      } else if (prefilledGarmentUrl) {
+        formData.append('garmentImageUrl', prefilledGarmentUrl);
       }
       formData.append('quality', quality)
 
@@ -141,10 +144,20 @@ export default function HomePage() {
       const category = url.searchParams.get('category');
       if (category) setSelectedCategory(category);
       if (garmentImage) {
-        garmentImageUpload.loadExampleImage(garmentImage);
+        setPrefilledGarmentUrl(garmentImage);
+        garmentImageUpload.loadExampleImage(`/api/image-proxy?url=${encodeURIComponent(garmentImage)}`);
       }
     } catch {}
   }, []);
+
+  const categoryFromFeatured = (p: { styleTags: string[] }) => {
+    const tags = (p.styleTags || []).map(t => t.toLowerCase())
+    if (tags.some(t => t.includes('dress') || t.includes('đầm'))) return 'dress'
+    if (tags.some(t => t.includes('outer') || t.includes('jacket') || t.includes('coat'))) return 'outerwear'
+    if (tags.some(t => t.includes('bottom') || t.includes('quần') || t.includes('skirt') || t.includes('váy'))) return 'bottoms'
+    if (tags.some(t => t.includes('accessor') || t.includes('phụ kiện'))) return 'accessories'
+    return 'tops'
+  }
 
   return (
     <>
@@ -253,6 +266,11 @@ export default function HomePage() {
                         <ExternalLink className="h-4 w-4" />
                         Mua ngay
                       </a>
+                    </Button>
+                    <Button asChild variant="secondary" aria-label={`Thử đồ với ${product.name}`}>
+                      <Link href={`/?garmentImage=${encodeURIComponent(product.imageUrl)}&category=${categoryFromFeatured(product)}`}>
+                        Thử đồ online
+                      </Link>
                     </Button>
                   </div>
                 </div>
