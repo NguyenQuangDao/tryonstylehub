@@ -1,13 +1,14 @@
 export const formatVND = (amount: number) => {
   try {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
+    const n = Math.round(Number(amount) || 0)
+    const withCommas = new Intl.NumberFormat('en-US', {
       maximumFractionDigits: 0,
       minimumFractionDigits: 0,
-    }).format(Math.round(Number(amount) || 0))
+      useGrouping: true,
+    }).format(n)
+    return `${withCommas} đ`
   } catch {
-    return `${Math.round(Number(amount) || 0)} VND`
+    const n = Math.round(Number(amount) || 0)
+    return `${n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ`
   }
 }
-

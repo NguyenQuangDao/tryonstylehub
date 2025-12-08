@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Slider } from "@/components/ui/slider"
 import { Filter } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 
 type Product = {
@@ -280,7 +281,7 @@ export default function ProductsPage() {
 
         <main>
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="rounded-lg border bg-card overflow-hidden">
                   <div className="aspect-square bg-muted" />
@@ -293,17 +294,32 @@ export default function ProductsPage() {
           ) : visible.length === 0 ? (
             <p className="text-sm text-muted-foreground">Không tìm thấy sản phẩm</p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
               {visible.map((p) => (
-                <CatalogProductCard
-                  key={p.id}
-                  id={p.id}
-                  title={p.name}
-                  brand={p.brand}
-                  category={p.type}
-                  price={p.price}
-                  imageUrl={p.imageUrl}
-                />
+                <div key={p.id} className="space-y-2">
+                  <CatalogProductCard
+                    id={p.id}
+                    title={p.name}
+                    brand={p.brand}
+                    category={p.type}
+                    price={p.price}
+                    imageUrl={p.imageUrl}
+                  />
+                  <div className="flex gap-2">
+                    {p?.shop?.url ? (
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link href={p.shop.url}>Truy cập shop</Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" className="w-full" disabled>
+                        Truy cập shop
+                      </Button>
+                    )}
+                    <Button asChild size="sm" className="w-full">
+                      <Link href={`/?garmentImage=${encodeURIComponent(p.imageUrl)}&category=auto`}>Thử đồ ảo</Link>
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

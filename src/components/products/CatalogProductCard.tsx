@@ -2,6 +2,7 @@
 
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { cn } from "@/lib/utils"
+import { formatVND } from "@/utils/currency"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -50,7 +51,7 @@ export function CatalogProductCard(props: CatalogProductCardProps) {
           {brand || category || ""}
         </div>
         <div className="text-sm font-medium leading-tight line-clamp-1 mt-1">{title}</div>
-        <div className="text-sm font-medium leading-tight line-clamp-1 mt-1">{price}</div>
+        <div className="text-sm font-medium leading-tight line-clamp-1 mt-1">{formatVND(price ?? 0)}</div>
       </div>
     </Link>
   )

@@ -6,9 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { getPlaceholderImageUrl } from "@/lib/placeholder-image";
 import { cn } from "@/lib/utils";
-import { Download, Grid3X3, Heart, List, Share2, Trash2 } from "lucide-react";
+import { Download, Grid3X3, Heart, Share2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import ZoomableImageModal from "./ZoomableImageModal";
 
 type GalleryItem = {
   url: string;
@@ -46,6 +47,8 @@ export default function ProfileGallery({ items, loading = false, onRefresh }: Pr
   const PAGE_SIZE = 12;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [likes, setLikes] = useState<Record<string, number>>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalIndex, setModalIndex] = useState(0);
 
   useEffect(() => {
     try {
@@ -142,6 +145,8 @@ export default function ProfileGallery({ items, loading = false, onRefresh }: Pr
 
   const paged = filtered.slice(0, page * PAGE_SIZE);
 
+  const imageUrls = useMemo(() => paged.map(it => it.url), [paged]);
+
   return (
     <div>
       <Tabs value={activeTab} onValueChange={(v: string) => setActiveTab(v as "time" | "style" | "category")}>
@@ -162,22 +167,42 @@ export default function ProfileGallery({ items, loading = false, onRefresh }: Pr
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
-            <Button variant={view === "list" ? "default" : "ghost"} size="sm" onClick={() => setView("list")}
+            {/* <Button variant={view === "list" ? "default" : "ghost"} size="sm" onClick={() => setView("list")}
               className={cn("h-9", view === "list" ? "" : "opacity-70")}
             >
               <List className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </div>
         </div>
-          <GalleryView items={paged} view={view} loading={loading} onLike={handleLike} onDelete={handleDelete} onDownload={handleDownload} onShare={handleShare} />
+          <GalleryView
+            items={paged}
+            view={view}
+            loading={loading}
+            onLike={handleLike}
+            onDelete={handleDelete}
+            onDownload={handleDownload}
+            onShare={handleShare}
+            onOpenImage={(url: string) => {
+              const idx = imageUrls.findIndex(u => u === url);
+              setModalIndex(idx >= 0 ? idx : 0);
+              setIsModalOpen(true);
+            }}
+          />
       </Tabs>
 
       <div ref={sentinelRef} className="h-6" />
+      <ZoomableImageModal
+        images={imageUrls}
+        isOpen={isModalOpen}
+        initialIndex={modalIndex}
+        onClose={() => setIsModalOpen(false)}
+        onIndexChange={(i) => setModalIndex(i)}
+      />
     </div>
   );
 }
 
-function GalleryView({ items, view, loading, onLike, onDelete, onDownload, onShare, groupBy }:
+function GalleryView({ items, view, loading, onLike, onDelete, onDownload, onShare, onOpenImage, groupBy }:
   {
     items: (GalleryItem & { style?: string; garment?: string; likeCount?: number })[];
     view: "grid" | "list";
@@ -186,6 +211,7 @@ function GalleryView({ items, view, loading, onLike, onDelete, onDownload, onSha
     onDelete: (key: string) => void | Promise<void>;
     onDownload: (item: GalleryItem) => void;
     onShare: (item: GalleryItem) => void | Promise<void>;
+    onOpenImage: (url: string) => void;
     groupBy?: "style" | "garment";
   }
 ) {
@@ -216,7 +242,10 @@ function GalleryView({ items, view, loading, onLike, onDelete, onDownload, onSha
 
   const renderItem = (it: GalleryItem & { likeCount?: number }) => (
     <Card key={it.key} className="relative p-3 border rounded-xl bg-white dark:bg-gray-800 overflow-hidden group">
-      <div className={cn("relative rounded-lg overflow-hidden", view === "grid" ? "aspect-square" : "h-48")}> 
+      <div
+        className={cn("relative rounded-lg overflow-hidden", view === "grid" ? "aspect-square" : "h-48")}
+        onClick={() => onOpenImage(it.url)}
+      > 
         <Image
           src={it.url}
           alt="Ảnh đã tạo"

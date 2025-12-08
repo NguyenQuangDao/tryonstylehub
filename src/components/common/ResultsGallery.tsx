@@ -3,9 +3,10 @@
 import { cn } from '@/app/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Save, X, Zap } from 'lucide-react';
+import { X, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
+import ZoomableImageModal from './ZoomableImageModal';
 
 interface ResultsGalleryProps {
   results: string[];
@@ -260,153 +261,14 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
         </div>
       </div>
 
-      {/* Full-screen Results Modal */}
-      <AnimatePresence>
-        {isResultsModalOpen && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 w-screen h-screen bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh'
-            }}
-            onClick={() => setIsResultsModalOpen(false)}
-          >
-            <div className="relative w-full h-full flex items-center justify-center">
-              {/* Close button */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsResultsModalOpen(false)}
-                className="absolute top-4 right-4 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
-              >
-                <X className="h-6 w-6" />
-              </motion.button>
-
-              {/* Image counter */}
-              <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm shadow-lg">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{currentResultIndex + 1} / {results.length}</span>
-                  {results.length > 1 && (
-                    <span className="text-xs opacity-90">• Dùng phím ← →</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Previous button */}
-              {currentResultIndex > 0 && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateResult('prev');
-                  }}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </motion.button>
-              )}
-
-              {/* Next button */}
-              {currentResultIndex < results.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateResult('next');
-                  }}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 backdrop-blur-sm transition-colors cursor-pointer"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </motion.button>
-              )}
-
-              {/* Main image */}
-              <motion.div
-                key={currentResultIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="w-full h-full flex items-center justify-center p-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Image
-                  src={results[currentResultIndex]}
-                  alt={`Result ${currentResultIndex + 1}`}
-                  className="w-auto h-auto max-w-[min(400px,calc(100vw-2rem))] max-h-[min(533px,calc(100vh-2rem))] object-contain"
-                  width={1200}
-                  height={1600}
-                  unoptimized
-                />
-              </motion.div>
-
-              {/* Download button */}
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                href={results[currentResultIndex]}
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-                className="absolute bottom-4 right-4 z-10 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 backdrop-blur-sm transition-all shadow-lg cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-                style={{ marginRight: '1rem' }}
-              >
-                <Zap className="h-4 w-4" />
-                Tải Xuống
-              </motion.a>
-
-              {/* Save button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveResult(results[currentResultIndex]);
-                }}
-                disabled={saving}
-                className="absolute bottom-4 right-32 z-10 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 backdrop-blur-sm transition-all shadow-lg cursor-pointer disabled:cursor-not-allowed"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? 'Đang lưu...' : 'Lưu'}
-              </motion.button>
-
-              {/* Dots indicator for multiple results */}
-              {results.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
-                  {results.map((_, idx) => (
-                    <motion.button
-                      key={idx}
-                      whileHover={{ scale: 1.2 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentResultIndex(idx);
-                      }}
-                      className={`w-2 h-2 rounded-full transition-all cursor-pointer ${idx === currentResultIndex ? 'bg-white scale-125' : 'bg-white/50'
-                        }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ZoomableImageModal
+        images={results}
+        isOpen={isResultsModalOpen}
+        initialIndex={currentResultIndex}
+        onClose={() => setIsResultsModalOpen(false)}
+        onIndexChange={(i) => setCurrentResultIndex(i)}
+        onSave={(url) => handleSaveResult(url)}
+      />
     </>
   );
 };

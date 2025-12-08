@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholder-image"
 import { formatVND } from "@/utils/currency"
 import Image from "next/image"
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 type ProductItem = {
@@ -16,6 +17,21 @@ type ProductItem = {
 }
 
 export function ShopProducts({ products }: { products: ProductItem[] }) {
+  const getCategoryForTryOn = (cat: string = "") => {
+    const t = cat.toLowerCase()
+    if (t.includes("dress") || t.includes("đầm")) return "dress"
+    if (t.includes("coat") || t.includes("jacket") || t.includes("outer")) return "outerwear"
+    if (
+      t.includes("pant") ||
+      t.includes("quần") ||
+      t.includes("skirt") ||
+      t.includes("váy") ||
+      t.includes("bottom")
+    )
+      return "bottoms"
+    if (t.includes("accessor") || t.includes("phụ kiện")) return "accessories"
+    return "tops"
+  }
   const categories = useMemo(() => {
     const set = new Set<string>()
     products.forEach((p) => {
@@ -60,7 +76,14 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 gap-4 flex-1">
         {filtered.map((p) => (
-          <Card key={p.id} className="overflow-hidden">
+          <Link
+            key={p.id}
+            href={`/?garmentImage=${encodeURIComponent(p.imageUrl || "")}&category=${getCategoryForTryOn(
+              p.category || ""
+            )}`}
+            className="block"
+          >
+          <Card className="overflow-hidden">
             <div className="aspect-square bg-muted relative">
               <Image
                 src={p.imageUrl || PLACEHOLDER_IMAGE}
@@ -85,6 +108,7 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
               </div>
             </CardContent>
           </Card>
+          </Link>
         ))}
       </div>
     </div>

@@ -82,15 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-  useEffect(() => {
-    const isAuthPage = pathname === '/register' || pathname === '/login';
-    if (isAuthPage) return;
-    const id = setInterval(() => {
-      fetchUser();
-    }, 60000);
-    return () => clearInterval(id);
-  }, [pathname]);
-
+  
   useEffect(() => {
     const isAuthPage = pathname === '/register' || pathname === '/login';
     if (isAuthPage) return;

@@ -70,17 +70,17 @@ export default function OptimizedHomePage({
   const { user } = useAuth()
   // Example images
   const personExamples = [
-    'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/936114/pexels-photo-936114.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/1055686/pexels-photo-1055686.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
+    '/image/personExamples/mau1.png',
+    '/image/personExamples/mau2.png',
+    '/image/personExamples/mau3.png',
+    '/image/personExamples/mau4.png'
   ];
 
   const garmentExamples = [
-    'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/325876/pexels-photo-325876.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/7679721/pexels-photo-7679721.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1',
-    'https://images.pexels.com/photos/7679723/pexels-photo-7679723.jpeg?auto=compress&cs=tinysrgb&w=800&h=1200&dpr=1'
+    '/image/garmentExamples/do1.png',
+    '/image/garmentExamples/do2.png',
+    '/image/garmentExamples/do3.png',
+    '/image/garmentExamples/do4.png'
   ];
 
   return (
@@ -228,7 +228,7 @@ export default function OptimizedHomePage({
                           role="button"
                           aria-label={`Chọn ảnh người mẫu ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Ví dụ người mẫu ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <Image src={url} alt={`Ví dụ người mẫu ${idx + 1}`} fill className="object-contain transition-transform duration-300 group-hover:scale-105" />
                         </div>
                       ))}
                     </div>
@@ -301,7 +301,7 @@ export default function OptimizedHomePage({
                           role="button"
                           aria-label={`Chọn ảnh trang phục ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Ví dụ trang phục ${idx + 1}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <Image src={url} alt={`Ví dụ trang phục ${idx + 1}`} fill className="object-contain transition-transform duration-300 group-hover:scale-105" />
                         </div>
                       ))}
                     </div>
@@ -429,7 +429,7 @@ export default function OptimizedHomePage({
                           alt={`Kết quả thử đồ ${index + 1}`}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="object-contain transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-2xl flex items-center justify-center">

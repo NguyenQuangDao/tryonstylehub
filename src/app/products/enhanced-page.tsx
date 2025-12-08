@@ -27,6 +27,7 @@ import {
     X
 } from 'lucide-react';
 import Image from 'next/image';
+import { formatVND } from '@/utils/currency';
 import { useEffect, useState } from 'react';
 
 interface Product {
@@ -433,7 +434,7 @@ export default function EnhancedProductsPage() {
 
                                     {/* Price Badge */}
                                     <Badge className="absolute top-3 right-3 bg-gradient-to-r from-blue-600 to-purple-600">
-                                        ${product.price.toFixed(2)}
+                                        {formatVND(product.price)}
                                     </Badge>
 
                                     {/* Wishlist */}

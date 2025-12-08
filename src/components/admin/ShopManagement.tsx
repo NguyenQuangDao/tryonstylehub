@@ -16,6 +16,7 @@ import {
     Search,
     Star
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 interface Shop {
@@ -47,6 +48,7 @@ interface Shop {
 }
 
 export default function ShopManagement() {
+  const router = useRouter();
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -311,7 +313,7 @@ export default function ShopManagement() {
                   <Star className={`h-3 w-3 mr-1 ${shop.featured ? 'fill-current' : ''}`} />
                   {shop.featured ? 'Bỏ nổi bật' : 'Nổi bật'}
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => router.push(`/shops/${shop.slug}`)}>
                   <Eye className="h-3 w-3" />
                 </Button>
               </div>
