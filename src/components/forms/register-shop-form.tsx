@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 type FormValues = {
   name: string
@@ -15,6 +16,7 @@ type FormValues = {
 }
 
 export default function RegisterShopForm() {
+  const { user, refetchUser } = useAuth()
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>({
     defaultValues: { name: "", description: "" }
   })
@@ -46,6 +48,7 @@ export default function RegisterShopForm() {
       const res = await fetch('/api/seller/register-shop', { method: 'POST', body: fd })
       const json = await res.json()
       if (res.ok && json?.redirect) {
+        await refetchUser()
         router.push(json.redirect)
       } else {
         alert(json?.error || 'Có lỗi xảy ra')
@@ -53,6 +56,15 @@ export default function RegisterShopForm() {
     } catch (e) {
       alert('Không thể gửi đăng ký. Vui lòng thử lại.')
     }
+  }
+
+  if (user?.role === 'SELLER' || (user?.shopId ?? null)) {
+    return (
+      <div className="space-y-3">
+        <div className="text-sm">Bạn đã có shop. Mỗi tài khoản chỉ được đăng ký một shop.</div>
+        <Button onClick={() => router.push('/dashboard/seller')} className="w-full">Vào khu vực quản lý shop</Button>
+      </div>
+    )
   }
 
   return (

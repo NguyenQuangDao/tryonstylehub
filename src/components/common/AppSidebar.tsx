@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Box, Coins, Home, LineChart, LogOut, Newspaper, ShoppingCart, Store, UploadCloud, User, Users } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -45,7 +45,7 @@ export default function AppSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-background/80 backdrop-blur-md shadow-xl">
+    <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-background shadow-xl">
       <div className="flex h-full flex-col">
         <div className="px-3 py-3">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight">
@@ -80,13 +80,13 @@ export default function AppSidebar() {
                 <span>Bảng người bán</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-lg w-full bg-background/95 backdrop-blur-xl shadow-2xl">
+            <SheetContent side="right" className="sm:max-w-4xl w-full bg-background shadow-2xl border-l p-6">
               <SheetHeader>
                 <SheetTitle>Quản lý cửa hàng</SheetTitle>
               </SheetHeader>
               <div className="mt-3">
                 <Tabs defaultValue="register">
-                  <TabsList className="w-full">
+                  <TabsList className="w-full bg-muted rounded-lg p-1">
                     <TabsTrigger value="register" className="flex-1">
                       Đăng ký shop
                     </TabsTrigger>
@@ -100,16 +100,16 @@ export default function AppSidebar() {
                     )}
                   </TabsList>
 
-                  <TabsContent value="register" className="mt-4">
+                  <TabsContent value="register" className="mt-6">
                     <RegisterShopForm onSuccess={() => setOpenSellerPanel(false)} />
                   </TabsContent>
 
-                  <TabsContent value="upload" className="mt-4">
+                  <TabsContent value="upload" className="mt-6">
                     <UploadProductForm />
                   </TabsContent>
 
                   {isSellerAdmin && (
-                    <TabsContent value="manage" className="mt-4">
+                    <TabsContent value="manage" className="mt-6">
                       <ShopAdminArea />
                     </TabsContent>
                   )}
@@ -156,7 +156,8 @@ const registerSchema = z.object({
 })
 
 function RegisterShopForm({ onSuccess }: { onSuccess: () => void }) {
-  const { user } = useAuth()
+  const { user, refetchUser } = useAuth()
+  const router = useRouter()
   type RegisterFormValues = Omit<z.infer<typeof registerSchema>, "logo"> & {
     logo?: FileList
   }
@@ -207,11 +208,22 @@ function RegisterShopForm({ onSuccess }: { onSuccess: () => void }) {
         setSubmitting(false)
         return
       }
+      await refetchUser()
+      router.push('/dashboard/seller')
       onSuccess()
     } catch {
       setError("Có lỗi mạng khi gửi đăng ký")
       setSubmitting(false)
     }
+  }
+
+  if (user?.role === 'SELLER' || (user?.shopId ?? null)) {
+    return (
+      <div className="space-y-3">
+        <div className="text-sm">Bạn đã có shop. Mỗi tài khoản chỉ được đăng ký một shop.</div>
+        <Button onClick={() => router.push('/dashboard/seller')} className="w-full">Vào khu vực quản lý shop</Button>
+      </div>
+    )
   }
 
   return (

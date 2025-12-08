@@ -59,6 +59,10 @@ export async function middleware(request: NextRequest) {
       if (role && role !== 'SELLER') {
         return NextResponse.redirect(new URL('/', request.url));
       }
+    } else {
+      if (role === 'SELLER') {
+        return NextResponse.redirect(new URL('/dashboard/seller', request.url));
+      }
     }
   }
 
