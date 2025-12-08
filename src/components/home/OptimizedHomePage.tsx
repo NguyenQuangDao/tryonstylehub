@@ -397,23 +397,16 @@ export default function OptimizedHomePage({
           >
             <Card className="border shadow-sm">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-start">
                   <div>
                     <CardTitle className="text-lg">Kết quả thử đồ</CardTitle>
                     <CardDescription className="text-xs">Ảnh đã được xử lý bằng AI</CardDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsComparisonMode(!isComparisonMode)}
-                  >
-                    {isComparisonMode ? 'Xem lưới' : 'So sánh'}
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className={cn(
-                  "grid gap-4",
-                  isComparisonMode ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                  "grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                 )}>
                   {resultGallery.map((result, index) => (
                     <motion.div
@@ -455,10 +448,50 @@ export default function OptimizedHomePage({
         )}
 
         {isLoading && resultGallery.length === 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] md:aspect-[2/3] rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
-            ))}
+          <div className="mt-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="relative overflow-hidden rounded-3xl border shadow-sm bg-gradient-to-br from-purple-100/60 to-blue-100/60 dark:from-purple-900/30 dark:to-blue-900/30"
+            >
+              <div className="pointer-events-none absolute inset-0 -z-10">
+                <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-400/30 to-sky-400/30 blur-3xl animate-pulse" />
+                <div className="absolute bottom-[-3rem] right-[-2rem] h-56 w-56 rounded-full bg-gradient-to-tr from-violet-500/25 to-cyan-500/25 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: i * 0.06 }}
+                    className="relative aspect-[3/4] md:aspect-[2/3] rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900"
+                  >
+                    <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.08),transparent_60%)]" />
+                    <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 [mask-image:linear-gradient(to_right,transparent,black,transparent)]" />
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-white/50 dark:ring-white/10" />
+
+                    <div className="absolute top-3 left-3 text-[11px] px-2 py-1 rounded-full bg-white/70 dark:bg-white/10 backdrop-blur-sm text-gray-700 dark:text-gray-300">
+                      Đang tạo ảnh...
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ repeat: Infinity, repeatType: 'mirror', duration: 1.2 }}
+                        className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-300"
+                      >
+                        <Sparkles className="w-4 h-4 animate-[spin_3s_linear_infinite]" />
+                        <span>Phép màu AI đang hoạt động</span>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         )}
       </div>

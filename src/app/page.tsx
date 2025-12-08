@@ -2,20 +2,12 @@
 
 import { VirtualModelForm, VirtualModelSelector } from '@/components/forms';
 import OptimizedHomePage from '@/components/home/OptimizedHomePage';
-import { Badge } from '@/components/ui/badge';
-import { formatVND } from '@/utils/currency';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { InsufficientTokensModal } from '@/components/tokens/TokenComponents';
+import { TOKEN_CONFIG } from '@/config/tokens';
 import { useImageUpload, useVirtualModels } from '@/hooks';
+import { useAuth } from '@/lib/auth-context';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';
-import { ExternalLink, ShoppingBag } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { InsufficientTokensModal } from '@/components/tokens/TokenComponents'
-import { useAuth } from '@/lib/auth-context'
-import { TOKEN_CONFIG } from '@/config/tokens'
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -214,7 +206,7 @@ export default function HomePage() {
       )}
 
       {/* Featured Products */}
-      <div className="max-w-7xl mx-auto mt-12 px-4">
+      {/* <div className="max-w-7xl mx-auto mt-12 px-4">
         <h2 className="text-2xl font-bold mb-4">Sản phẩm nổi bật</h2>
         {featuredLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -279,7 +271,7 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
       <InsufficientTokensModal
         isOpen={insufficientOpen}
         onClose={() => setInsufficientOpen(false)}
