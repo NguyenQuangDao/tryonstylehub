@@ -9,7 +9,7 @@ const config: Config = {
   ],
   theme: {
   	extend: {
-  		fontFamily: {
+			fontFamily: {
   			'open-sans': [
   				'Open Sans',
   				'sans-serif'
@@ -20,7 +20,7 @@ const config: Config = {
   				'sans-serif'
   			]
   		},
-  		colors: {
+			colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -71,8 +71,15 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
-  		},
-  		animation: {
+			},
+			boxShadow: {
+				soft: 'var(--shadow-sm)',
+				md: 'var(--shadow-md)',
+				lg: 'var(--shadow-lg)',
+				xl: 'var(--shadow-xl)',
+				'2xl': 'var(--shadow-2xl)'
+			},
+			animation: {
   			'fade-in': 'fadeIn 0.5s ease-in-out',
   			'slide-up': 'slideUp 0.3s ease-out',
   			'bounce-subtle': 'bounceSubtle 2s infinite'

@@ -15,7 +15,7 @@ export default function AppHeader() {
     return null
   }
   return (
-    <header className={cn("sticky top-0 z-40 border-b bg-background/80 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60")}>      
+    <header className={cn("sticky top-0 z-40 bg-background/80 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-background/60")}>      
       <div className="flex h-14 items-center px-4">
         <div className="flex items-center gap-3">
           {pathname !== '/' && (

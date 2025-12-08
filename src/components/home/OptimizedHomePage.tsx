@@ -131,7 +131,7 @@ export default function OptimizedHomePage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="h-full border shadow-sm rounded-xl">
+              <Card className="h-full shadow-soft rounded-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
                     <User className="w-6 h-6 text-blue-600" />
@@ -244,7 +244,7 @@ export default function OptimizedHomePage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card className="h-full border shadow-sm rounded-xl">
+              <Card className="h-full shadow-soft rounded-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
                     <Shirt className="w-6 h-6 text-purple-600" />
@@ -380,7 +380,7 @@ export default function OptimizedHomePage({
               animate={{ opacity: 1 }}
               role="alert"
               aria-live="polite"
-              className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-700 dark:text-red-300 text-center text-sm"
+              className="bg-red-50 dark:bg-red-900/30 rounded-lg p-3 text-red-700 dark:text-red-300 text-center text-sm shadow-soft"
             >
               {errorMessage}
             </motion.div>
@@ -395,7 +395,7 @@ export default function OptimizedHomePage({
             transition={{ duration: 0.6 }}
             className="mt-12"
           >
-            <Card className="border shadow-sm">
+            <Card className="shadow-soft">
               <CardHeader>
                 <div className="flex items-center justify-start">
                   <div>
@@ -453,7 +453,7 @@ export default function OptimizedHomePage({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="relative overflow-hidden rounded-3xl border shadow-sm bg-gradient-to-br from-purple-100/60 to-blue-100/60 dark:from-purple-900/30 dark:to-blue-900/30"
+              className="relative overflow-hidden rounded-3xl shadow-soft bg-gradient-to-br from-purple-100/60 to-blue-100/60 dark:from-purple-900/30 dark:to-blue-900/30"
             >
               <div className="pointer-events-none absolute inset-0 -z-10">
                 <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-400/30 to-sky-400/30 blur-3xl animate-pulse" />

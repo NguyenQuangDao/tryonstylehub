@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js'
 import { Bitcoin, Check, Coins, CreditCard, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -102,14 +103,13 @@ export default function TokenPurchasePage() {
 
             if (methodsData.success) {
                 setAllPaymentMethods(methodsData.data)
-                // Filter methods by currency
                 const currencyMethods = methodsData.data.filter(
                     (m: PaymentMethod) => !m.currencies || m.currencies.includes(selectedCurrency)
                 )
-                setPaymentMethods(currencyMethods)
-                // Auto-select first payment method
-                if (currencyMethods.length > 0) {
-                    setSelectedPaymentMethod(currencyMethods[0].id)
+                const sortedMethods = reorderMethods(currencyMethods)
+                setPaymentMethods(sortedMethods)
+                if (sortedMethods.length > 0) {
+                    setSelectedPaymentMethod(sortedMethods[0].id)
                 }
             }
 
@@ -140,11 +140,22 @@ export default function TokenPurchasePage() {
         const currencyMethods = allPaymentMethods.filter(
             m => !m.currencies || m.currencies.includes(currency)
         )
-        setPaymentMethods(currencyMethods)
+        const sortedMethods = reorderMethods(currencyMethods)
+        setPaymentMethods(sortedMethods)
 
         // Reset selections
         setSelectedPackage(null)
-        setSelectedPaymentMethod(currencyMethods.length > 0 ? currencyMethods[0].id : null)
+        setSelectedPaymentMethod(sortedMethods.length > 0 ? sortedMethods[0].id : null)
+    }
+
+    const reorderMethods = (methods: PaymentMethod[]) => {
+        const score = (name: string) => {
+            const n = name.toLowerCase()
+            if (n.includes('crypto')) return 0
+            if (n.includes('paypal')) return 1
+            return 2
+        }
+        return [...methods].sort((a, b) => score(a.name) - score(b.name))
     }
 
     const handlePurchase = async () => {
@@ -317,6 +328,17 @@ export default function TokenPurchasePage() {
                                         )
                                     })}
                                 </RadioGroup>
+                                <div className="mt-3">
+                                    <Alert className="shadow-soft">
+                                        <Bitcoin className="h-4 w-4" />
+                                        <div>
+                                            <AlertTitle>Crypto thanh toán nhanh</AlertTitle>
+                                            <AlertDescription>
+                                                Không cần thẻ. Địa chỉ ví được tạo cho mỗi giao dịch, hãy chuyển đúng số tiền hiển thị. Phí mạng do người dùng chi trả. Sau khi mạng xác nhận, credit sẽ cộng tự động.
+                                            </AlertDescription>
+                                        </div>
+                                    </Alert>
+                                </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="text-base font-bold">

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Box, Coins, Home, LineChart, LogOut, ShoppingCart, Store, UploadCloud, User, Users, Newspaper } from "lucide-react"
+import { Box, Coins, Home, LineChart, LogOut, Newspaper, ShoppingCart, Store, UploadCloud, User, Users } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -45,7 +45,7 @@ export default function AppSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 w-64 border-r bg-background">
+    <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-background/80 backdrop-blur-md shadow-xl">
       <div className="flex h-full flex-col">
         <div className="px-3 py-3">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight">
@@ -80,7 +80,7 @@ export default function AppSidebar() {
                 <span>Bảng người bán</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-lg w-full bg-background bg-white shadow-lg border">
+            <SheetContent side="right" className="sm:max-w-lg w-full bg-background/95 backdrop-blur-xl shadow-2xl">
               <SheetHeader>
                 <SheetTitle>Quản lý cửa hàng</SheetTitle>
               </SheetHeader>
@@ -118,7 +118,7 @@ export default function AppSidebar() {
             </SheetContent>
           </Sheet>
         </nav>
-        <div className="mt-auto border-t px-3 py-3">
+        <div className="mt-auto px-3 py-3">
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user?.avatar ?? ""} alt={user?.name ?? "Người dùng"} />
@@ -481,7 +481,7 @@ function ShopAdminArea() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-md border p-3">
+        <div className="rounded-lg shadow-soft p-3 bg-card">
           <div className="flex items-center gap-2 font-medium"><UploadCloud className="h-4 w-4" /> Quản lý sản phẩm</div>
           {loading ? (
             <div className="mt-2 text-muted-foreground">Đang tải...</div>
@@ -491,11 +491,11 @@ function ShopAdminArea() {
             <div className="mt-2 text-muted-foreground">{products.length} sản phẩm</div>
           )}
         </div>
-        <div className="rounded-md border p-3">
+        <div className="rounded-lg shadow-soft p-3 bg-card">
           <div className="flex items-center gap-2 font-medium"><Users className="h-4 w-4" /> Đơn hàng</div>
           <div className="mt-2 text-muted-foreground">Chưa khả dụng</div>
         </div>
-        <div className="rounded-md border p-3">
+        <div className="rounded-lg shadow-soft p-3 bg-card">
           <div className="flex items-center gap-2 font-medium"><LineChart className="h-4 w-4" /> Doanh thu</div>
           <div className="mt-2 text-muted-foreground">Chưa khả dụng</div>
         </div>
