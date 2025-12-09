@@ -1,5 +1,6 @@
 'use client'
 
+import { InsufficientTokensModal, TokenDisplay } from '@/components/tokens/TokenComponents';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,13 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
+import { TOKEN_CONFIG } from '@/config/tokens';
+import { useAuth } from '@/lib/auth-context';
 import { motion } from 'framer-motion';
-import { Camera, Download, Image as ImageIcon, Info, Loader2, Palette, Sparkles, Wand2, Shirt, Watch, Backpack, Sun, CloudSun } from 'lucide-react';
+import { Backpack, Camera, CloudSun, Download, Image as ImageIcon, Info, Loader2, Palette, Shirt, Sparkles, Sun, Wand2, Watch } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { TokenDisplay, InsufficientTokensModal } from '@/components/tokens/TokenComponents'
-import { useAuth } from '@/lib/auth-context'
-import { TOKEN_CONFIG } from '@/config/tokens'
 
 export default function GenerateImagePage() {
   const { user } = useAuth()
@@ -471,13 +471,13 @@ export default function GenerateImagePage() {
                       className="object-contain"
                     />
                   </div>
-                  <div className="mt-6 flex justify-center">
+                  {/* <div className="mt-6 flex justify-center">
                     <Button asChild variant="default" className="px-6 py-3">
                       <a href={`/?garmentImage=${encodeURIComponent(imageUrl)}&category=${encodeURIComponent(selectedCategories[0] || 'auto')}`}>
                         Dùng ảnh này để thử đồ ảo
                       </a>
                     </Button>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             </motion.div>

@@ -8,14 +8,14 @@ Hệ thống được thiết kế theo mô hình Client-Server hiện đại, t
 
 1.  Frontend (Client-side):
     -   Xây dựng trên nền tảng Next.js (React Framework), cung cấp giao diện người dùng tương tác cao (Interactive UI).
-    -   Chịu trách nhiệm hiển thị sản phẩm, giao diện thử đồ, dashboard quản lý và tương tác với người dùng.
+    -   Chịu trách nhiệm hiển thị thư viện trang phục mẫu, giao diện thử đồ, dashboard quản lý và tương tác với người dùng.
     -   Giao tiếp với Backend thông qua RESTful API.
 
 2.  Backend (Server-side):
     -   Cũng sử dụng Next.js API Routes (Serverless Functions) để xử lý logic nghiệp vụ.
-    -   Authentication & Authorization: Quản lý xác thực người dùng và phân quyền (Guest, Member, Seller, Admin).
+    -   Authentication & Authorization: Quản lý xác thực người dùng và phân quyền (Guest, Member, Admin).
     -   Data Processing: Xử lý ảnh đầu vào (Validation, Resize, Base64 Encoding) trước khi gửi đi và xử lý ảnh đầu ra (Optimization) sử dụng thư viện sharp.
-    -   Token Management: Quản lý số dư token, trừ token sau khi sử dụng dịch vụ thành công.
+    -   Token Management: Quản lý số dư token/quota, trừ lượt sau khi sử dụng dịch vụ thành công.
 
 3.  External AI Service (AI Engine):
     -   Là thành phần cốt lõi thực hiện các tác vụ AI nặng (GPU-intensive).
@@ -25,7 +25,7 @@ Hệ thống được thiết kế theo mô hình Client-Server hiện đại, t
 
 4.  Storage & Database:
     -   AWS S3 (Cloud Storage): Lưu trữ hình ảnh người dùng upload và ảnh kết quả sau khi thử đồ để đảm bảo tốc độ truy xuất cao và khả năng mở rộng.
-    -   Database (PostgreSQL/MongoDB): Lưu trữ thông tin người dùng, sản phẩm, đơn hàng, lịch sử giao dịch và metadata của ảnh.
+    -   Database (PostgreSQL/MongoDB): Lưu trữ thông tin người dùng, metadata của ảnh và lịch sử thử đồ.
 
 2.3 Phân tích chi tiết các chức năng
 
@@ -76,21 +76,14 @@ b. Yêu cầu đầu vào (Input Requirements)
     -   Loại ảnh: Ảnh chụp trải phẳng (flat-lay) hoặc ảnh chụp trên ma-nơ-canh (ghost mannequin).
     -   Nền (Background): Nền đơn giản (trắng hoặc xám), độ tương phản cao với sản phẩm.
 
-2.3.3 Hệ thống Token & Thanh toán (Token System & Payment)
+2.3.3 Hệ thống Token (Quota)
 
-Hệ thống sử dụng cơ chế "Credit-based" (Token) để quản lý việc sử dụng các dịch vụ AI tốn kém tài nguyên.
+Hệ thống sử dụng cơ chế "Credit-based" (Token/Quota) để quản lý việc sử dụng các dịch vụ AI tốn kém tài nguyên, không có chức năng mua bán.
 
--   Mô hình Token:
-    -   Mỗi lượt thử đồ (Try-on) tiêu tốn một lượng token nhất định tùy thuộc vào chất lượng (Standard/High Quality).
+-   Mô hình Token/Quota:
+    -   Mỗi lượt thử đồ (Try-on) tiêu tốn một lượng token/lượt nhất định tùy thuộc vào chất lượng (Standard/High Quality).
     -   Người dùng mới được tặng một lượng token miễn phí để trải nghiệm.
--   Chức năng Nạp Token:
-    -   Người dùng có thể mua thêm token thông qua các gói (Packages) được định nghĩa sẵn (ví dụ: Starter, Pro, Enterprise).
-    -   Hệ thống hỗ trợ đa tiền tệ (USD, VND) và tự động chuyển đổi giá.
--   Cổng thanh toán (Payment Gateways):
-    -   Tích hợp Stripe cho thanh toán thẻ quốc tế (Visa/Mastercard).
-    -   Hỗ trợ các ví điện tử và cổng thanh toán nội địa (dự kiến: MoMo, VNPay, ZaloPay).
-    -   Quy trình thanh toán an toàn, bảo mật thông tin thẻ theo tiêu chuẩn PCI DSS (thông qua đối tác trung gian).
-    -   Hệ thống không lưu trữ trực tiếp thông tin thẻ của người dùng mà chỉ lưu trữ token giao dịch (Transaction Token).
+    -   Có thể áp dụng quota theo ngày/tuần hoặc do Admin cấp bổ sung khi cần.
 
 2.3.4 Gợi ý thông minh (AI Recommendation)
 
@@ -98,27 +91,17 @@ Tính năng này sử dụng AI để tư vấn phong cách thời trang cho ng�
 
 -   Đầu vào (Input):
     -   Mô tả văn bản (Prompt): Ví dụ "trang phục đi biển mùa hè, màu pastel".
-    -   Tùy chọn ưu tiên: Ưu tiên sản phẩm trong Wishlist, ưu tiên cửa hàng đang theo dõi.
     -   Lịch sử tìm kiếm: Dựa trên các từ khóa người dùng đã tìm trước đó.
 -   Xử lý (Processing):
     -   Hệ thống phân tích ngữ nghĩa của prompt để trích xuất các thuộc tính: Phong cách (Style), Dịp (Occasion), Màu sắc (Color).
-    -   Tìm kiếm và lọc sản phẩm trong cơ sở dữ liệu phù hợp với các thuộc tính đã trích xuất.
+    -   Tìm kiếm và lọc trang phục mẫu trong thư viện nội bộ phù hợp với các thuộc tính đã trích xuất.
 -   Đầu ra (Output):
-    -   Danh sách các sản phẩm (Quần, áo, váy) phù hợp nhất.
+    -   Danh sách các gợi ý phối đồ phù hợp nhất.
     -   Gợi ý các phong cách phổ biến (Trending Styles).
 
-2.3.5 Kênh Người bán (Seller Channel) & Thương mại điện tử
+2.3.5 (Loại bỏ) Kênh Người bán & Thương mại điện tử
 
-Hệ thống hoạt động theo mô hình Marketplace, cho phép người dùng đăng ký trở thành người bán.
-
--   Đăng ký Shop: Quy trình xét duyệt để người dùng thường nâng cấp lên tài khoản người bán.
--   Quản lý sản phẩm:
-    -   Đăng tải sản phẩm mới với đầy đủ thông tin: Tên, giá, mô tả, hình ảnh, tags.
-    -   Quản lý kho hàng (Inventory).
--   Dashboard người bán: Thống kê doanh thu, số lượng đơn hàng, sản phẩm bán chạy.
--   Mua sắm trực tuyến:
-    -   Người mua có thể xem chi tiết sản phẩm, thêm vào giỏ hàng (Cart) hoặc danh sách yêu thích (Wishlist).
-    -   Quy trình Checkout và theo dõi đơn hàng (Order Tracking).
+Không nằm trong phạm vi hệ thống hiện tại. Hệ thống không hỗ trợ mua bán, giỏ hàng, checkout hoặc theo dõi đơn hàng.
 
 2.3.6 Blog & Tin tức thời trang
 
@@ -131,22 +114,18 @@ Hệ thống hoạt động theo mô hình Marketplace, cho phép người dùng
 2.4.1 Các tác nhân (Actors)
 
 -   Khách hàng (Customer):
-    -   Khách vãng lai (Guest): Có thể xem sản phẩm, tìm kiếm, xem blog, nhưng bị giới hạn tính năng thử đồ và mua hàng.
-    -   Thành viên (Member): Đã đăng ký tài khoản, có thể thực hiện thử đồ, quản lý tủ đồ ảo, nạp token, mua hàng, xem lịch sử, và sử dụng tính năng Gợi ý AI.
--   Người bán (Seller): Là Thành viên đã đăng ký mở shop. Có thêm quyền hạn đăng bán sản phẩm, quản lý đơn hàng và xem thống kê doanh thu.
--   Quản trị viên (Admin): Người quản lý hệ thống, chịu trách nhiệm duyệt shop, quản lý người dùng, cấu hình tham số hệ thống và quản lý nội dung Blog.
+    -   Khách vãng lai (Guest): Có thể xem thư viện trang phục mẫu, tìm kiếm, xem blog, nhưng bị giới hạn tính năng thử đồ.
+    -   Thành viên (Member): Đã đăng ký tài khoản, có thể thực hiện thử đồ, quản lý tủ đồ ảo, xem số dư token/quota, xem lịch sử và sử dụng tính năng Gợi ý AI.
+-   Quản trị viên (Admin): Người quản lý hệ thống, chịu trách nhiệm quản lý người dùng, cấu hình tham số hệ thống và quản lý nội dung Blog.
 -   Hệ thống AI (AI System - Tác nhân phụ): Service bên ngoài (External System) chịu trách nhiệm nhận dữ liệu ảnh và trả về kết quả xử lý (Try-on, Recommendation).
--   Cổng thanh toán (Payment Gateway - Tác nhân phụ): Xử lý giao dịch tài chính (Stripe, PayPal, v.v.).
 
 2.4.2 Danh sách Usecase chính
 
 1.  Quản lý tài khoản: Đăng ký, Đăng nhập, Quên mật khẩu, Cập nhật hồ sơ.
-2.  Mua sắm (E-commerce): Tìm kiếm sản phẩm, Xem chi tiết, Thêm vào giỏ, Thanh toán (Checkout), Theo dõi đơn hàng.
-3.  Thử đồ ảo (Virtual Try-on): Upload ảnh, Chọn người mẫu, Thử đồ, Xem kết quả, Lưu vào Gallery.
-4.  Gợi ý phối đồ (AI Recommendation): Nhập yêu cầu phối đồ, Xem danh sách gợi ý.
-5.  Hệ thống Token: Xem số dư, Chọn gói token, Thanh toán mua token.
-6.  Kênh người bán (Seller): Đăng ký mở shop, Đăng sản phẩm, Quản lý đơn hàng shop, Xem báo cáo doanh thu.
-7.  Quản trị (Admin): Quản lý người dùng, Duyệt sản phẩm/shop, Quản lý Blog.
+2.  Thử đồ ảo (Virtual Try-on): Upload ảnh, Chọn người mẫu, Thử đồ, Xem kết quả, Lưu vào Gallery.
+3.  Gợi ý phối đồ (AI Recommendation): Nhập yêu cầu phối đồ, Xem danh sách gợi ý.
+4.  Hệ thống Token/Quota: Xem số dư, quản lý lượt sử dụng (không mua bán).
+5.  Quản trị (Admin): Quản lý người dùng, Quản lý Blog.
 
 2.4.3 Kịch bản chi tiết (Scenario) cho Usecase "Thực hiện thử đồ"
 
@@ -155,7 +134,7 @@ Tác nhân chính: Thành viên (Member)
 Tiền điều kiện: Người dùng đã đăng nhập và có đủ số dư token trong tài khoản.
 
 Luồng sự kiện chính (Basic Flow):
-1.  Người dùng truy cập trang chi tiết sản phẩm hoặc phòng thử đồ ảo.
+1.  Người dùng truy cập phòng thử đồ ảo hoặc trang thư viện trang phục.
 2.  Người dùng chọn một ảnh người mẫu (từ thư viện có sẵn hoặc upload ảnh cá nhân).
 3.  Người dùng chọn một sản phẩm trang phục (áo, quần, hoặc váy).
 4.  Người dùng nhấn nút "Thử ngay" (Try On).
@@ -163,12 +142,12 @@ Luồng sự kiện chính (Basic Flow):
 6.  Hệ thống gửi yêu cầu đến Hệ thống AI (API Request).
 7.  Hệ thống hiển thị trạng thái "Đang xử lý" (Processing/Loading) cho người dùng.
 8.  Hệ thống AI xử lý và trả về hình ảnh kết quả.
-9.  Hệ thống trừ token của người dùng và lưu ảnh vào "Tủ đồ của tôi".
+9.  Hệ thống trừ token/lượt của người dùng và lưu ảnh vào "Tủ đồ của tôi".
 10. Hệ thống hiển thị ảnh kết quả lên màn hình.
 
 Luồng ngoại lệ (Alternative Flows):
 -   Tại bước 5: Nếu ảnh không hợp lệ (sai định dạng, quá mờ), hệ thống báo lỗi và yêu cầu upload lại.
--   Tại bước 5: Nếu không đủ token, hệ thống hiển thị thông báo và gợi ý nạp thêm token.
+-   Tại bước 5: Nếu không đủ token/quota, hệ thống hiển thị thông báo và gợi ý chờ cấp thêm lượt (quota theo ngày) hoặc liên hệ Admin.
 -   Tại bước 8: Nếu Hệ thống AI gặp lỗi (Time out, Server Error), hệ thống thông báo "Thử đồ thất bại, vui lòng thử lại sau" và không trừ token của người dùng.
 
 2.5 Mô tả Biểu đồ hoạt động (Activity Diagram) - Chức năng Thử đồ

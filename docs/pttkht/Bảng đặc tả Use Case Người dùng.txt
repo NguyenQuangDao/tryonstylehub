@@ -1,16 +1,16 @@
-Tên Use Case: Duyệt & Tìm kiếm sản phẩm
+Tên Use Case: Duyệt & Tìm kiếm trang phục mẫu
 
 Actors: Khách hàng
 
-Mô tả: Người dùng duyệt danh mục, tìm kiếm sản phẩm, áp dụng bộ lọc/sắp xếp và xem chi tiết sản phẩm.
+Mô tả: Người dùng duyệt thư viện trang phục mẫu, tìm kiếm theo từ khóa, áp dụng bộ lọc/sắp xếp và xem chi tiết trang phục mẫu.
 
-Tiền điều kiện: Dữ liệu sản phẩm khả dụng; kết nối mạng ổn định; bộ lọc hợp lệ.
+Tiền điều kiện: Dữ liệu trang phục mẫu khả dụng; kết nối mạng ổn định; bộ lọc hợp lệ.
 
 Luồng sự kiện chính:
 1. Người dùng mở trang danh mục hoặc tìm kiếm.
 2. Nhập từ khóa hoặc chọn bộ lọc/sắp xếp.
 3. Hệ thống thực thi truy vấn và hiển thị kết quả.
-4. Người dùng mở trang chi tiết sản phẩm.
+4. Người dùng mở trang chi tiết trang phục mẫu.
 5. Hệ thống ghi nhận hành vi để phục vụ gợi ý/analytics.
 
 Luồng sự kiện phụ:
@@ -27,12 +27,12 @@ Tên Use Case: Thử đồ ảo (Try-On)
 
 Actors: Khách hàng
 
-Mô tả: Người dùng chọn sản phẩm và ảnh/body scan để thử đồ ảo; hệ thống gửi yêu cầu tới dịch vụ AI và hiển thị kết quả.
+Mô tả: Người dùng chọn trang phục mẫu và ảnh/body scan để thử đồ ảo; hệ thống gửi yêu cầu tới dịch vụ AI và hiển thị kết quả.
 
 Tiền điều kiện: Dịch vụ AI Try-On khả dụng; ảnh/body scan hợp lệ; quyền sử dụng dữ liệu; CDN hoạt động.
 
 Luồng sự kiện chính:
-1. Người dùng chọn sản phẩm và ảnh/body scan.
+1. Người dùng chọn trang phục mẫu và ảnh/body scan.
 2. Hệ thống kiểm tra định dạng, kích thước ảnh.
 3. Hệ thống gửi yêu cầu tới dịch vụ AI Try-On.
 4. Nhận kết quả render và hiển thị cho người dùng.
@@ -73,11 +73,11 @@ Ngoại lệ/Lỗi:
 
 ----------------------------------------
 
-Tên Use Case: Gợi ý trang phục
+Tên Use Case: Gợi ý phối đồ
 
 Actors: Khách hàng
 
-Mô tả: Hệ thống gợi ý sản phẩm dựa trên hành vi, hồ sơ, body scan và sở thích.
+Mô tả: Hệ thống gợi ý phối đồ dựa trên hành vi, hồ sơ, body scan và sở thích.
 
 Tiền điều kiện: Người dùng chấp thuận sử dụng dữ liệu; dịch vụ AI/analytics khả dụng.
 
@@ -85,7 +85,7 @@ Luồng sự kiện chính:
 1. Người dùng mở trang gợi ý.
 2. Hệ thống tổng hợp đặc trưng (hành vi, profile, scan).
 3. Gọi dịch vụ AI để tạo danh sách gợi ý.
-4. Hiển thị gợi ý; người dùng thêm sản phẩm vào giỏ hoặc yêu thích.
+4. Hiển thị gợi ý; người dùng lưu gợi ý vào Yêu thích hoặc thử ngay.
 
 Luồng sự kiện phụ:
 A. Tùy chỉnh tiêu chí gợi ý (giá, phong cách, kích cỡ).
@@ -97,16 +97,16 @@ Ngoại lệ/Lỗi:
 
 ----------------------------------------
 
-Tên Use Case: Yêu thích
+Tên Use Case: Yêu thích (Trang phục/Gợi ý)
 
 Actors: Khách hàng
 
-Mô tả: Người dùng thêm/xóa sản phẩm vào danh sách yêu thích, xem và quản lý danh sách.
+Mô tả: Người dùng lưu/xóa trang phục mẫu hoặc gợi ý phối đồ vào danh sách yêu thích, xem và quản lý danh sách.
 
-Tiền điều kiện: Người dùng đã đăng nhập; sản phẩm tồn tại.
+Tiền điều kiện: Người dùng đã đăng nhập; trang phục mẫu/gợi ý tồn tại.
 
 Luồng sự kiện chính:
-1. Người dùng nhấn "Yêu thích" trên sản phẩm.
+1. Người dùng nhấn "Yêu thích" trên trang phục mẫu hoặc gợi ý.
 2. Hệ thống thêm sản phẩm vào danh sách và đồng bộ.
 3. Người dùng mở trang Yêu thích để xem/quản lý.
 
@@ -120,99 +120,23 @@ Ngoại lệ/Lỗi:
 
 ----------------------------------------
 
-Tên Use Case: Giỏ hàng
-
-Actors: Khách hàng
-
-Mô tả: Quản lý sản phẩm trong giỏ, biến thể, số lượng, và áp mã giảm giá.
-
-Tiền điều kiện: Sản phẩm còn hàng; chính sách giá/mã giảm giá hợp lệ.
-
-Luồng sự kiện chính:
-1. Thêm sản phẩm vào giỏ từ trang danh mục/chi tiết.
-2. Chọn biến thể (kích cỡ/màu) và số lượng.
-3. Hệ thống tính tổng tạm tính và thuế/phí (nếu áp dụng).
-4. Áp mã giảm giá (nếu có) và cập nhật tổng.
-
-Luồng sự kiện phụ:
-A. Lưu giỏ cho khách chưa đăng nhập và đồng bộ khi đăng nhập.
-B. Xóa/cập nhật sản phẩm trong giỏ.
-
-Ngoại lệ/Lỗi:
-- Hết hàng/không đủ tồn: thông báo và đề xuất thay thế.
-- Mã giảm giá không hợp lệ/hết hạn.
+Tên Use Case: (Loại bỏ) Giỏ hàng
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ mua bán/giỏ hàng.
 
 ----------------------------------------
 
-Tên Use Case: Thanh toán
-
-Actors: Khách hàng
-
-Mô tả: Người dùng nhập thông tin nhận hàng, chọn phương thức thanh toán và đặt hàng qua cổng thanh toán.
-
-Tiền điều kiện: Giỏ hàng có mặt hàng; thông tin người nhận hợp lệ; cổng thanh toán hoạt động.
-
-Luồng sự kiện chính:
-1. Người dùng mở trang Checkout.
-2. Nhập địa chỉ giao hàng và thông tin liên hệ.
-3. Chọn phương thức thanh toán và xác nhận.
-4. Hệ thống khởi tạo giao dịch với cổng thanh toán.
-5. Nhận kết quả/callback, tạo đơn hàng và hiển thị xác nhận.
-
-Luồng sự kiện phụ:
-A. Thanh toán COD: bỏ qua bước cổng thanh toán, tạo đơn trực tiếp.
-B. Lưu phương thức thanh toán cho lần sau (khi được phép).
-
-Ngoại lệ/Lỗi:
-- Giao dịch thất bại/3DS/OTP không hợp lệ.
-- Timeout/lỗi kết nối cổng thanh toán.
+Tên Use Case: (Loại bỏ) Thanh toán
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ thanh toán/đơn hàng.
 
 ----------------------------------------
 
-Tên Use Case: Theo dõi đơn
-
-Actors: Khách hàng
-
-Mô tả: Xem trạng thái đơn hàng, lịch sử cập nhật và nhận thông báo.
-
-Tiền điều kiện: Đơn hàng tồn tại; trạng thái đồng bộ.
-
-Luồng sự kiện chính:
-1. Người dùng mở danh sách/chi tiết đơn hàng.
-2. Hệ thống hiển thị trạng thái hiện tại và timeline.
-3. Người dùng yêu cầu hỗ trợ khi có vấn đề.
-
-Luồng sự kiện phụ:
-A. Hủy/đổi đơn theo chính sách.
-B. Tạo yêu cầu hỗ trợ/ticket.
-
-Ngoại lệ/Lỗi:
-- Đơn không tìm thấy/không thuộc quyền truy cập.
-- Trạng thái chậm cập nhật.
+Tên Use Case: (Loại bỏ) Theo dõi đơn
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ đơn hàng.
 
 ----------------------------------------
 
-Tên Use Case: Đánh giá/Bình luận
-
-Actors: Khách hàng
-
-Mô tả: Người dùng viết đánh giá, bình luận và chấm điểm cho sản phẩm.
-
-Tiền điều kiện: Người dùng đăng nhập; đơn hàng đủ điều kiện đánh giá.
-
-Luồng sự kiện chính:
-1. Người dùng mở form đánh giá/bình luận.
-2. Nhập nội dung và chọn điểm đánh giá.
-3. Hệ thống kiểm tra chính sách nội dung và lưu.
-4. Hiển thị trên trang sản phẩm.
-
-Luồng sự kiện phụ:
-A. Sửa/xóa đánh giá trước đó.
-B. Đính kèm ảnh vào đánh giá.
-
-Ngoại lệ/Lỗi:
-- Vi phạm nội dung/spam: bị từ chối/kiểm duyệt.
-- Lỗi lưu trữ/timeout.
+Tên Use Case: (Loại bỏ) Đánh giá/Bình luận sản phẩm
+Mô tả: Không áp dụng. Hệ thống không có sản phẩm để mua/bán.
 
 ----------------------------------------
 
@@ -237,4 +161,3 @@ B. Xuất dữ liệu cá nhân theo yêu cầu.
 Ngoại lệ/Lỗi:
 - Xác minh thất bại/chính sách mật khẩu không đạt.
 - Lỗi đồng bộ dữ liệu.
-

@@ -21,14 +21,6 @@ type NavItem = { href: string; label: string; icon: any }
 export default function AppSidebar() {
   const pathname = usePathname()
   const { user, logout } = useAuth()
-  const [openSellerPanel, setOpenSellerPanel] = useState(false)
-
-  const isSellerAdmin = useMemo(() => {
-    type Role = "SHOPPER" | "SELLER" | "ADMIN" | "SHOP_ADMIN"
-    type UserWithRole = { role?: Role } | null
-    const role = (user as UserWithRole)?.role
-    return role === "SELLER" || role === "SHOP_ADMIN" || role === "ADMIN"
-  }, [user])
 
   const navItems = useMemo<NavItem[]>(() => {
     const base: NavItem[] = [
