@@ -142,7 +142,7 @@ export default function GenerateImagePage() {
   return (
     <ToastProvider>
       <div className="max-w-7xl mx-auto relative overflow-hidden">
-        {/* Background Pattern */}
+        {/* Nền trang trí */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tl from-pink-500 to-orange-500 rounded-full blur-3xl"></div>
@@ -153,7 +153,7 @@ export default function GenerateImagePage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8 relative z-10"
         >
-          {/* Hero Section */}
+          {/* Phần tiêu đề */}
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-100 dark:border-purple-900/30">
             <CardHeader className="text-center space-y-6">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -187,7 +187,7 @@ export default function GenerateImagePage() {
           </CardHeader>
           </Card>
 
-          {/* Usage Guide */}
+          {/* Hướng dẫn sử dụng */}
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
             <CardHeader>
               <div className={`flex items-center justify-between ${showGuide ? 'mb-4' : ''}`}>

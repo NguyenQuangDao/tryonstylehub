@@ -61,7 +61,7 @@ export default function Navigation() {
             </span>
           </Link>
           
-          {/* Desktop Navigation */}
+          {/* Điều hướng trên desktop */}
           <nav className="flex items-center gap-6 text-sm">
             {navigationItems.map((item) => (
               <Link
@@ -75,7 +75,7 @@ export default function Navigation() {
           </nav>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Điều hướng trên di động */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -111,7 +111,7 @@ export default function Navigation() {
                   </Link>
                 ))}
                 
-                {/* Mobile Authentication Section */}
+                {/* Khu vực xác thực trên di động */}
                 <div className="border-t pt-4 mt-4">
                   {loading ? (
                     <div className="space-y-2">
@@ -174,7 +174,7 @@ export default function Navigation() {
           </SheetContent>
         </Sheet>
 
-        {/* Mobile Logo */}
+        {/* Logo trên di động */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <Link href="/" className="flex items-center md:hidden">
@@ -182,7 +182,7 @@ export default function Navigation() {
             </Link>
           </div>
           
-          {/* Right side actions */}
+          {/* Hành động bên phải */}
           <nav className="flex items-center gap-2">
             <ThemeToggle />
             {loading ? (

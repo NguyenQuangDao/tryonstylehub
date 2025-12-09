@@ -35,7 +35,7 @@ export function InsufficientTokensModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm animate-fadeIn">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform animate-slideUp">
-                {/* Icon */}
+                {/* Biểu tượng */}
                 <div className="flex justify-center mb-6">
                     <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg">
                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,12 +44,12 @@ export function InsufficientTokensModal({
                     </div>
                 </div>
 
-                {/* Title */}
+                {/* Tiêu đề */}
                 <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
                     Không đủ Token
                 </h2>
 
-                {/* Message */}
+                {/* Thông báo */}
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
                     <p className="text-gray-700 text-center">
                         Bạn cần <span className="font-bold text-red-600">{required} token</span> để
@@ -61,7 +61,7 @@ export function InsufficientTokensModal({
                     </p>
                 </div>
 
-                {/* Recommended Package */}
+                {/* Gói đề xuất */}
                 <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-5 mb-6 border-2 border-purple-200">
                     <div className="text-center">
                         <p className="text-sm text-gray-600 mb-2">Gói đề xuất</p>
@@ -87,7 +87,7 @@ export function InsufficientTokensModal({
                     </div>
                 </div>
 
-                {/* Actions */}
+                {/* Hành động */}
                 <div className="space-y-3">
                     <Link
                         href="/tokens"
@@ -112,7 +112,7 @@ export function InsufficientTokensModal({
                     </button>
                 </div>
 
-                {/* Info */}
+                {/* Thông tin */}
                 <p className="text-xs text-gray-500 text-center mt-4">
                     💡 Token được cộng ngay lập tức sau khi thanh toán
                 </p>
@@ -206,4 +206,3 @@ export function TokenDisplay({ balance, showWarning = true, className = '' }: To
         </div>
     )
 }
-
