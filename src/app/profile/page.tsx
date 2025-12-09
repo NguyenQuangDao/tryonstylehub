@@ -1,6 +1,7 @@
 'use client'
 
-import { ProfileGallery, ProfileSettings, VirtualModelForm } from '@/components';
+import { ProfileSettings, VirtualModelForm } from '@/components';
+import ProfileGallery from '@/components/common/ProfileGallery';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import { CreateVirtualModelInput, VirtualModel } from '@/types';

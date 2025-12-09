@@ -1,9 +1,9 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { Download, Save, X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { X, Download, Save } from 'lucide-react';
 
 type Props = {
   images: string[];
@@ -74,7 +74,10 @@ export default function ZoomableImageModal({ images, isOpen, initialIndex = 0, o
     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
   }, []);
 
-  const currentUrl = useMemo(() => images[index] || '', [images, index]);
+  const currentUrl = useMemo(() => {
+    const url = images[index];
+    return typeof url === 'string' && url.trim().length > 0 ? url : undefined;
+  }, [images, index]);
 
   return (
     <AnimatePresence>
@@ -133,19 +136,26 @@ export default function ZoomableImageModal({ images, isOpen, initialIndex = 0, o
               onPointerUp={onPointerUp}
             >
               <div className="relative" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transition: dragging ? 'none' : 'transform 120ms ease-out' }}>
-                <Image
-                  src={currentUrl}
-                  alt="image"
-                  className="w-auto h-auto max-w-[min(90vw,1200px)] max-h-[min(85vh,1600px)] object-contain select-none"
-                  width={1200}
-                  height={1600}
-                  unoptimized
-                  draggable={false}
-                />
+                {currentUrl ? (
+                  <Image
+                    src={currentUrl}
+                    alt="image"
+                    className="w-auto h-auto max-w-[min(90vw,1200px)] max-h-[min(85vh,1600px)] object-contain select-none"
+                    width={1200}
+                    height={1600}
+                    unoptimized
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="text-white/80 text-sm px-3 py-2 rounded bg-white/5 border border-white/10">
+                    Không có ảnh hợp lệ
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
+              {currentUrl && (
               <motion.a
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -158,7 +168,8 @@ export default function ZoomableImageModal({ images, isOpen, initialIndex = 0, o
                 <Download className="h-4 w-4" />
                 Tải xuống
               </motion.a>
-              {onSave && (
+              )}
+              {onSave && currentUrl && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -176,4 +187,3 @@ export default function ZoomableImageModal({ images, isOpen, initialIndex = 0, o
     </AnimatePresence>
   );
 }
-

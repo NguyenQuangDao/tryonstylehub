@@ -136,7 +136,7 @@ export default function ProfileSettings({
           <p className="text-[12px] text-muted-foreground">Hiển thị trên hồ sơ của bạn.</p>
         </div>
 
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <Label htmlFor="username" className="text-sm font-medium">Tên người dùng</Label>
           <Input
             id="username"
@@ -146,7 +146,7 @@ export default function ProfileSettings({
             placeholder="Chọn tên người dùng"
           />
           <p className="text-[12px] text-muted-foreground">3–20 ký tự; chữ, số, gạch dưới.</p>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="email" className="text-sm font-medium">Email</Label>
