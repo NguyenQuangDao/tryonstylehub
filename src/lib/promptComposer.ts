@@ -8,6 +8,23 @@ interface UserInfo {
   hairStyle: 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy';
 }
 
+const GROUP_TERMS = [
+  'two\\s+people', 'three\\s+people', '\\d+\\s*people', 'multiple\\s+subjects', 'additional\\s+figures', 'extra\\s+person',
+  'group', 'couple', 'multiple', 'crowd', 'several', 'friends', 'team', 'family', 'children', 'kids',
+  'men\\s+and\\s+women', 'boys\\s+and\\s+girls',
+  'nhóm', 'cặp', 'đôi', 'hai\\s+người', '2\\s*người', 'ba\\s+người', '3\\s*người', 'nhiều\\s+người',
+  'đám\\s+đông', 'tập\\s+thể', 'gia\\s+đình', 'bạn\\s+bè', 'song\\s+sinh', 'bộ\\s+ba', 'bộ\\s+đôi',
+  'nam\\s+và\\s+nữ', 'con\\s+trai\\s+và\\s+con\\s+gái', '\\d+\\s*người'
+];
+const GROUP_BLACKLIST = new RegExp(`(?:${GROUP_TERMS.join('|')})`, 'i');
+
+function removeGroupTerms(text: string): string {
+  // remove all group mentions and numeric-people patterns
+  let t = text.replace(GROUP_BLACKLIST, '');
+  t = t.replace(/\b(\d+)\s*(people|persons|người)\b/gi, '');
+  return t.replace(/\s{2,}/g, ' ').trim();
+}
+
 const STRUCTURE_KEYWORDS = [
   'grayscale',
   'high-contrast',
@@ -47,6 +64,10 @@ const NEGATIVE_KEYWORDS = [
   'no multiple panels',
   'no split-screen',
   'no multi-view',
+  'no multiple angles',
+  'no orthographic views',
+  'no front/side/back layout',
+  'no top-bottom layout',
   'no diagram',
   'no labels or annotations',
   'no measurement lines',
@@ -55,6 +76,25 @@ const NEGATIVE_KEYWORDS = [
   'no infographic layout',
   'no reference sheet'
 ];
+
+const FEMALE_NEGATIVE = [
+  'no beard',
+  'no mustache',
+  'no stubble',
+  'no chest hair'
+];
+const MALE_NEGATIVE: string[] = [];
+const NB_NEGATIVE = [
+  'no beard',
+  'no mustache',
+  'no stubble'
+];
+
+function genderSilhouette(gender: UserInfo['gender']): string {
+  if (gender === 'female') return 'feminine body silhouette';
+  if (gender === 'male') return 'masculine body silhouette';
+  return 'androgynous body silhouette';
+}
 
 // Color-dependent descriptors removed
 const skinToneMap: Record<UserInfo['skinTone'], string> = {
@@ -144,20 +184,24 @@ export function composePromptFromAll(info: UserInfo, incomingPrompt?: string): s
   const bodyType = describeBodyType(info.height, info.weight);
   const gender = genderTerm(info.gender);
 
-  parts.push(`grayscale, edge-emphasized full body depiction of a ${bodyType} ${gender}`);
+  parts.push(`full body depiction of an adult ${gender}`);
+  parts.push(genderSilhouette(info.gender));
+  parts.push(`${bodyType}`);
   const hairSilhouette = hairStyleMap[info.hairStyle] ? `${hairStyleMap[info.hairStyle]} hair silhouette` : '';
   if (hairSilhouette) parts.push(hairSilhouette);
   parts.push('neutral facial structure');
   parts.push(heightDesc);
-  parts.push('natural standing pose, orthographic front view, canonical upright alignment, relaxed hands at sides');
+  parts.push('natural standing pose, front-facing orientation, canonical upright alignment, relaxed hands at sides');
 
   parts.push(...COMPOSITION_KEYWORDS);
   parts.push(...STRUCTURE_KEYWORDS);
   parts.push(...NEGATIVE_KEYWORDS);
+  if (info.gender === 'female') parts.push(...FEMALE_NEGATIVE);
+  if (info.gender === 'non-binary') parts.push(...NB_NEGATIVE);
 
   if (incomingPrompt && incomingPrompt.trim()) {
-    const userTags = tokenize(incomingPrompt);
-    const filtered = userTags.filter(tag => !/brand|logo|watermark|copyright|text|background|studio|DSLR|lens|f\/|ISO|lighting|key light|rim light|color|skin tone|eye color/i.test(tag));
+    const userTags = tokenize(removeGroupTerms(incomingPrompt));
+    const filtered = userTags.filter(tag => !/brand|logo|watermark|copyright|text|background|studio|DSLR|lens|f\/|ISO|lighting|key light|rim light|color|skin tone|eye color/i.test(tag) && !GROUP_BLACKLIST.test(tag));
     parts.push(...filtered);
   }
 
@@ -171,6 +215,7 @@ export function improveOnly(original: string): string {
     ...STRUCTURE_KEYWORDS,
     ...NEGATIVE_KEYWORDS
   ];
-  const parts = dedupe([...tokenize(original), ...base]);
+  const cleaned = removeGroupTerms(original);
+  const parts = dedupe([...tokenize(cleaned), ...base]);
   return clampLength(parts.join(', '), 700);
 }

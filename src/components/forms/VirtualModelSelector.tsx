@@ -78,6 +78,43 @@ export default function VirtualModelSelector({
     }
   };
 
+  const getHairStyleLabel = (style?: string) => {
+    switch (style) {
+      case 'short': return 'Ngắn';
+      case 'long': return 'Dài';
+      case 'curly': return 'Xoăn';
+      case 'straight': return 'Thẳng';
+      case 'wavy': return 'Gợn sóng';
+      case 'bald': return 'Hói';
+      default: return style || '';
+    }
+  };
+
+  const getHairColorLabel = (color?: string) => {
+    switch (color) {
+      case 'black': return 'Đen';
+      case 'brown': return 'Nâu';
+      case 'blonde': return 'Vàng';
+      case 'red': return 'Đỏ';
+      case 'white': return 'Trắng';
+      case 'gray': return 'Xám';
+      case 'other': return 'Khác';
+      default: return color || '';
+    }
+  };
+
+  const getSkinToneLabel = (tone?: string) => {
+    switch (tone) {
+      case 'very-light': return 'Rất sáng';
+      case 'light': return 'Sáng';
+      case 'medium': return 'Trung bình';
+      case 'tan': return 'Nâu nhạt';
+      case 'brown': return 'Nâu';
+      case 'dark': return 'Tối';
+      default: return tone || '';
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -215,6 +252,7 @@ export default function VirtualModelSelector({
                             width={64}
                             height={64}
                             className="w-full h-full object-cover"
+                            sizes="64px"
                           />
                         </div>
                       ) : (
@@ -242,7 +280,7 @@ export default function VirtualModelSelector({
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500 dark:text-gray-500">Tóc:</span>
                       <span className="text-gray-900 dark:text-white font-medium">
-                        {model.hairStyle} - {model.hairColor}
+                        {getHairStyleLabel(model.hairStyle)} - {getHairColorLabel(model.hairColor)}
                       </span>
                     </div>
                     {model.bodyShape && (
@@ -257,7 +295,7 @@ export default function VirtualModelSelector({
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-gray-500 dark:text-gray-500">Màu da:</span>
                         <span className="text-gray-900 dark:text-white font-medium">
-                          {model.skinTone}
+                          {getSkinToneLabel(model.skinTone)}
                         </span>
                       </div>
                     )}
@@ -340,4 +378,3 @@ export default function VirtualModelSelector({
     </motion.div>
   );
 }
-

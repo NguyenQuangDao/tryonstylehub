@@ -19,7 +19,7 @@ export default function RootLayout({
             <div className="min-h-screen ml-64">
               <Navigation />
               <AppHeader />
-              <main className="max-w-full">
+              <main className="max-w-full py-8">
                 {children}
               </main>
             </div>

@@ -1,21 +1,18 @@
 'use client'
 
+import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import { motion } from 'framer-motion';
 import {
   Activity,
   BarChart3,
-  Calendar,
   CreditCard,
-  DollarSign,
   Image as ImageIcon,
   Sparkles,
-  TrendingUp,
   Zap
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -27,7 +24,7 @@ interface CostStats {
 }
 
 interface Transaction {
-  id: number
+  id: string
   createdAt: string
   paypalOrderId: string
   amount: number
@@ -58,14 +55,18 @@ export default function EnhancedDashboardPage() {
       const balanceRes = await fetch('/api/tokens/balance');
       if (balanceRes.ok) {
         const data = await balanceRes.json();
-        setTokenBalance(data.data.balance);
+        if (data.success && data.data && typeof data.data.balance === 'number') {
+          setTokenBalance(data.data.balance);
+        }
       }
 
       // Fetch transaction history
       const historyRes = await fetch('/api/tokens/purchase');
       if (historyRes.ok) {
         const data = await historyRes.json();
-        setTransactions(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setTransactions(data.data);
+        }
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -81,35 +82,10 @@ export default function EnhancedDashboardPage() {
       icon: Sparkles,
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/20',
-      trend: '+0.0% from last week',
       action: {
         label: 'Nạp thêm',
         href: '/tokens',
       }
-    },
-    {
-      title: 'Chi phí hôm nay',
-      value: `$${costStats.daily.toFixed(2)}`,
-      icon: DollarSign,
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/20',
-      trend: '+5.2% from yesterday',
-    },
-    {
-      title: 'Chi phí tuần này',
-      value: `$${costStats.weekly.toFixed(2)}`,
-      icon: Calendar,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/20',
-      trend: '+12.4% from last week',
-    },
-    {
-      title: 'Chi phí tháng này',
-      value: `$${costStats.monthly.toFixed(2)}`,
-      icon: TrendingUp,
-      color: 'text-orange-600 dark:text-orange-400',
-      bgColor: 'bg-orange-100 dark:bg-orange-900/20',
-      trend: '+20.1% from last month',
     },
   ];
 
@@ -188,7 +164,6 @@ export default function EnhancedDashboardPage() {
         items={stats.map((s) => ({
           title: s.title,
           value: s.value,
-          trend: s.trend,
           icon: s.icon,
         }))}
       />
@@ -235,10 +210,7 @@ export default function EnhancedDashboardPage() {
                           +{tx.tokens} Token
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {tx.amount > 1000
-                            ? `${tx.amount.toLocaleString('vi-VN')}₫`
-                            : `$${tx.amount}`
-                          }
+                          {`$${Number(tx.amount).toFixed(2)}`}
                         </p>
                       </div>
                       <Badge variant={tx.status === 'completed' ? 'default' : 'secondary'}>

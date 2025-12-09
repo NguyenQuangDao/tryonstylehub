@@ -1,4 +1,4 @@
-import { JWTPayload, verifyToken, createToken } from '@/lib/auth'
+import { createToken, JWTPayload, verifyToken } from '@/lib/auth'
 import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
 import { uploadFileToS3 } from '@/lib/s3'
@@ -47,10 +47,25 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const name = String(formData.get('name') || '').trim()
     const description = String(formData.get('description') || '').trim()
+    const address = String(formData.get('address') || '').trim()
+    const phone = String(formData.get('phone') || '').trim()
+    const email = String(formData.get('email') || '').trim()
     const logo = formData.get('logo') as File | null
 
     if (!name || name.length < 2) {
       return NextResponse.json({ error: 'Tên shop không hợp lệ' }, { status: 400 })
+    }
+
+    if (address && address.length < 5) {
+      return NextResponse.json({ error: 'Địa chỉ không hợp lệ' }, { status: 400 })
+    }
+
+    if (phone && !/^[0-9+\-()\s]{9,16}$/i.test(phone)) {
+      return NextResponse.json({ error: 'Số điện thoại không hợp lệ' }, { status: 400 })
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Email liên hệ không hợp lệ' }, { status: 400 })
     }
 
     let logoUrl: string | null = null
@@ -82,6 +97,9 @@ export async function POST(request: Request) {
         slug,
         logoUrl,
         description: description || null,
+        address: address || null,
+        phone: phone || null,
+        email: email || null,
         ownerId: userId as string,
         status: 'ACTIVE',
       },

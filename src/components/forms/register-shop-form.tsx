@@ -12,13 +12,16 @@ import { useAuth } from "@/lib/auth-context"
 type FormValues = {
   name: string
   description: string
+  address: string
+  phone: string
+  email: string
   logo: FileList
 }
 
 export default function RegisterShopForm() {
   const { user, refetchUser } = useAuth()
   const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm<FormValues>({
-    defaultValues: { name: "", description: "" }
+    defaultValues: { name: "", description: "", address: "", phone: "", email: user?.email || "" }
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -42,6 +45,9 @@ export default function RegisterShopForm() {
     const fd = new FormData()
     fd.append("name", data.name)
     fd.append("description", data.description || "")
+    fd.append("address", data.address || "")
+    fd.append("phone", data.phone || "")
+    fd.append("email", data.email || "")
     const file = data.logo?.[0]
     if (file) fd.append("logo", file)
     try {
@@ -77,6 +83,21 @@ export default function RegisterShopForm() {
       <div>
         <Label htmlFor="description">Mô tả</Label>
         <Textarea id="description" rows={4} placeholder="Mô tả cửa hàng của bạn" {...register("description", { required: true })} />
+      </div>
+
+      <div>
+        <Label htmlFor="address">Địa chỉ kinh doanh</Label>
+        <Input id="address" className="h-9" placeholder="Số nhà, đường, quận/huyện, tỉnh/thành" {...register("address", { required: true })} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="phone">Số điện thoại liên hệ</Label>
+          <Input id="phone" className="h-9" placeholder="0123 456 789" {...register("phone", { required: true })} />
+        </div>
+        <div>
+          <Label htmlFor="email">Email liên hệ</Label>
+          <Input id="email" type="email" className="h-9" placeholder="email@domain.com" {...register("email", { required: true })} />
+        </div>
       </div>
 
       <div>

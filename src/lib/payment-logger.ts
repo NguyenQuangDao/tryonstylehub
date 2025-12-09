@@ -37,18 +37,30 @@ interface LogEntry {
  */
 export async function logPaymentEvent(entry: LogEntry): Promise<void> {
     try {
+        // Build details and clamp to column size (VARCHAR ~191)
+        const MAX_LEN = 180
+        const summaryPairs = Object.entries(entry.details || {}).slice(0, 8).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`)
+        const minimal = {
+            level: entry.level,
+            timestamp: new Date().toISOString(),
+            ipAddress: entry.ipAddress,
+            userAgent: entry.userAgent,
+            summary: summaryPairs.join('; '),
+        }
+        let detailsStr = JSON.stringify(minimal)
+        if (detailsStr.length > MAX_LEN) {
+            const over = detailsStr.length - MAX_LEN
+            const keep = Math.max(0, minimal.summary.length - (over + 3))
+            minimal.summary = minimal.summary.slice(0, keep) + '...'
+            detailsStr = JSON.stringify(minimal)
+        }
+
         const logData = {
             userId: entry.userId || null,
             service: 'payment',
             operation: entry.eventType,
-            cost: 0, // For payment logs, cost is tracked in TokenPurchase
-            details: JSON.stringify({
-                level: entry.level,
-                timestamp: new Date().toISOString(),
-                ipAddress: entry.ipAddress,
-                userAgent: entry.userAgent,
-                ...entry.details,
-            }),
+            cost: 0,
+            details: detailsStr,
         }
 
         await (prisma as any).costTracking.create({ data: logData })

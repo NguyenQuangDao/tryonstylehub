@@ -150,9 +150,25 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
                 <CardTitle>Giới thiệu cửa hàng</CardTitle>
                 <CardDescription>Thông tin mô tả về cửa hàng</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="text-muted-foreground">Mô tả</div>
-                <div>{shop.description || 'Chưa có mô tả'}</div>
+              <CardContent className="space-y-4 text-sm">
+                <div>
+                  <div className="text-muted-foreground">Mô tả</div>
+                  <div>{shop.description || 'Chưa có mô tả'}</div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground">Địa chỉ</div>
+                    <div>{shop.address || '—'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground">Số điện thoại</div>
+                    <div>{shop.phone || '—'}</div>
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <div className="text-muted-foreground">Email liên hệ</div>
+                    <div>{shop.email || '—'}</div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

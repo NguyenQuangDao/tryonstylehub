@@ -2,14 +2,14 @@
 
 import {
   Avatar,
-  AvatarFallback,
   AvatarImage,
   Button,
   Input,
   Label,
   Separator,
-  Textarea,
+  Textarea
 } from "@/components/ui";
+import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 
 interface ProfileSettingsProps {
@@ -29,6 +29,7 @@ export default function ProfileSettings({
   avatarUrl = null,
   isEmailVerified = true,
 }: ProfileSettingsProps) {
+  const { refetchUser } = useAuth();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [username, setUsername] = useState(initialUsername);
   const [email, setEmail] = useState(initialEmail || "name@example.com");
@@ -70,8 +71,42 @@ export default function ProfileSettings({
     } catch {}
   }, [])
 
-  const handleUpdate = () => {
-    console.log({ displayName, username, email, bio });
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveOk, setSaveOk] = useState(false)
+
+  const handleUpdate = async () => {
+    setSaving(true)
+    setSaveError(null)
+    setSaveOk(false)
+    try {
+      const res = await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName,
+          gender,
+          height,
+          weight,
+          skinTone,
+          eyeColor,
+          hairColor,
+          hairStyle,
+        })
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setSaveError(data.error || 'Cập nhật hồ sơ thất bại')
+        setSaving(false)
+        return
+      }
+      await refetchUser()
+      setSaveOk(true)
+    } catch {
+      setSaveError('Lỗi mạng khi cập nhật hồ sơ')
+    } finally {
+      setSaving(false)
+    }
   };
 
   const handleSaveDefaults = () => {
@@ -81,13 +116,12 @@ export default function ProfileSettings({
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center gap-4">
+      {avatarUrl && <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
           <AvatarImage src={avatarUrl || undefined} alt="Ảnh đại diện" />
-          <AvatarFallback>US</AvatarFallback>
         </Avatar>
         <Button variant="outline" className="h-8">Thay đổi</Button>
-      </div>
+      </div>}
 
       <form className="space-y-4">
         <div className="flex flex-col gap-2">
@@ -210,14 +244,13 @@ export default function ProfileSettings({
               </select>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button type="button" className="h-9" onClick={handleSaveDefaults}>Lưu mặc định avatar</Button>
-          </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button type="button" className="h-9" onClick={handleUpdate}>
-            Cập nhật hồ sơ
+        <div className="flex items-center justify-end gap-3">
+          {saveError && <span className="text-[12px] text-destructive">{saveError}</span>}
+          {saveOk && !saveError && <span className="text-[12px] text-emerald-600">Đã lưu</span>}
+          <Button type="button" className="h-9" onClick={handleUpdate} disabled={saving}>
+            {saving ? 'Đang lưu...' : 'Cập nhật hồ sơ'}
           </Button>
         </div>
       </form>

@@ -261,7 +261,7 @@ export const TOKEN_CONFIG = {
             color: DESIGN_TOKENS.colors.success[500],
             gradient: `linear-gradient(135deg, ${DESIGN_TOKENS.colors.success[300]}, ${DESIGN_TOKENS.colors.success[600]})`,
             badge: null,
-            savings: 0,
+            savings: 5,
             features: ['20 tokens', 'Basic features', 'Email support'],
         },
         {
@@ -337,7 +337,7 @@ export const TOKEN_CONFIG = {
             color: DESIGN_TOKENS.colors.success[500],
             gradient: `linear-gradient(135deg, ${DESIGN_TOKENS.colors.success[300]}, ${DESIGN_TOKENS.colors.success[600]})`,
             badge: null,
-            savings: 0,
+            savings: 5,
             features: ['20 tokens', 'Tính năng cơ bản', 'Hỗ trợ email'],
         },
         {

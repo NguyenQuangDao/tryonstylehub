@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
@@ -18,15 +16,7 @@ import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-const items = [
-  { href: "/dashboard", label: "Bảng điều khiển", icon: Home },
-  { href: "/profile", label: "Thông tin cá nhân", icon: User },
-  { href: "/products", label: "Sản phẩm", icon: Box },
-  { href: "/shops", label: "Cửa hàng", icon: ShoppingCart },
-  { href: "/blog", label: "Blog", icon: Newspaper },
-  { href: "/tokens", label: "Token", icon: Coins },
-  { href: "/admin/users", label: "Các tính năng", icon: Users },
-]
+type NavItem = { href: string; label: string; icon: any }
 
 export default function AppSidebar() {
   const pathname = usePathname()
@@ -38,6 +28,26 @@ export default function AppSidebar() {
     type UserWithRole = { role?: Role } | null
     const role = (user as UserWithRole)?.role
     return role === "SELLER" || role === "SHOP_ADMIN" || role === "ADMIN"
+  }, [user])
+
+  const navItems = useMemo<NavItem[]>(() => {
+    const base: NavItem[] = [
+      { href: "/dashboard", label: "Bảng điều khiển", icon: Home },
+      { href: "/", label: "Thử đồ ảo", icon: User },
+      { href: "/profile", label: "Thông tin cá nhân", icon: User },
+      { href: "/products", label: "Sản phẩm", icon: Box },
+      { href: "/shops", label: "Cửa hàng", icon: ShoppingCart },
+      { href: "/blog", label: "Blog", icon: Newspaper },
+      { href: "/tokens", label: "Token", icon: Coins },
+    ]
+    const role = (user as { role?: "SHOPPER" | "SELLER" | "ADMIN" } | null)?.role
+    const seller: NavItem[] = role === "SELLER"
+      ? [{ href: "/dashboard/seller", label: "Bảng người bán", icon: Store }]
+      : [{ href: "/dashboard/seller", label: "Đăng ký người bán", icon: Store }]
+    const admin: NavItem[] = role === "ADMIN" ? [
+      { href: "/admin/dashboard", label: "Admin Dashboard", icon: LineChart },
+    ] : []
+    return [...base, ...seller, ...admin]
   }, [user])
 
   if (pathname === '/login' || pathname === '/register') {
@@ -53,7 +63,7 @@ export default function AppSidebar() {
           </Link>
         </div>
         <nav className="flex-1 px-3 py-2 space-y-1">
-          {items.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname?.startsWith(href)
             return (
               <Link key={href} href={href} className="block">
@@ -70,53 +80,6 @@ export default function AppSidebar() {
               </Link>
             )
           })}
-          <Sheet open={openSellerPanel} onOpenChange={setOpenSellerPanel}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-start h-9 text-sm font-medium text-muted-foreground hover:text-foreground gap-2"
-              >
-                <Store className="h-4 w-4" />
-                <span>Bảng người bán</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-4xl w-full bg-background shadow-2xl border-l p-6">
-              <SheetHeader>
-                <SheetTitle>Quản lý cửa hàng</SheetTitle>
-              </SheetHeader>
-              <div className="mt-3">
-                <Tabs defaultValue="register">
-                  <TabsList className="w-full bg-muted rounded-lg p-1">
-                    <TabsTrigger value="register" className="flex-1">
-                      Đăng ký shop
-                    </TabsTrigger>
-                    <TabsTrigger value="upload" className="flex-1">
-                      Đăng sản phẩm
-                    </TabsTrigger>
-                    {isSellerAdmin && (
-                      <TabsTrigger value="manage" className="flex-1">
-                        Quản lý shop
-                      </TabsTrigger>
-                    )}
-                  </TabsList>
-
-                  <TabsContent value="register" className="mt-6">
-                    <RegisterShopForm onSuccess={() => setOpenSellerPanel(false)} />
-                  </TabsContent>
-
-                  <TabsContent value="upload" className="mt-6">
-                    <UploadProductForm />
-                  </TabsContent>
-
-                  {isSellerAdmin && (
-                    <TabsContent value="manage" className="mt-6">
-                      <ShopAdminArea />
-                    </TabsContent>
-                  )}
-                </Tabs>
-              </div>
-            </SheetContent>
-          </Sheet>
         </nav>
         <div className="mt-auto px-3 py-3">
           <div className="flex items-center gap-2">
@@ -124,8 +87,15 @@ export default function AppSidebar() {
               <AvatarImage src={user?.avatar ?? ""} alt={user?.name ?? "Người dùng"} />
               <AvatarFallback>{user?.name?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
             </Avatar>
-            <div className="text-sm text-muted-foreground">
-              {user?.name || user?.email || "Khách"}
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-muted-foreground">
+                {user?.name || user?.email || "Khách"}
+              </div>
+              {user?.role && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-foreground/70">
+                  {user.role}
+                </span>
+              )}
             </div>
           </div>
           <div className="mt-2">

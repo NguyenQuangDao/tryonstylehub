@@ -4,16 +4,33 @@ import { TOKEN_CONFIG } from "../../../config/tokens";
 import { CostTracker } from "../../../lib/cost-optimizer";
 import { generateImageWithDALLE } from "../../../lib/openai-ai";
 import { prisma } from "../../../lib/prisma";
+import { composePromptFromAll, improveOnly } from "../../../lib/promptComposer";
 import { generateS3Key, getJSON, getPresignedUrl, putJSON, uploadToS3 } from "../../../lib/s3";
 import { chargeTokens, createInsufficientTokensResponse, requireTokens } from "../../../lib/token-middleware";
 
-type GenerateImageRequest = {
-  prompt: string;
-  size?: "1024x1024" | "1024x1792" | "1792x1024";
-  quality?: "standard" | "hd";
-  range?: 'upper-body' | 'full-body';
-  pose?: 'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning';
+type UserInfo = {
+  gender: 'male' | 'female' | 'non-binary';
+  height: number;
+  weight: number;
+  skinTone: 'very-light' | 'light' | 'medium' | 'tan' | 'brown' | 'dark';
+  eyeColor: 'brown' | 'black' | 'blue' | 'green' | 'gray' | 'amber';
+  hairColor: 'black' | 'brown' | 'blonde' | 'red' | 'white' | 'gray' | 'other';
+  hairStyle: 'long' | 'short' | 'curly' | 'straight' | 'bald' | 'wavy';
 };
+
+type CreateAvatarRequest = {
+  userInfo?: UserInfo;
+  prompt?: string;
+  options?: {
+    quality?: 'standard' | 'hd';
+    range?: 'upper-body' | 'full-body';
+    pose?: 'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning';
+  };
+  image?: {
+    size?: "1024x1024" | "1024x1792" | "1792x1024";
+  };
+};
+
 type GalleryEntry = {
   url: string;
   key: string;
@@ -26,45 +43,25 @@ type GalleryEntry = {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as GenerateImageRequest;
-    const { prompt, quality = "standard", size, range = 'full-body', pose = 'standing' } = body;
+    const body = await request.json() as CreateAvatarRequest;
 
-    // Validation
-    if (!prompt || typeof prompt !== "string") {
+    const { userInfo, prompt } = body;
+    const quality = body.options?.quality ?? 'standard';
+    const range = body.options?.range ?? 'full-body';
+    const pose = body.options?.pose ?? 'standing';
+    const size = body.image?.size;
+
+    if ((!userInfo && !prompt) || (prompt && typeof prompt !== 'string')) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Prompt là bắt buộc và phải là chuỗi văn bản."
-        },
+        { success: false, error: 'Cần cung cấp thông tin người dùng hoặc mô tả (prompt) hợp lệ.' },
         { status: 400 }
       );
     }
 
-    if (prompt.length < 10) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Prompt phải có ít nhất 10 ký tự để tạo ảnh chất lượng."
-        },
-        { status: 400 }
-      );
-    }
-
-    if (prompt.length > 1000) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Prompt không được vượt quá 1000 ký tự."
-        },
-        { status: 400 }
-      );
-    }
-
-    // Require tokens and get user
     const tokenCheck = await requireTokens(request, {
       operation: 'Tạo ảnh AI',
       tokensRequired: TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
-    })
+    });
 
     if (!tokenCheck.success) {
       if (tokenCheck.insufficientTokens) {
@@ -72,15 +69,30 @@ export async function POST(request: NextRequest) {
           TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
           tokenCheck.currentBalance || 0,
           'tạo ảnh AI'
-        )
+        );
       }
-      return NextResponse.json({ success: false, error: tokenCheck.error || 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ success: false, error: tokenCheck.error || 'Unauthorized' }, { status: 401 });
     }
 
-    const userId: string = tokenCheck.userId!
-    const userIdStr: string = tokenCheck.userId!
-    
-    // Enhance prompt for better results
+    const userId: string = tokenCheck.userId!;
+    const userIdStr: string = tokenCheck.userId!;
+
+    let basePrompt = userInfo
+      ? composePromptFromAll(userInfo, prompt)
+      : improveOnly(String(prompt));
+    const removeTerms = [
+      'edge-emphasized',
+      'contour-focused',
+      'shape-based representation',
+      'structural morphology',
+      'rotation-invariant depiction',
+      'camera-agnostic orientation'
+    ]
+    for (const term of removeTerms) {
+      basePrompt = basePrompt.replace(new RegExp(`\\b${term}\\b`, 'gi'), '')
+    }
+    basePrompt = basePrompt.replace(/\s{2,}/g, ' ').trim()
+
     const fullBodyCues = [
       'full body portrait',
       'subject centered',
@@ -91,6 +103,9 @@ export async function POST(request: NextRequest) {
       'non-sexual, safe for work',
       'solo portrait',
       'single frame',
+      'single shot',
+      'front-facing orientation',
+      'one-angle view',
       'plain neutral background',
       'uncluttered background'
     ].join(', ');
@@ -104,6 +119,9 @@ export async function POST(request: NextRequest) {
       'non-sexual, safe for work',
       'solo portrait',
       'single frame',
+      'single shot',
+      'front-facing orientation',
+      'one-angle view',
       'plain neutral background',
       'uncluttered background'
     ].join(', ');
@@ -117,6 +135,17 @@ export async function POST(request: NextRequest) {
       'no multiple panels',
       'no split-screen',
       'no multi-view',
+      'no multiple angles',
+      'no orthographic views',
+      'no front/side/back layout',
+      'no top-bottom layout',
+      'no multiple people',
+      'no two people',
+      'no couple',
+      'no group',
+      'no crowd',
+      'no additional figures',
+      'no extra person',
       'no diagram',
       'no labels or annotations',
       'no measurement lines',
@@ -141,15 +170,11 @@ export async function POST(request: NextRequest) {
       'no gore'
     ].join(', ');
     const structureCues = [
-      'grayscale',
-      'high-contrast',
-      'edge-emphasized',
-      'contour-focused',
-      'shape-based representation',
-      'structural morphology',
-      'rotation-invariant depiction',
-      'camera-agnostic orientation',
-      'normalized exposure',
+      'photorealistic portrait',
+      'realistic human proportions',
+      'natural neutral background',
+      'high detail',
+      'balanced exposure',
       'denoised',
       'artifact-free'
     ].join(', ');
@@ -168,15 +193,28 @@ export async function POST(request: NextRequest) {
       }
     })();
     const rangeCues = range === 'upper-body' ? upperBodyCues : fullBodyCues;
-    const sanitizePrompt = (raw: string) => {
-      const blacklist = /(nude|naked|underwear|bikini|lingerie|sexy|erotic|fetish|violence|weapon|blood|gore|child|kid|minor|teen|two\s+people|couple|group|multiple|crowd|several|friends|family|team)/gi;
-      return raw.replace(blacklist, '').replace(/\s{2,}/g, ' ').trim();
-    };
-    const base = sanitizePrompt(prompt);
-    const enhancedPrompt = `${base}, ${rangeCues}, ${poseCues}, ${structureCues}, ${negativeCues}`;
 
-    // Generate image using optimized DALL-E
+    const sanitizePrompt = (raw: string) => {
+      const groupTerms = [
+        'two\\s+people', 'three\\s+people', '\\d+\\s*people', 'multiple\\s+subjects', 'additional\\s+figures', 'extra\\s+person',
+        'group', 'couple', 'multiple', 'crowd', 'several', 'friends', 'family', 'team',
+        'nhóm', 'cặp', 'đôi', 'hai\\s+người', '2\\s*người', 'ba\\s+người', '3\\s*người', 'nhiều\\s+người',
+        'đám\\s+đông', 'tập\\s+thể', 'gia\\s+đình', 'bạn\\s+bè', 'bộ\\s+ba', 'bộ\\s+đôi', 'song\\s+sinh', '\\d+\\s*người'
+      ];
+      const sensitiveTerms = [
+        'nude','naked','underwear','bikini','lingerie','sexy','erotic','fetish','violence','weapon','blood','gore','child','kid','minor','teen'
+      ];
+      const blacklist = new RegExp(`(?:${[...groupTerms, ...sensitiveTerms].join('|')})`, 'gi');
+      return raw
+        .replace(blacklist, '')
+        .replace(/\b(\d+)\s*(people|persons|người)\b/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    };
+    const enhancedPrompt = `${sanitizePrompt(basePrompt)}, ${rangeCues}, ${poseCues}, ${structureCues}, ${negativeCues}`;
+
     const preferredSize: "1024x1024" | "1024x1792" | "1792x1024" = size || (range === 'upper-body' ? "1024x1024" : "1024x1792");
+
     let imageUrl: string;
     try {
       imageUrl = await generateImageWithDALLE(enhancedPrompt, String(userId), quality, preferredSize);
@@ -263,16 +301,13 @@ export async function POST(request: NextRequest) {
       } catch {}
     }
 
-    // Get cost information
     const costStats = CostTracker.getStats();
-
-    // Charge tokens after successful generation
     await chargeTokens(
       userId,
       'Tạo ảnh AI',
       TOKEN_CONFIG.COSTS.GENERATE_IMAGE.amount,
       { s3Key }
-    )
+    );
 
     return NextResponse.json({
       success: true,
@@ -285,46 +320,28 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("[Generate Image API] Error:", error);
-    
-    // Handle specific OpenAI errors
     if (error instanceof Error) {
-      if (error.message.includes("content_policy_violation")) {
+      if (error.message.includes('content_policy_violation')) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Nội dung của bạn vi phạm chính sách của OpenAI. Vui lòng thử lại với nội dung khác."
-          },
+          { success: false, error: 'Nội dung vi phạm chính sách. Vui lòng thử với mô tả khác.' },
           { status: 400 }
         );
       }
-      
-      if (error.message.includes("rate_limit")) {
+      if (error.message.includes('rate_limit')) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Đã vượt quá giới hạn tỷ lệ. Vui lòng thử lại sau ít phút."
-          },
+          { success: false, error: 'Đã vượt quá giới hạn tần suất. Thử lại sau.' },
           { status: 429 }
         );
       }
-
-      if (error.message.includes("insufficient_quota")) {
+      if (error.message.includes('insufficient_quota')) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Không đủ quota API. Vui lòng kiểm tra tài khoản OpenAI."
-          },
+          { success: false, error: 'Không đủ quota API. Vui lòng kiểm tra cấu hình.' },
           { status: 402 }
         );
       }
     }
-
     return NextResponse.json(
-      {
-        success: false,
-        error: "Không thể tạo ảnh. Vui lòng thử lại sau."
-      },
+      { success: false, error: 'Không thể tạo ảnh. Vui lòng thử lại sau.' },
       { status: 500 }
     );
   }

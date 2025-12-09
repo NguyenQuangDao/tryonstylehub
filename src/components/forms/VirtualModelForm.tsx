@@ -13,10 +13,9 @@ import {
 import { CreateVirtualModelInput, VirtualModel } from "@/types";
 import { motion } from "framer-motion";
 import { AlertCircle, Save, User, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import AvatarGenerator from "./AvatarGenerator";
 import AvatarUpload from "./AvatarUpload";
-import { useEffect } from "react";
 
 interface VirtualModelFormProps {
   onClose: () => void;
@@ -29,6 +28,8 @@ export default function VirtualModelForm({
   onSave,
   editModel,
 }: VirtualModelFormProps) {
+  const DEFAULT_AVATAR_PROMPT =
+    "Chân dung một người duy nhất, một khung hình; tập trung cấu trúc grayscale, đường viền rõ; nền trung tính; hiển thị toàn thân; tránh mô tả màu sắc, ánh sáng, camera.";
   // Basic Info
   const [avatarName, setAvatarName] = useState(editModel?.avatarName || "");
 
@@ -105,6 +106,33 @@ export default function VirtualModelForm({
 
     if (weight < 30 || weight > 200) {
       setError("Cân nặng phải từ 30-200kg");
+      return;
+    }
+
+    const validGenders = ["male", "female", "non-binary"] as const;
+    const validSkinTones = ["very-light", "light", "medium", "tan", "brown", "dark"] as const;
+    const validEyeColors = ["brown", "black", "blue", "green", "gray", "amber"] as const;
+    const validHairColors = ["black", "brown", "blonde", "red", "white", "gray", "other"] as const;
+    const validHairStyles = ["long", "short", "curly", "straight", "bald", "wavy"] as const;
+
+    if (!validGenders.includes(gender as any)) {
+      setError("Giới tính không hợp lệ");
+      return;
+    }
+    if (!validSkinTones.includes(skinTone as any)) {
+      setError("Màu da không hợp lệ");
+      return;
+    }
+    if (!validEyeColors.includes(eyeColor as any)) {
+      setError("Màu mắt không hợp lệ");
+      return;
+    }
+    if (!validHairColors.includes(hairColor as any)) {
+      setError("Màu tóc không hợp lệ");
+      return;
+    }
+    if (!validHairStyles.includes(hairStyle as any)) {
+      setError("Kiểu tóc không hợp lệ");
       return;
     }
 
@@ -420,6 +448,7 @@ export default function VirtualModelForm({
                   hairColor,
                   hairStyle,
                 }}
+                initialPrompt={DEFAULT_AVATAR_PROMPT}
               />
             ) : (
               <AvatarUpload

@@ -120,6 +120,8 @@ export class PromptService {
 
     const hairStyleDesc = hairStyleMap[userInfo.hairStyle];
 
-    return `Grayscale, edge-emphasized full body depiction of a ${bodyType} ${genderTerm}, ${hairStyleDesc} hair silhouette, neutral facial structure, natural standing pose, orthographic front view, canonical upright alignment, subject centered, head-to-toe visible, all limbs fully visible (hands and feet in frame), high-contrast contours, shape-based representation, structural morphology, rotation-invariant depiction, camera-agnostic orientation, normalized exposure, denoised, artifact-free`;
+    const genderSilhouette = userInfo.gender === 'female' ? 'feminine body silhouette' : userInfo.gender === 'male' ? 'masculine body silhouette' : 'androgynous body silhouette';
+    const genderNegatives = userInfo.gender === 'female' || userInfo.gender === 'non-binary' ? ', no beard, no mustache, no stubble' : '';
+    return `Photorealistic full-body portrait of an adult ${genderTerm}, ${genderSilhouette}, ${bodyType}, ${hairStyleDesc} hair silhouette, neutral facial structure${genderNegatives}, natural standing pose, subject centered, head-to-toe visible, single subject only, one person, solo portrait, single frame, realistic human proportions, balanced exposure, denoised, artifact-free, plain neutral background`;
   }
 }

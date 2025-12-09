@@ -308,15 +308,15 @@ export default function ProductsPage() {
                   <div className="flex gap-2">
                     {p?.shop?.url ? (
                       <Button asChild variant="outline" size="sm" className="w-full">
-                        <Link href={p.shop.url}>Truy cập shop</Link>
+                        <Link href={p.shop.url}>Xem</Link>
                       </Button>
                     ) : (
                       <Button variant="outline" size="sm" className="w-full" disabled>
-                        Truy cập shop
+                        Xem Shop
                       </Button>
                     )}
                     <Button asChild size="sm" className="w-full">
-                      <Link href={`/?garmentImage=${encodeURIComponent(p.imageUrl)}&category=auto`}>Thử đồ ảo</Link>
+                      <Link href={`/?garmentImage=${encodeURIComponent(p.imageUrl)}&category=auto`}>Try-on</Link>
                     </Button>
                   </div>
                 </div>

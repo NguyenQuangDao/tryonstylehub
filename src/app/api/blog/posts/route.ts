@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
     const where: any = {}
     if (keyword) {
       where.OR = [
-        { title: { contains: keyword, mode: 'insensitive' } },
-        { content: { contains: keyword, mode: 'insensitive' } },
+        { title: { contains: keyword } },
+        { content: { contains: keyword } },
       ]
     }
     if (category) where.category = category

@@ -60,6 +60,11 @@ export async function generateImageWithDALLE(
     return imageUrl;
   } catch (error) {
     console.error('[OpenAI] DALL-E error:', error);
+    const e: any = error;
+    const code = e?.error?.code || e?.code || '';
+    if (String(code).includes('content_policy_violation')) {
+      throw new Error('content_policy_violation');
+    }
     throw error;
   }
 }

@@ -3,7 +3,7 @@
 import { Button, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PromptService } from '@/services';
-import { Download, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { Download, Loader2, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface UserInfo {
@@ -20,16 +20,27 @@ interface AvatarGeneratorProps {
   onImageGenerated: (imageUrl: string) => void;
   onError: (error: string) => void;
   userInfo?: UserInfo;
+  initialPrompt?: string;
 }
 
-export default function AvatarGenerator({ onImageGenerated, onError, userInfo }: AvatarGeneratorProps) {
-  const [prompt, setPrompt] = useState('');
+export default function AvatarGenerator({ onImageGenerated, onError, userInfo, initialPrompt }: AvatarGeneratorProps) {
+  const [prompt, setPrompt] = useState(initialPrompt || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
   const [range, setRange] = useState<'upper-body' | 'full-body'>('full-body');
   const [pose, setPose] = useState<'standing' | 'walking' | 'hands-on-hips' | 'arms-crossed' | 'leaning'>('standing');
+
+  const GROUP_TERMS = [
+    'two\\s+people', 'three\\s+people', '\\d+\\s*people', 'multiple\\s+subjects', 'additional\\s+figures', 'extra\\s+person',
+    'group', 'couple', 'multiple', 'crowd', 'several', 'friends', 'team', 'family', 'children', 'kids',
+    'men\\s+and\\s+women', 'boys\\s+and\\s+girls',
+    'nhóm', 'cặp', 'đôi', 'hai\\s+người', '2\\s*người', 'ba\\s+người', '3\\s*người', 'nhiều\\s+người',
+    'đám\\s+đông', 'tập\\s+thể', 'gia\\s+đình', 'bạn\\s+bè', 'song\\s+sinh', 'bộ\\s+ba', 'bộ\\s+đôi',
+    'nam\\s+và\\s+nữ', 'con\\s+trai\\s+và\\s+con\\s+gái', '\\d+\\s*người'
+  ];
+  const invalidGroupRegex = new RegExp(`(?:${GROUP_TERMS.join('|')})`, 'i');
 
   const generatePromptFromUserInfo = async () => {
     if (!userInfo) {
@@ -43,7 +54,8 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
       const generatedPrompt = prompt.trim()
         ? await promptService.composeAndImprovePrompt(userInfo, prompt)
         : await promptService.generatePrompt(userInfo);
-      setPrompt(generatedPrompt);
+      const sanitized = generatedPrompt.replace(invalidGroupRegex, '').replace(/\s{2,}/g, ' ').trim();
+      setPrompt(sanitized);
     } catch (error) {
       console.error('Error generating prompt:', error);
       onError('Không thể tạo prompt tự động. Vui lòng nhập prompt thủ công.');
@@ -53,23 +65,30 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) {
+    if (!prompt.trim() && !userInfo) {
       onError('Vui lòng nhập mô tả cho avatar');
+      return;
+    }
+
+    const finalPrompt = prompt.trim();
+
+    if (invalidGroupRegex.test(finalPrompt)) {
+      onError('Prompt phải mô tả một người duy nhất');
       return;
     }
 
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/generate-image', {
+      const response = await fetch('/api/create-avatar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: prompt,
-          quality,
-          range,
-          pose,
+          prompt: finalPrompt || undefined,
+          userInfo,
+          options: { quality, range, pose },
+          image: { size: range === 'upper-body' ? '1024x1024' : '1024x1792' },
         }),
       });
 
@@ -127,7 +146,7 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="avatar-prompt" className="text-sm font-medium">Mô tả avatar</label>
-            {userInfo && (
+            {/* {userInfo && (
               <Button
                 type="button"
                 variant="outline"
@@ -148,7 +167,7 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
                   </>
                 )}
               </Button>
-            )}
+            )} */}
           </div>
           <textarea
             id="avatar-prompt"
@@ -207,8 +226,9 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
         </div>
 
         <Button
+          type="button"
           onClick={handleGenerate}
-          disabled={isGenerating || !prompt.trim()}
+          disabled={isGenerating || (!prompt.trim() && !userInfo)}
           className="w-full"
         >
           {isGenerating ? (
@@ -243,14 +263,15 @@ export default function AvatarGenerator({ onImageGenerated, onError, userInfo }:
               <img
                 src={generatedImage}
                 alt="Generated avatar"
-                className="w-full h-64 object-contain rounded-lg border"
-              />
+        className="w-full h-64 object-contain rounded-lg border"
+        loading="lazy"
+      />
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleUseImage} className="flex-1">
+              <Button type="button" onClick={handleUseImage} className="flex-1">
                 Sử dụng Avatar này
               </Button>
-              <Button onClick={handleDownload} variant="outline">
+              <Button type="button" onClick={handleDownload} variant="outline">
                 <Download className="h-4 w-4" />
               </Button>
             </div>

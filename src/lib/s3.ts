@@ -43,6 +43,8 @@ export async function uploadToS3(
         ...(includeAcl ? { ACL: 'public-read' as const } : {}),
       });
       await s3Client.send(command);
+      const base = PUBLIC_BASE || `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`;
+      return `${base}/${key}`;
     } catch (err) {
       const code = (err as any)?.Code || (err as any)?.name;
       if (includeAcl && (code === 'AccessControlListNotSupported' || code === 'InvalidRequest')) {
@@ -53,13 +55,17 @@ export async function uploadToS3(
           ContentType: contentType,
         });
         await s3Client.send(commandNoAcl);
-      } else {
-        throw err;
+        const forcePresigned = process.env.AWS_S3_FORCE_PRESIGNED === 'true'
+        if (forcePresigned || process.env.AWS_S3_USE_ACL === 'false') {
+          // Return presigned URL when ACL is not available or disabled
+          const signed = await getPresignedUrl(key, 7 * 24 * 3600)
+          return signed
+        }
+        const base = PUBLIC_BASE || `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`;
+        return `${base}/${key}`;
       }
+      throw err;
     }
-
-    const base = PUBLIC_BASE || `https://${BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`;
-    return `${base}/${key}`;
   } catch (error) {
     console.error('S3 upload error:', error);
     throw new Error('Failed to upload file to S3');

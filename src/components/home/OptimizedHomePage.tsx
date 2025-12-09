@@ -13,12 +13,11 @@ import { VirtualModel } from '@/types';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  Lightbulb,
   Loader2,
   Shirt,
   Sparkles,
   User,
-  X,
+  X
 } from 'lucide-react';
 import Image from 'next/image';
 import { FormEvent } from 'react';
@@ -344,16 +343,6 @@ export default function OptimizedHomePage({
             className="flex flex-col sm:flex-row gap-3 justify-center"
           >
             <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setIsTipsModalOpen?.(true)}
-              className="px-6"
-            >
-              <Lightbulb className="w-4 h-4 mr-2" />
-              Hướng dẫn
-            </Button>
-
-            <Button
               type="submit"
               className="px-6"
               aria-live="polite"
@@ -460,8 +449,8 @@ export default function OptimizedHomePage({
                 <div className="absolute bottom-[-3rem] right-[-2rem] h-56 w-56 rounded-full bg-gradient-to-tr from-violet-500/25 to-cyan-500/25 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-                {Array.from({ length: 6 }).map((_, i) => (
+              <div className="grid grid-cols-1 p-6">
+                {Array.from({ length: 1 }).map((_, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, scale: 0.98 }}

@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js'
 import { Check, Coins } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -39,17 +38,53 @@ export default function TokenPurchasePage() {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [processing, setProcessing] = useState(false)
+    const [blockingInit, setBlockingInit] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [currentBalance, setCurrentBalance] = useState<number>(0)
-    const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
-    const paypalReady = !!paypalClientId && paypalClientId !== 'placeholder_client_id'
-
-    useEffect(() => {}, [])
 
     useEffect(() => {
-        fetchData()
+        const params = new URLSearchParams(window.location.search)
+        const payment = params.get('payment')
+        const provider = params.get('provider')
+        const tokenParam = params.get('token')
+        if (payment === 'approved' && provider === 'paypal' && tokenParam) {
+            setBlockingInit(true)
+            ;(async () => {
+                try {
+                    setError(null)
+                    const res = await fetch('/api/tokens/confirm-paypal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: tokenParam }),
+                    })
+                    const d = await res.json()
+                    if (!res.ok || !d.success) {
+                        throw new Error(d.error || 'Không thể xác thực thanh toán')
+                    }
+                    setSuccess(true)
+                    setCurrentBalance(d.data?.newBalance || currentBalance)
+                    const url = new URL(window.location.href)
+                    url.searchParams.delete('payment')
+                    url.searchParams.delete('provider')
+                    url.searchParams.delete('token')
+                    url.searchParams.delete('PayerID')
+                    window.history.replaceState({}, document.title, url.toString())
+                    setTimeout(() => {
+                        router.push('/success?purchase=success')
+                    }, 1500)
+                } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi')
+                } finally {
+                    setBlockingInit(false)
+                }
+            })()
+        }
     }, [])
+
+    useEffect(() => {
+        if (!blockingInit) fetchData()
+    }, [blockingInit])
 
     const fetchData = async () => {
         try {
@@ -181,6 +216,17 @@ export default function TokenPurchasePage() {
         }
     }
 
+    if (blockingInit) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
+                    <p className="text-sm text-muted-foreground">Đang xác thực thanh toán PayPal...</p>
+                </div>
+            </div>
+        )
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -232,7 +278,7 @@ export default function TokenPurchasePage() {
                                     )}
                                     <div className="flex items-baseline justify-between mb-3">
                                         <div className="text-2xl font-bold tracking-tight">{pkg.tokens}</div>
-                                        <div className="text-xs text-muted-foreground ml-2">Credits</div>
+                                        <div className="text-sm text-muted-foreground ml-2">Credits</div>
                                     </div>
                                     <div className="mb-3">
                                         <span className="text-lg font-semibold">
@@ -271,11 +317,11 @@ export default function TokenPurchasePage() {
                                     })()}
                                 </div>
                                 <Button className="h-9 px-6" onClick={handlePurchase} disabled={processing || !selectedPackage || !selectedPaymentMethod}>
-                                    {processing ? 'Processing...' : 'Confirm Payment'}
+                                    {processing ? 'Processing...' : 'Confirm Payment with PayPal'}
                                 </Button>
                             </div>
                         </div>
-                {selectedPaymentMethod === 'paypal' && selectedPackage && (
+                {/* {selectedPaymentMethod === 'paypal' && selectedPackage && (
                     <div className="mt-4 w-full">
                         <Separator className="my-4" />
                         {!paypalReady && (
@@ -330,7 +376,7 @@ export default function TokenPurchasePage() {
                           </PayPalScriptProvider>
                         )}
                     </div>
-                )}
+                )} */}
                     </div>
                 </div>
             </div>

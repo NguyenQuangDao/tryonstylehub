@@ -107,6 +107,51 @@ export async function capturePaypalOrder(orderId: string): Promise<{ success: bo
   }
 }
 
+export async function getPaypalOrderDetails(orderId: string): Promise<{
+  success: boolean
+  status?: string
+  orderId?: string
+  customId?: string
+  payerId?: string
+  amountValue?: string
+  amountCurrency?: string
+  error?: string
+}>{
+  try {
+    const token = await getAccessToken()
+    if (!token) return { success: false, error: 'PayPal is not configured' }
+    const res = await fetch(`${base}/v2/checkout/orders/${orderId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      return { success: false, error: err }
+    }
+    const json = await res.json() as any
+    const status = json?.status as string | undefined
+    const pu = json?.purchase_units?.[0]
+    const amt = pu?.amount
+    const customId = pu?.custom_id as string | undefined
+    const payerId = json?.payer?.payer_id as string | undefined
+    return {
+      success: true,
+      status,
+      orderId: json?.id,
+      customId,
+      payerId,
+      amountValue: amt?.value,
+      amountCurrency: amt?.currency_code,
+    }
+  } catch (error) {
+    console.error('PayPal get order details error:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Get order failed' }
+  }
+}
+
 export async function refundPaypalCapture(captureId: string, amount?: number, currency: string = 'USD'): Promise<{ success: boolean; status?: string; error?: string }>{
   try {
     const token = await getAccessToken()
