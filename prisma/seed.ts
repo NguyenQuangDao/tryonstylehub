@@ -61,6 +61,7 @@ async function seedBlogPosts(authors: { id: string }[]) {
       data: {
         authorId: author.id,
         title,
+        slug: slugify(`${title}-${i}-${faker.string.alphanumeric({ length: 6 })}`),
         content,
         media,
         category,
@@ -107,6 +108,7 @@ async function seedSellersAndProducts(categories: { id: string }[]) {
               title: pTitle,
               description: pDesc,
               images,
+              sku: slugify(`${pTitle}-${i}-${idx}-${faker.string.alphanumeric({ length: 8 })}`),
               basePrice: new Prisma.Decimal(price),
               status: 'PUBLISHED',
               category: { connect: { id: cat.id } },

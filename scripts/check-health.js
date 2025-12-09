@@ -9,11 +9,15 @@ async function checkHealth() {
   console.log('1️⃣  Checking Environment Variables...');
   const requiredVars = [
     'DATABASE_URL',
-    'NEXTAUTH_SECRET',
-    'NEXTAUTH_URL',
+    'JWT_SECRET',
     'FASHN_API_KEY',
-    'STRIPE_SECRET_KEY',
-    'STRIPE_WEBHOOK_SECRET'
+    'OPENAI_API_KEY',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_S3_BUCKET_NAME',
+    'PAYPAL_CLIENT_ID',
+    'PAYPAL_CLIENT_SECRET',
+    'NEXT_PUBLIC_PAYPAL_CLIENT_ID',
   ];
   
   const missingVars = [];

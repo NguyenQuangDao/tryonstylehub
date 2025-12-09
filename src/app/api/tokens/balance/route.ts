@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         tokens: true,
         status: true,
         createdAt: true,
-        stripePaymentId: true,
+        paypalOrderId: true,
       }
     })
 

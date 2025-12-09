@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { createToken, isValidEmail, verifyPassword } from '../../../../lib/auth';
 import { checkDatabaseConnection } from '../../../../lib/db-check';
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validation
+    email = email?.trim().toLowerCase()
+    password = password?.trim()
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email và mật khẩu là bắt buộc' },
@@ -69,6 +72,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
+    if (!user.password) {
+      return NextResponse.json(
+        { error: 'Tài khoản này không hỗ trợ đăng nhập bằng mật khẩu' },
+        { status: 401 }
+      );
+    }
     const isValidPassword = await verifyPassword(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(

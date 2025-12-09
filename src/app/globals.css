@@ -300,6 +300,10 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  /* Button-specific shadows */
+  --shadow-btn: 0 2px 6px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-btn-hover: 0 6px 12px rgb(0 0 0 / 0.12), 0 3px 6px rgb(0 0 0 / 0.08);
+  --shadow-btn-focus: 0 0 0 4px rgb(99 102 241 / 0.15), 0 6px 14px rgb(0 0 0 / 0.14);
   
   /* Typography */
   --font-sans: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -348,6 +352,10 @@
   --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
   --gradient-secondary: linear-gradient(135deg, #1F2937 0%, #111827 100%);
   --gradient-card: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%);
+  /* Dark mode button shadow overrides */
+  --shadow-btn: 0 2px 6px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.22);
+  --shadow-btn-hover: 0 8px 16px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.25);
+  --shadow-btn-focus: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Ensure body and html also get theme classes */

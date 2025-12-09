@@ -1,7 +1,5 @@
-// Common Components
 export { default as Banner } from './Banner';
 export { default as BodyPreview } from './BodyPreview';
-export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as Footer } from './Footer';
 export { ImageUploadCard } from './ImageUploadCard';
 export { Layout } from './Layout';

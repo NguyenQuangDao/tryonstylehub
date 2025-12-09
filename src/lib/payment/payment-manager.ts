@@ -3,10 +3,10 @@
  * Unified interface for all payment methods
  */
 
-import { createStripePayment, verifyStripePayment } from './stripe'
+import { createPaypalOrder } from './paypal'
 
 export enum PaymentProvider {
-    STRIPE = 'stripe',
+    PAYPAL = 'paypal',
 }
 
 export interface PaymentParams {
@@ -28,7 +28,7 @@ export interface PaymentResult {
     success: boolean
     transactionId?: string
     paymentUrl?: string
-    clientSecret?: string // For Stripe
+    clientSecret?: string
     error?: string
 }
 
@@ -46,19 +46,20 @@ function convertUSDtoVND(usd: number): number {
 export async function createPayment(params: PaymentParams): Promise<PaymentResult> {
     try {
         switch (params.provider) {
-            case PaymentProvider.STRIPE: {
-                const result = await createStripePayment({
+            case PaymentProvider.PAYPAL: {
+                const result = await createPaypalOrder({
                     amount: params.amount,
                     currency: params.currency,
                     userId: params.userId,
                     packageId: params.packageId,
                     userEmail: params.userEmail,
-                    userName: params.userName,
+                    returnUrl: params.returnUrl,
+                    cancelUrl: params.cancelUrl,
                 })
                 return {
                     success: result.success,
-                    transactionId: result.transactionId,
-                    clientSecret: result.clientSecret,
+                    transactionId: result.orderId,
+                    paymentUrl: result.approvalUrl,
                     error: result.error,
                 }
             }
@@ -110,15 +111,8 @@ export async function verifyPayment(
 ): Promise<{ success: boolean; transactionId?: string; error?: string; packageId?: string }> {
     try {
         switch (provider) {
-            case PaymentProvider.STRIPE: {
-                const pid = typeof data.paymentIntentId === 'string' ? data.paymentIntentId : ''
-                const result = await verifyStripePayment(pid)
-                return {
-                    success: result.success,
-                    transactionId: pid,
-                    error: result.error,
-                }
-            }
+            case PaymentProvider.PAYPAL:
+                return { success: false, error: 'Use capture endpoint for PayPal' }
 
             default:
                 return { success: false, error: 'Unsupported payment provider' }
@@ -137,5 +131,5 @@ export async function verifyPayment(
  */
 export function getAvailablePaymentMethods(currency: string): PaymentProvider[] {
     const c = currency.toUpperCase()
-    return [PaymentProvider.STRIPE]
+    return [PaymentProvider.PAYPAL]
 }

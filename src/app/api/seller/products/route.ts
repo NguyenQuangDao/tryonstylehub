@@ -211,6 +211,7 @@ export async function POST(request: NextRequest) {
           title: name,
           description,
           images: uploaded,
+          sku: `${slugify(name)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`,
           basePrice: priceNum,
           status: isFeatured ? 'PUBLISHED' : 'DRAFT',
           shopId,

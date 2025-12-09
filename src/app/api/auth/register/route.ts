@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { TOKEN_CONFIG } from '../../../../config/tokens';
 import { createToken, hashPassword, isValidEmail, isValidPassword } from '../../../../lib/auth';

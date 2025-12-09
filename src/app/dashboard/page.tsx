@@ -29,7 +29,7 @@ interface CostStats {
 interface Transaction {
   id: number
   createdAt: string
-  stripePaymentId: string
+  paypalOrderId: string
   amount: number
   tokens: number
   status: string
@@ -226,7 +226,7 @@ export default function EnhancedDashboardPage() {
                             {new Date(tx.createdAt).toLocaleDateString('vi-VN')}
                           </p>
                           <p className="text-sm text-muted-foreground font-mono">
-                            {tx.stripePaymentId.substring(0, 16)}...
+                            {tx.paypalOrderId.substring(0, 16)}...
                           </p>
                         </div>
                       </div>

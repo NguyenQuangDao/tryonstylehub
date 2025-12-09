@@ -9,6 +9,15 @@ function tryParseId(idValue: unknown): string | null {
   return null
 }
 
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)
@@ -116,6 +125,7 @@ export async function POST(request: NextRequest) {
         data: {
           authorId: userId,
           title,
+          slug: slugify(`${title}-${Date.now().toString(36)}`),
           content,
           media: uploaded,
           category: category || undefined,

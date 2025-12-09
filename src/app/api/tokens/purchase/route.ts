@@ -110,12 +110,12 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // For Stripe (client-side confirmation)
-    if (paymentResult.clientSecret) {
+    // For PayPal Buttons flow, FE will handle approval then call confirm endpoint
+    if (paymentResult.transactionId && !paymentResult.paymentUrl) {
       return NextResponse.json({
         success: true,
         requiresClientConfirmation: true,
-        clientSecret: paymentResult.clientSecret,
+        orderId: paymentResult.transactionId,
         transactionId: paymentResult.transactionId,
       })
     }
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       const purchase = await getTokenPurchaseClient(tx).create({
         data: {
           userId: userId!,
-          stripePaymentId: paymentResult.transactionId || `fallback_${Date.now()}`,
+          paypalOrderId: paymentResult.transactionId || `fallback_${Date.now()}`,
           amount: pkg.price,
           tokens: pkg.tokens,
           status: 'completed',
@@ -218,7 +218,7 @@ async function processPayment(params: {
   const { createPayment, PaymentProvider } = await import('../../../../lib/payment/payment-manager')
 
   // Map payment method ID to provider
-  const provider = params.paymentMethodId === 'stripe' ? PaymentProvider.STRIPE : undefined
+  const provider = params.paymentMethodId === 'paypal' ? PaymentProvider.PAYPAL : undefined
   if (!provider) {
     return {
       success: false,
@@ -231,9 +231,9 @@ async function processPayment(params: {
   const host = params.req.headers.get('host') || 'localhost:3000'
   const baseUrl = `${protocol}://${host}`
 
-  const returnUrl = `${baseUrl}/api/tokens/payment-callback?provider=${provider}`
-  const cancelUrl = `${baseUrl}/tokens?payment=cancelled`
-  const notifyUrl = `${baseUrl}/api/tokens/payment-webhook?provider=${provider}`
+  const returnUrl = `${baseUrl}/tokens?payment=approved&provider=${provider}`
+  const cancelUrl = `${baseUrl}/tokens?payment=cancelled&provider=${provider}`
+  const notifyUrl = undefined
   const ipAddress = params.req.headers.get('x-forwarded-for') || params.req.headers.get('x-real-ip') || '127.0.0.1'
 
   try {

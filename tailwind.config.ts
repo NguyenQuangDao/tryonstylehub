@@ -77,7 +77,10 @@ const config: Config = {
 				md: 'var(--shadow-md)',
 				lg: 'var(--shadow-lg)',
 				xl: 'var(--shadow-xl)',
-				'2xl': 'var(--shadow-2xl)'
+				'2xl': 'var(--shadow-2xl)',
+				btn: 'var(--shadow-btn)',
+				'btn-hover': 'var(--shadow-btn-hover)',
+				'btn-focus': 'var(--shadow-btn-focus)'
 			},
 			animation: {
   			'fade-in': 'fadeIn 0.5s ease-in-out',

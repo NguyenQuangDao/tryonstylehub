@@ -2,43 +2,29 @@
 
 Để tối ưu hóa nguồn lực và tập trung vào các tính năng cốt lõi, hệ thống tích hợp các dịch vụ SaaS (Software as a Service) hàng đầu cho các tác vụ chuyên biệt: Thanh toán, Lưu trữ và Trí tuệ nhân tạo.
 
-## 2.6.1. Stripe: Cổng Thanh toán Trực tuyến
+## 2.6.1. PayPal: Cổng Thanh toán Trực tuyến
 
-### 2.6.1.1. Khái niệm và Bảo mật PCI Compliance
-Stripe là nền tảng xử lý thanh toán trực tuyến toàn cầu, cung cấp API mạnh mẽ cho các nhà phát triển. Hệ thống sử dụng thư viện `stripe` (Node.js SDK) để tương tác với Stripe API.
-
-Việc tự xây dựng hệ thống xử lý thẻ tín dụng đòi hỏi tuân thủ chuẩn bảo mật PCI-DSS cực kỳ khắt khe. Stripe giải quyết vấn đề này bằng cách cung cấp giải pháp Tokenization. Thông tin thẻ nhạy cảm được gửi trực tiếp từ Client đến Stripe; hệ thống của chúng ta chỉ nhận về `PaymentIntent` ID và `ClientSecret`.
+### 2.6.1.1. Khái niệm và Bảo mật
+PayPal là nền tảng ví điện tử phổ biến, hỗ trợ thanh toán thẻ quốc tế. Hệ thống sử dụng SDK `@paypal/react-paypal-js` (FE) và `@paypal/checkout-server-sdk` hoặc `@paypal/paypal-server-sdk` (BE) để tương tác với PayPal Orders API v2.
 
 **Cấu hình:**
-- **Environment Variables:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
-- **Library:** `stripe` (v14+).
+- **Environment Variables:** `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE=sandbox`, `NEXT_PUBLIC_PAYPAL_CLIENT_ID`.
+- **Libraries:** `@paypal/react-paypal-js`, `@paypal/checkout-server-sdk` hoặc `@paypal/paypal-server-sdk`.
 
-### 2.6.1.2. Webhooks và Tính Lũy đẳng (Idempotency)
-Quy trình thanh toán là bất đồng bộ. Hệ thống sử dụng Webhook để cập nhật trạng thái đơn hàng một cách tin cậy.
+### 2.6.1.2. Idempotency & Ghi nhận
+Quy trình dùng `Orders v2` với `intent=CAPTURE`. Sau khi người dùng approve trên FE, BE gọi capture và ghi nhận idempotent bằng `paypalOrderId`.
 
-**Cơ chế Webhook (`src/app/api/tokens/payment-webhook/route.ts`):**
-1.  **Xác thực Chữ ký (Signature Verification):**
-    Hệ thống xác thực header `stripe-signature` bằng `stripe.webhooks.constructEvent(rawBody, sig, secret)`. Điều này đảm bảo request thực sự đến từ Stripe và không bị giả mạo.
-
-2.  **Xử lý sự kiện `payment_intent.succeeded`:**
-    Khi thanh toán thành công, Stripe gửi sự kiện này kèm theo `metadata` chứa `userId` và `packageId`.
-
-3.  **Tính Lũy đẳng (Idempotency):**
-    Để tránh cộng tiền hai lần do Stripe gửi trùng lặp sự kiện (retry mechanism), hệ thống kiểm tra sự tồn tại của giao dịch trong cơ sở dữ liệu trước khi xử lý:
-    ```typescript
-    const existingPurchase = await getTokenPurchaseClient(prisma).findFirst({
-        where: { stripePaymentId: paymentIntentId },
-    })
-    if (existingPurchase) return; // Bỏ qua nếu đã xử lý
-    ```
-
-4.  **Transaction Atomicity:**
-    Sử dụng `prisma.$transaction` để đảm bảo việc tạo bản ghi mua hàng (Purchase) và cộng Token vào tài khoản User diễn ra đồng thời. Nếu một trong hai thất bại, toàn bộ giao dịch sẽ được rollback.
+```typescript
+const existing = await getTokenPurchaseClient(prisma).findFirst({
+  where: { paypalOrderId: orderId },
+})
+if (existing) return
+```
 
 ### 2.6.1.3. Quy trình Thanh toán
-1.  **Khởi tạo (`createStripePayment`):** Backend tạo `PaymentIntent` với số tiền và currency (hỗ trợ xử lý Zero-decimal currencies như VND).
-2.  **Xác nhận Client-side:** Frontend sử dụng `stripe.confirmPayment` với `clientSecret`.
-3.  **Xử lý Hậu kỳ:** Webhook nhận tín hiệu thành công và cộng Token cho người dùng.
+1. **Khởi tạo (`createPaypalOrder`)**: Backend tạo Order với `purchase_units` và trả `orderId`.
+2. **Approve (FE)**: Frontend render `PayPalButtons` và người dùng approve.
+3. **Capture (BE)**: Endpoint `POST /api/tokens/confirm-paypal` gọi capture, ghi nhận TokenPurchase, tăng `tokenBalance`.
 
 ## 2.6.2. AWS S3: Hạ tầng Lưu trữ Đối tượng
 

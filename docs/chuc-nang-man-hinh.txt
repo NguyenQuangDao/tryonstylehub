@@ -1,0 +1,80 @@
+Chức năng các màn hình hệ thống AIStyleHub
+
+1) Đăng nhập
+- Mục tiêu: Cho phép người dùng nhập email và mật khẩu để truy cập hệ thống. Hỗ trợ hiển thị hoặc ẩn mật khẩu, phản hồi lỗi và chuyển hướng sau khi đăng nhập.
+- Trường thông tin: Email và Mật khẩu (bắt buộc). Nút biểu tượng mắt để hiển thị hoặc ẩn mật khẩu ngay trong ô nhập.
+- Kiểm tra hợp lệ: Bắt buộc nhập đủ email và mật khẩu. Thông báo lỗi hiển thị rõ ràng khi đăng nhập thất bại.
+- Hành vi: Nhấn nút “Đăng nhập” để gửi thông tin. Trong lúc xử lý, nút bị vô hiệu hóa và hiển thị trạng thái đang xử lý. Khi đã đăng nhập, hệ thống tự động chuyển đến trang phù hợp.
+- Trạng thái: Khi đang kiểm tra đăng nhập, hiển thị vòng quay tải; khi đang gửi yêu cầu đăng nhập, hiển thị tiến trình trên nút.
+- Bảo mật: Mật khẩu không được ghi log. Chỉ hiển thị khi người dùng chủ động bật nút hiển thị.
+
+2) Đăng ký
+- Mục tiêu: Tạo tài khoản mới với tên, email và mật khẩu; có xác nhận mật khẩu; phản hồi lỗi rõ ràng; chuyển hướng hợp lý.
+- Trường thông tin: Tên, Email, Mật khẩu, Xác nhận mật khẩu (bắt buộc). Có nút biểu tượng mắt để hiển thị hoặc ẩn mật khẩu và xác nhận mật khẩu.
+- Kiểm tra hợp lệ: Mật khẩu và xác nhận mật khẩu phải khớp; mật khẩu phải có độ dài tối thiểu hợp lý.
+- Hành vi: Nhấn “Đăng ký” để gửi thông tin. Nếu đã đăng nhập sẵn, hệ thống sẽ chuyển sang trang tổng quan.
+- Trạng thái: Khi đang kiểm tra trạng thái đăng nhập, hiển thị vòng quay tải; khi đang đăng ký, nút và biểu mẫu bị vô hiệu hóa và hiển thị tiến trình.
+
+3) Trang blog
+- Mục tiêu: Tìm kiếm và hiển thị danh sách bài viết theo dạng lưới trực quan, ưu tiên ảnh đại diện; có phương án dự phòng hiển thị video.
+- Hành vi: Nhập từ khóa và nhấn “Tìm” để lấy danh sách bài viết. Kết quả hiển thị theo dạng lưới với ảnh hoặc video, tiêu đề, tên tác giả và số lượt yêu thích/lưu.
+- Hiển thị phương tiện:
+  - Ảnh đại diện: chọn ảnh phù hợp nếu có.
+  - Dự phòng: nếu không có ảnh, hiển thị mục đầu tiên; nếu là video thì hiển thị khung video tĩnh.
+- Trạng thái: Khi đang tải, hiển thị thông báo “Đang tải...”.
+
+4) Trang chi tiết bài viết
+- Mục tiêu: Hiển thị đầy đủ nội dung bài viết, các phương tiện ảnh hoặc video, cho phép yêu thích, lưu và chia sẻ; hỗ trợ đọc và gửi bình luận.
+- Tải dữ liệu: Lấy bài viết theo định danh, danh sách bài liên quan và bình luận cho bài đó.
+- Tương tác:
+  - Yêu thích: bấm nút để thêm hoặc bớt yêu thích, số yêu thích được cập nhật hợp lý.
+  - Lưu: bấm nút để thêm hoặc bớt lưu, số lượt lưu được cập nhật hợp lý.
+  - Chia sẻ: nếu thiết bị hỗ trợ chia sẻ, có thể chia sẻ tiêu đề và địa chỉ trang hiện tại.
+- Hiển thị phương tiện:
+  - Ảnh: hiển thị ảnh theo danh sách, hỗ trợ xem nhiều ảnh.
+  - Video: hiển thị khung video có điều khiển.
+- Bình luận: Nhập nội dung rồi gửi. Sau khi gửi thành công, danh sách bình luận và bài viết được cập nhật lại để phản ánh thay đổi.
+- Trạng thái: Hiển thị tiến trình khi đang tải dữ liệu; nếu không tìm thấy bài viết, hiển thị thông báo phù hợp.
+
+5) Trang mua token
+- Mục tiêu: Cho phép người dùng nạp điểm tín dụng để sử dụng các tính năng AI, hỗ trợ nhiều phương thức thanh toán và hai loại tiền tệ.
+- Tải dữ liệu: Lấy danh sách gói, phương thức thanh toán và số dư hiện có.
+- Chọn tiền tệ: Có thể chuyển giữa các loại tiền; danh sách gói và phương thức thanh toán tự động cập nhật; ưu tiên hiển thị phương thức tiện dụng.
+- Mua hàng:
+  - Một số phương thức sẽ chuyển hướng sang trang thanh toán bên ngoài.
+  - Phương thức thanh toán thẻ có biểu mẫu ngay trong trang để xác nhận giao dịch.
+  - Sau khi thanh toán thành công, số dư được cập nhật và có thể chuyển đến trang xác nhận thành công.
+- Trạng thái: Hiển thị rõ ràng trạng thái tải, đang xử lý, thành công và lỗi.
+- Giao diện: Hiển thị danh sách gói, gói phổ biến được đánh dấu; tổng tiền hiển thị theo gói đang chọn; phần thanh toán thẻ xuất hiện khi cần.
+
+6) Trang thử đồ ảo
+- Mục tiêu: Cho phép người dùng chọn hoặc tải ảnh người mẫu và ảnh trang phục, chọn loại trang phục và chất lượng xử lý, gửi yêu cầu thử đồ, xem và tải kết quả.
+- Ảnh người mẫu: Có thể tải ảnh hoặc chọn người mẫu ảo; có nút xóa hoặc bỏ chọn; cung cấp danh sách ảnh ví dụ để dùng nhanh.
+- Ảnh trang phục: Có thể tải ảnh hoặc chọn từ danh sách ví dụ.
+- Lựa chọn: Chọn loại trang phục và chất lượng xử lý; hiển thị chi phí điểm tương ứng.
+- Gửi yêu cầu: Nhấn nút để bắt đầu xử lý; trong lúc xử lý hiển thị tiến trình và vô hiệu hóa các thao tác phụ.
+- Kết quả: Hiển thị dạng lưới các ảnh sau khi xử lý; mỗi ảnh có nút tải xuống xuất hiện khi rê chuột.
+- Trạng thái: Có khối hiển thị chỗ trống đẹp mắt khi chưa có kết quả; hiển thị thông báo lỗi nếu xảy ra.
+
+7) Trang tạo ảnh AI
+- Mục tiêu: Tạo ảnh thời trang từ mô tả chi tiết hoặc từ các tùy chọn sẵn; có thể cải tiến mô tả bằng trợ lý AI; xử lý trường hợp thiếu điểm.
+- Mô tả tổng hợp: Hệ thống tự ghép mô tả từ các lựa chọn về loại trang phục, phong cách, màu sắc, phụ kiện và bối cảnh, thêm các từ khóa về chất lượng ảnh. Nếu người dùng nhập mô tả đủ chi tiết, hệ thống dùng mô tả đó.
+- Gửi yêu cầu: Nhấn nút để tạo ảnh. Nếu thiếu điểm, hiển thị cửa sổ thông tin và hướng dẫn nạp thêm. Nếu thành công, hiển thị ảnh và thông báo đã lưu.
+- Cải tiến mô tả: Có nút để nhờ AI cải tiến nội dung mô tả hiện tại, giúp chất lượng ảnh tốt hơn.
+- Sử dụng kết quả: Có nút dẫn trực tiếp sang chức năng thử đồ ảo với ảnh vừa tạo.
+- Trạng thái: Hiển thị tiến trình khi đang tạo; hiển thị thông báo lỗi hoặc thông báo thành công phù hợp.
+
+8) Trang gợi ý phối đồ AI
+- Mục tiêu: Gợi ý trang phục phù hợp phong cách và sở thích của người dùng dựa trên mô tả, lịch sử tìm kiếm và ưu tiên đã lưu.
+- Đầu vào: Người dùng nhập mô tả phong cách hoặc chọn nhanh từ các gợi ý phổ biến.
+- Tùy chọn ưu tiên: Có thể ưu tiên sản phẩm từng yêu thích và các cửa hàng đã theo dõi.
+- Lịch sử tìm kiếm: Hệ thống lưu lại một số tìm kiếm gần đây để dùng lại nhanh; người dùng có thể ẩn hoặc xem lịch sử.
+- Gửi yêu cầu: Nhấn nút để tạo gợi ý; kết quả là danh sách sản phẩm với ảnh, tên, loại và nhãn phong cách.
+- Hành động: Có nút mở trang mua hàng bên ngoài và nút chuyển sang thử đồ ảo ngay theo ảnh sản phẩm.
+- Trạng thái: Hiển thị tiến trình khi đang tạo gợi ý; hiển thị thông báo lỗi nếu có.
+
+Ghi chú chung
+- Mọi biểu mẫu đều yêu cầu các trường bắt buộc; nút gửi bị vô hiệu hóa khi đang xử lý để tránh gửi trùng lặp.
+- Các thao tác gọi dịch vụ đều có kiểm tra kết quả và hiển thị thông báo thân thiện.
+- Không sử dụng hay hiển thị thông tin nhạy cảm.
+- Trải nghiệm người dùng nhất quán: có vòng quay tải, khối chờ, thông báo và hiệu ứng trực quan rõ ràng.

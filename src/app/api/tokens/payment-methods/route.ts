@@ -7,10 +7,10 @@ import { TOKEN_CONFIG } from '../../../../config/tokens'
  */
 export async function GET() {
     try {
-        const isStripeReady = !!process.env.STRIPE_SECRET_KEY
+        const isPaypalReady = !!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_CLIENT_SECRET
         const availableMethods = TOKEN_CONFIG.PAYMENT_METHODS
-            .filter(m => m.id === 'stripe')
-            .map(m => ({ ...m, enabled: isStripeReady }))
+            .filter(m => m.id === 'paypal')
+            .map(m => ({ ...m, enabled: isPaypalReady }))
             .filter(method => method.enabled)
 
         return NextResponse.json({

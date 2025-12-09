@@ -401,14 +401,14 @@ export const TOKEN_CONFIG = {
     // Payment methods with modern icons and styling
     PAYMENT_METHODS: [
         {
-            id: 'stripe',
-            name: 'Credit/Debit Card',
-            nameVi: 'Thẻ tín dụng/ghi nợ',
-            icon: '💳',
-            svgIcon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>`,
+            id: 'paypal',
+            name: 'PayPal',
+            nameVi: 'PayPal (Sandbox)',
+            icon: '🅿️',
+            svgIcon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19h12a4 4 0 0 0 0-8H9"/><path d="M9 11H6a4 4 0 0 0 0 8h1"/></svg>`,
             enabled: true,
-            description: 'Visa, MasterCard, American Express',
-            currencies: ['USD', 'VND'],
+            description: 'Ví điện tử PayPal - hỗ trợ thẻ quốc tế',
+            currencies: ['USD'],
             color: DESIGN_TOKENS.colors.secondary[500],
             popularity: 1,
         },

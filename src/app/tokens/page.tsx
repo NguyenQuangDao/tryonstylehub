@@ -2,13 +2,11 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js'
-import { Bitcoin, Check, Coins, CreditCard, Wallet } from 'lucide-react'
+import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js'
+import { Check, Coins } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface TokenPackage {
     id: string
@@ -44,34 +42,10 @@ export default function TokenPurchasePage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [currentBalance, setCurrentBalance] = useState<number>(0)
-    const [stripe, setStripe] = useState<Stripe | null>(null)
-    const [elements, setElements] = useState<StripeElements | null>(null)
-    const [clientSecret, setClientSecret] = useState<string | null>(null)
-    const [showStripeForm, setShowStripeForm] = useState(false)
-    const paymentElementId = 'stripe-payment-element'
-    const paymentElementRef = useRef<any>(null)
+    const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
+    const paypalReady = !!paypalClientId && paypalClientId !== 'placeholder_client_id'
 
-    useEffect(() => {
-        if (showStripeForm && elements && !paymentElementRef.current) {
-            const container = document.getElementById(paymentElementId)
-            if (container) {
-                const pe = elements.create('payment')
-                paymentElementRef.current = pe
-                pe.mount(`#${paymentElementId}`)
-            }
-        }
-    }, [showStripeForm, elements])
-
-    useEffect(() => {
-        return () => {
-            if (paymentElementRef.current) {
-                try {
-                    paymentElementRef.current.unmount()
-                } catch {}
-                paymentElementRef.current = null
-            }
-        }
-    }, [])
+    useEffect(() => {}, [])
 
     useEffect(() => {
         fetchData()
@@ -189,28 +163,7 @@ export default function TokenPurchasePage() {
                 return
             }
 
-            // Handle Stripe client-side confirmation
-            if (data.requiresClientConfirmation && data.clientSecret) {
-                const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
-                if (!pk) {
-                    setError('Thiếu NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY trong môi trường')
-                    setProcessing(false)
-                    return
-                }
-                const s = await loadStripe(pk)
-                if (!s) {
-                    setError('Không thể khởi tạo Stripe')
-                    setProcessing(false)
-                    return
-                }
-                setStripe(s)
-                setClientSecret(data.clientSecret)
-                const els = s.elements({ clientSecret: data.clientSecret })
-                setElements(els)
-                setShowStripeForm(true)
-                setProcessing(false)
-                return
-            }
+            // PayPal Buttons handled below
 
             // Direct success (shouldn't happen with real payments)
             setSuccess(true)
@@ -308,38 +261,7 @@ export default function TokenPurchasePage() {
                     </div>
 
                     <div className="bg-muted/30 rounded-lg p-4 mt-6">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div className="flex-1">
-                                <div className="text-sm font-medium mb-2">Payment Method</div>
-                                <RadioGroup value={selectedPaymentMethod ?? ''} onValueChange={(val) => setSelectedPaymentMethod(val)} className="grid grid-cols-3 gap-2">
-                                    {paymentMethods.map((m) => {
-                                        const isSelected = selectedPaymentMethod === m.id
-                                        const icon = m.name.toLowerCase().includes('paypal')
-                                            ? <Wallet className="size-4" />
-                                            : m.name.toLowerCase().includes('crypto')
-                                            ? <Bitcoin className="size-4" />
-                                            : <CreditCard className="size-4" />
-                                        return (
-                                            <label key={m.id} className={`h-9 px-3 border rounded-md flex items-center gap-2 cursor-pointer ${isSelected ? 'border-primary bg-primary/5 text-primary' : ''}`}>
-                                                {icon}
-                                                <span className="text-sm">{m.name}</span>
-                                                <RadioGroupItem value={m.id} className="sr-only" />
-                                            </label>
-                                        )
-                                    })}
-                                </RadioGroup>
-                                <div className="mt-3">
-                                    <Alert className="shadow-soft">
-                                        <Bitcoin className="h-4 w-4" />
-                                        <div>
-                                            <AlertTitle>Crypto thanh toán nhanh</AlertTitle>
-                                            <AlertDescription>
-                                                Không cần thẻ. Địa chỉ ví được tạo cho mỗi giao dịch, hãy chuyển đúng số tiền hiển thị. Phí mạng do người dùng chi trả. Sau khi mạng xác nhận, credit sẽ cộng tự động.
-                                            </AlertDescription>
-                                        </div>
-                                    </Alert>
-                                </div>
-                            </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="text-base font-bold">
                                     Total: {(() => {
@@ -353,51 +275,60 @@ export default function TokenPurchasePage() {
                                 </Button>
                             </div>
                         </div>
-                {showStripeForm && clientSecret && (
-                    <div className="mt-4">
+                {selectedPaymentMethod === 'paypal' && selectedPackage && (
+                    <div className="mt-4 w-full">
                         <Separator className="my-4" />
-                        <div className="text-sm font-medium mb-2">Card Payment</div>
-                        <div id={paymentElementId} className="mb-3" />
-                        <Button className="w-full h-9" onClick={async () => {
-                            if (!stripe || !elements) return
-                            setProcessing(true)
-                            setError(null)
-                            const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
-                                elements,
-                                redirect: 'if_required',
-                            })
-                            if (stripeErr) {
-                                setError(stripeErr.message || 'Payment confirmation failed')
-                                setProcessing(false)
-                                return
-                            }
-                            if (paymentIntent && paymentIntent.status === 'succeeded') {
-                                const pkgId = selectedPackage
-                                const res = await fetch('/api/tokens/confirm-stripe', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ paymentIntentId: paymentIntent.id, packageId: pkgId }),
-                                })
-                                const d = await res.json()
-                                if (!res.ok || !d.success) {
-                                    setError(d.error || 'Could not record transaction')
-                                    setProcessing(false)
-                                    return
-                                }
-                                setSuccess(true)
-                                setCurrentBalance(d.data?.newBalance || currentBalance)
-                                setProcessing(false)
-                                setTimeout(() => {
-                                    router.push('/success?purchase=success')
-                                }, 1500)
-                            } else {
-                                setError('Payment not completed')
-                                setProcessing(false)
-                            }
-                        }} disabled={processing}>
-                            {processing ? 'Confirming...' : 'Pay'}
-                        </Button>
-                        <div className="text-xs text-muted-foreground mt-2">Test card: 4242 4242 4242 4242</div>
+                        {!paypalReady && (
+                            <div className="text-sm text-muted-foreground bg-muted/30 border rounded-md p-3 mb-3">
+                                Thiếu cấu hình Sandbox: đặt `NEXT_PUBLIC_PAYPAL_CLIENT_ID` và `PAYPAL_CLIENT_ID` trong `.env`.
+                            </div>
+                        )}
+                        {paypalReady && (
+                          <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'USD', intent: 'capture' }}>
+                            <PayPalButtons
+                                style={{ layout: 'vertical' }}
+                                createOrder={async () => {
+                                    const res = await fetch('/api/tokens/purchase', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ packageId: selectedPackage, paymentMethodId: 'paypal' }),
+                                    })
+                                    const d = await res.json()
+                                    if (!res.ok || !d.success) {
+                                        setError(d.error || 'Không thể tạo đơn PayPal')
+                                        throw new Error(d.error || 'createOrder failed')
+                                    }
+                                    if (d.requiresRedirect && d.paymentUrl) {
+                                        window.location.href = d.paymentUrl
+                                        return ''
+                                    }
+                                    return d.orderId || d.transactionId || ''
+                                }}
+                                onApprove={async (data) => {
+                                    const orderId = data.orderID
+                                    const res = await fetch('/api/tokens/confirm-paypal', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ orderId, packageId: selectedPackage }),
+                                    })
+                                    const d = await res.json()
+                                    if (!res.ok || !d.success) {
+                                        setError(d.error || 'Không thể ghi nhận giao dịch')
+                                        return
+                                    }
+                                    setSuccess(true)
+                                    setCurrentBalance(d.data?.newBalance || currentBalance)
+                                    setTimeout(() => {
+                                        router.push('/success?purchase=success')
+                                    }, 1500)
+                                }}
+                                onError={(err) => {
+                                    console.error(err)
+                                    setError('Thanh toán PayPal lỗi')
+                                }}
+                            />
+                          </PayPalScriptProvider>
+                        )}
                     </div>
                 )}
                     </div>

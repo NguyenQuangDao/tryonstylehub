@@ -1,12 +1,12 @@
-# Hướng Dẫn Tích Hợp Thanh Toán (Stripe-Only)
+# Hướng Dẫn Tích Hợp Thanh Toán (PayPal Sandbox)
 
 ## 📋 Tổng Quan
 
-Hệ thống hiện chỉ hỗ trợ thanh toán qua **Stripe**. Tất cả phương thức thanh toán khác đã được loại bỏ khỏi hệ thống.
+Hệ thống chuyển sang hỗ trợ thanh toán qua **PayPal Sandbox**. Stripe đã được gỡ bỏ hoàn toàn khỏi mã nguồn, webhook và schema.
 
-### ✅ Phương Thức Stripe Đang Hỗ Trợ
+### ✅ Phương Thức PayPal Hỗ Trợ
 
-- `card` (Credit/Debit Card): Visa, MasterCard, American Express
+- Ví điện tử PayPal (thẻ quốc tế) với luồng `Orders v2 (CAPTURE)`
 
 ### 🚫 Phương Thức Stripe ĐÃ BỊ Vô Hiệu Hóa
 
@@ -20,11 +20,10 @@ Hệ thống hiện chỉ hỗ trợ thanh toán qua **Stripe**. Tất cả phư
 
 ### Bước 1: Cài Đặt Dependencies
 
-Stripe đã được cài đặt. Các SDK khác không cần cài thêm vì sử dụng REST API.
-
 ```bash
-# Đã cài đặt
-npm install stripe @stripe/stripe-js
+npm install @paypal/react-paypal-js @paypal/checkout-server-sdk
+# hoặc dùng SDK mới:
+npm install @paypal/paypal-server-sdk
 ```
 
 ### Bước 2: Cấu Hình Environment Variables
@@ -38,20 +37,19 @@ cp .env.example .env
 Sau đó điền thông tin credentials:
 
 ```env
-# Stripe
-STRIPE_SECRET_KEY="<your_stripe_secret_key>"
-STRIPE_PUBLISHABLE_KEY="<your_stripe_publishable_key>"
-STRIPE_WEBHOOK_SECRET="<your_stripe_webhook_secret>"
-
-# Chỉ yêu cầu biến môi trường Stripe
+# PayPal Sandbox
+PAYPAL_CLIENT_ID="<your_sandbox_client_id>"
+PAYPAL_CLIENT_SECRET="<your_sandbox_client_secret>"
+PAYPAL_MODE="sandbox"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID="<your_sandbox_client_id>"
 ```
 
 ### Bước 3: Đăng Ký Tài Khoản Developer
 
-#### 🔵 Stripe (Quốc tế)
-1. Truy cập: https://dashboard.stripe.com/register
-2. Tạo tài khoản và lấy API keys
-3. Cấu hình webhook endpoint: `/api/tokens/payment-webhook?provider=stripe`
+#### 🔵 PayPal (Sandbox)
+1. Truy cập: https://developer.paypal.com/
+2. Tạo ứng dụng Sandbox và lấy `Client ID/Secret`
+3. Không cần webhook trong Sandbox; sản xuất có thể bật Webhooks nếu cần
 
 Các cổng thanh toán khác đã bị loại bỏ.
 
@@ -69,23 +67,24 @@ Người dùng truy cập `/tokens`:
 
 ### 2. Flow Thanh Toán
 
-#### Client-side (Stripe)
+#### Client-side (PayPal Buttons)
 
 ```
 User → Chọn gói & phương thức
-     → API tạo payment intent
-     → Frontend hiển thị Stripe Elements
-     → User nhập thẻ
-     → Confirm payment
+     → FE gọi /api/tokens/purchase để lấy orderId
+     → Hiển thị PayPal Buttons
+     → User approve
+     → FE gọi /api/tokens/confirm-paypal để capture
      → Cộng token
 ```
 
 ### 3. API Endpoints
 
 #### POST `/api/tokens/purchase`
-Tạo payment intent Stripe và trả `clientSecret`.
+Tạo PayPal Order và trả `orderId` (hoặc `paymentUrl` nếu dùng redirect).
 
-Stripe dùng webhook: `POST /api/tokens/payment-webhook?provider=stripe` và xác nhận client: `POST /api/tokens/confirm-stripe`.
+#### POST `/api/tokens/confirm-paypal`
+Capture PayPal Order, idempotent ghi nhận `TokenPurchase` theo `paypalOrderId` và tăng `tokenBalance`.
 
 ---
 
@@ -95,14 +94,12 @@ Stripe dùng webhook: `POST /api/tokens/payment-webhook?provider=stripe` và xá
 src/
 ├── lib/payment/
 │   ├── payment-manager.ts     # Quản lý tổng hợp
-│   ├── stripe.ts              # Stripe integration
-│   └── (chỉ Stripe)
+│   └── paypal.ts              # PayPal integration
 ├── app/api/tokens/
-│   ├── purchase/route.ts      # API mua token
-│   ├── payment-callback/route.ts  # Callback handler
-│   └── payment-webhook/route.ts   # Webhook handler
+│   ├── purchase/route.ts      # API mua token (PayPal)
+│   └── confirm-paypal/route.ts# Capture PayPal
 ├── app/tokens/
-│   └── page.tsx               # UI trang mua token
+│   └── page.tsx               # UI trang mua token (PayPal Buttons)
 └── config/
     └── tokens.ts              # Cấu hình gói & phương thức
 ```
@@ -113,13 +110,9 @@ src/
 
 ### Test với Sandbox Credentials
 
-#### Stripe Test Cards
-```
-Visa: 4242 4242 4242 4242
-MasterCard: 5555 5555 5555 4444
-CVV: Any 3 digits
-Date: Any future date
-```
+#### PayPal Sandbox
+- Đăng nhập bằng tài khoản buyer sandbox
+- Approve giao dịch và xác nhận FE chuyển trang sang `/success`
 
 Các mục test khác đã được loại bỏ.
 
@@ -183,9 +176,8 @@ ORDER BY timestamp DESC;
 
 ### Webhook Configuration
 
-```
-Stripe: https://yourdomain.com/api/tokens/payment-webhook?provider=stripe
-```
+- Sandbox: không bắt buộc
+- Production: cấu hình PayPal Webhooks nếu cần đảm bảo hậu kỳ
 
 ---
 
@@ -212,7 +204,7 @@ Stripe: https://yourdomain.com/api/tokens/payment-webhook?provider=stripe
 
 ## 📚 Documentation Links
 
-- **Stripe**: https://stripe.com/docs
+- **PayPal Orders v2**: https://developer.paypal.com/docs/api/orders/v2/
 
 ---
 

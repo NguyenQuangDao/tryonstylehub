@@ -220,7 +220,7 @@ model Transaction {
 model TokenPurchase {
   id              String              @id @default(cuid())
   userId          String
-  stripePaymentId String              @unique
+  paypalOrderId   String              @unique
   amount          Decimal             @db.Decimal(10, 2)
   tokens          Int
   status          TokenPurchaseStatus @default(pending)
