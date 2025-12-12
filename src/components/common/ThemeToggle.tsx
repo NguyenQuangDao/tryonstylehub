@@ -2,7 +2,7 @@
 
 import { useTheme } from '@/lib/theme'
 import { testDarkMode } from '@/lib/theme-utils'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Laptop } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
@@ -23,9 +23,10 @@ export function ThemeToggle() {
   const themes = [
     { value: 'light' as const, icon: Sun, label: 'Sáng', description: 'Chế độ sáng' },
     { value: 'dark' as const, icon: Moon, label: 'Tối', description: 'Chế độ tối' },
+    { value: 'system' as const, icon: Laptop, label: 'Hệ thống', description: 'Theo hệ thống' },
   ]
 
-  const currentTheme = themes.find(t => t.value === theme) || themes[2]
+  const currentTheme = themes.find(t => t.value === theme) || themes[0]
   const CurrentIcon = currentTheme.icon
 
   const handleThemeChange = (newTheme: typeof theme) => {

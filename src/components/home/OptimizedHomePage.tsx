@@ -60,9 +60,6 @@ export default function OptimizedHomePage({
   isLoading,
   errorMessage,
   resultGallery,
-  isComparisonMode,
-  setIsComparisonMode,
-  setIsTipsModalOpen,
   onClearSelectedVirtualModel,
   onSubmit
 }: OptimizedHomePageProps) {

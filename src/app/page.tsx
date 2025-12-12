@@ -10,7 +10,7 @@ import { CreateVirtualModelInput, VirtualModel } from '@/types';
 import { FormEvent, useEffect, useState } from 'react';
 
 export default function HomePage() {
-  const { user } = useAuth()
+  const { user, refetchUser } = useAuth()
   const { createVirtualModel, updateVirtualModel } = useVirtualModels();
   const [selectedVirtualModel, setSelectedVirtualModel] = useState<VirtualModel | null>(null);
   const personImageUpload = useImageUpload();
