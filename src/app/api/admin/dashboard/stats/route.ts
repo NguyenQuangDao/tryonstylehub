@@ -49,11 +49,7 @@ export async function GET(request: NextRequest) {
       totalUsers,
       totalStores,
       totalProducts,
-      totalBlogPosts,
-      recentUsers,
-      recentStores,
-      recentProducts,
-      topStores
+      totalBlogPosts
     ] = await Promise.all([
       // Count totals
       prisma.user.count(),
@@ -65,85 +61,8 @@ export async function GET(request: NextRequest) {
       }),
       prisma.blogPost.count({
         where: { status: 'PUBLISHED' }
-      }),
-      
-      // Recent items
-      prisma.user.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          avatarUrl: true
-        }
-      }),
-      
-      prisma.shop.findMany({
-        where: { status: 'ACTIVE' },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logoUrl: true,
-          status: true,
-          averageRating: true,
-          createdAt: true,
-          owner: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
-        }
-      }),
-      
-      prisma.product.findMany({
-        where: { status: 'PUBLISHED' },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: {
-          id: true,
-          title: true,
-          basePrice: true,
-          
-          createdAt: true,
-          shop: {
-            select: {
-              name: true,
-              slug: true
-            }
-          },
-          category: {
-            select: {
-              name: true,
-              slug: true
-            }
-          }
-        }
-      }),
-      
-      // Top stores by rating (not sales)
-      prisma.shop.findMany({
-        where: { status: 'ACTIVE' },
-        orderBy: { averageRating: 'desc' },
-        take: 10,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logoUrl: true,
-          averageRating: true,
-          createdAt: true
-        }
       })
     ]);
-
-    
 
     return NextResponse.json({
       overview: {
@@ -152,12 +71,6 @@ export async function GET(request: NextRequest) {
         totalProducts,
         totalBlogPosts
       },
-      recent: {
-        users: recentUsers,
-        stores: recentStores,
-        products: recentProducts
-      },
-      topStores,
       timeRange
     });
 

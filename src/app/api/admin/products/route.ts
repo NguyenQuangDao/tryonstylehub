@@ -26,20 +26,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '12');
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
+    const category = searchParams.get('category') || 'all';
+    const shop = searchParams.get('shop') || 'all';
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: { [key: string]: any } = {};
+    const where: any = {};
     
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { slug: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } }
+        { title: { contains: search } }, // Removed mode: 'insensitive' for compatibility if db doesn't support it, or add it back if using Postgres
+        { description: { contains: search } },
+        { sku: { contains: search } }
       ];
     }
 
@@ -47,58 +48,63 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    // Build order by clause
-    const orderBy: { [key: string]: 'asc' | 'desc' } = {};
-    switch (sortBy) {
-      case 'name':
-        orderBy.name = sortOrder as 'asc' | 'desc';
-        break;
-      case 'totalSales':
-        orderBy.totalSales = sortOrder as 'asc' | 'desc';
-        break;
-      case 'averageRating':
-        orderBy.averageRating = sortOrder as 'asc' | 'desc';
-        break;
-      case 'totalProducts':
-        orderBy.totalProducts = sortOrder as 'asc' | 'desc';
-        break;
-      default:
-        orderBy.createdAt = sortOrder as 'asc' | 'desc';
+    if (category !== 'all') {
+      where.category = { slug: category };
     }
 
-    const [shops, total] = await Promise.all([
-      prisma.shop.findMany({
+    if (shop !== 'all') {
+      where.shop = { slug: shop };
+    }
+
+    // Build order by clause
+    const orderBy: any = {};
+    switch (sortBy) {
+      case 'title':
+        orderBy.title = sortOrder;
+        break;
+      case 'price':
+        orderBy.basePrice = sortOrder;
+        break;
+      case 'stock':
+        orderBy.stockQuantity = sortOrder;
+        break;
+      case 'rating':
+        orderBy.rating = sortOrder;
+        break;
+      default:
+        orderBy.createdAt = sortOrder;
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
         where,
         orderBy,
         skip,
         take: limit,
         include: {
-          owner: {
+          shop: {
             select: {
               id: true,
               name: true,
-              email: true
+              slug: true
             }
           },
-          _count: {
+          category: {
             select: {
-              products: true,
-              orders: true
+              id: true,
+              name: true,
+              slug: true
             }
           }
         }
       }),
-      prisma.shop.count({ where })
+      prisma.product.count({ where })
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
-      shops: shops.map(shop => ({
-        ...shop,
-        totalProducts: shop._count.products,
-        totalOrders: shop._count.orders
-      })),
+      products,
       pagination: {
         page,
         limit,
@@ -107,11 +113,11 @@ export async function GET(request: NextRequest) {
         hasNext: page < totalPages,
         hasPrev: page > 1
       },
-      totalPages
+      totalPages // Keeping this for compatibility with frontend which expects totalPages at root
     });
 
   } catch (error) {
-    console.error('Shops list error:', error);
+    console.error('Products list error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

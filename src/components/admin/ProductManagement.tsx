@@ -1,22 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Search, 
-  Filter, 
-  Eye, 
-  Edit, 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Eye,
   Package,
-  Store,
-  Star,
-  DollarSign,
-  Box
+  Search,
+  Star
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Product {
   id: string;
@@ -64,6 +74,7 @@ export default function ProductManagement() {
   const [sortBy, setSortBy] = useState('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -74,7 +85,7 @@ export default function ProductManagement() {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '12',
+        limit: '10', // Increased limit for table view
         search: searchTerm,
         status: statusFilter,
         category: categoryFilter,
@@ -105,6 +116,9 @@ export default function ProductManagement() {
 
       if (response.ok) {
         fetchProducts();
+        if (selectedProduct && selectedProduct.id === productId) {
+            setSelectedProduct({...selectedProduct, status: newStatus});
+        }
       }
     } catch (error) {
       console.error('Failed to update product status:', error);
@@ -123,6 +137,9 @@ export default function ProductManagement() {
 
       if (response.ok) {
         fetchProducts();
+        if (selectedProduct && selectedProduct.id === productId) {
+            setSelectedProduct({...selectedProduct, isFeatured: !featured});
+        }
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
@@ -159,24 +176,14 @@ export default function ProductManagement() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                  <div className="h-3 bg-gray-200 rounded w-24"></div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                <div className="h-3 bg-gray-200 rounded w-20"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="p-6 space-y-4">
+         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+         <div className="h-12 w-full bg-gray-200 rounded animate-pulse"></div>
+         <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 w-full bg-gray-200 rounded animate-pulse"></div>
+            ))}
+         </div>
       </div>
     );
   }
@@ -258,154 +265,111 @@ export default function ProductManagement() {
         </CardContent>
       </Card>
 
-      {/* Product Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => (
-          <Card key={product.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="relative mb-4">
-                <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                  {product.images && product.images.length > 0 ? (
-                    <img 
-                      src={product.images[0].url} 
-                      alt={product.images[0].alt}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Package className="h-16 w-16 text-gray-400" />
-                  )}
-                </div>
-                
-                {/* Badges */}
-                <div className="absolute top-2 left-2 space-y-1">
-                  {product.isFeatured && (
-                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">
-                      <Star className="h-2 w-2 mr-1" />
-                      Nổi bật
-                    </Badge>
-                  )}
-                  {product.isNew && (
-                    <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
-                      Mới
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="absolute top-2 right-2">
-                  <Badge className={getStatusColor(product.status)}>
-                    {product.status === 'PUBLISHED' ? 'Đã đăng' : 
-                     product.status === 'DRAFT' ? 'Nháp' : 
-                     'Đã lưu trữ'}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{product.title}</h3>
-                    <p className="text-sm text-gray-500 truncate">{product.category.name}</p>
-                  </div>
-                </div>
-                
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {product.shortDescription || product.description.substring(0, 100) + '...'}
-                </p>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              {/* Price */}
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold text-red-600">
-                  {formatCurrency(product.salePrice || product.basePrice)}
-                </span>
-                {product.salePrice && (
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatCurrency(product.basePrice)}
-                  </span>
-                )}
-              </div>
-              
-              {/* Stock */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tồn kho:</span>
-                <Badge variant={product.stockQuantity > 10 ? 'outline' : 'destructive'}>
-                  {product.stockQuantity} còn hàng
-                </Badge>
-              </div>
-              
-              {/* Rating */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Đánh giá:</span>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="font-medium">{product.rating.toFixed(1)}</span>
-                  <span className="text-gray-500">({product.reviewCount})</span>
-                </div>
-              </div>
-              
-              {/* Shop Info */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Cửa hàng:</span>
-                <span className="font-medium truncate">{product.shop.name}</span>
-              </div>
-              
-              {/* SKU */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">SKU:</span>
-                <span className="font-mono text-xs">{product.sku}</span>
-              </div>
-              
-              {/* Views */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Lượt xem:</span>
-                <span className="font-medium">{product.viewCount}</span>
-              </div>
-              
-              {/* Date */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Ngày tạo:</span>
-                <span className="text-gray-500">{formatDate(product.createdAt)}</span>
-              </div>
-              
-              {/* Actions */}
-              <div className="flex space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => toggleFeatured(product.id, product.isFeatured)}
-                >
-                  <Star className={`h-3 w-3 mr-1 ${product.isFeatured ? 'fill-current' : ''}`} />
-                  {product.isFeatured ? 'Bỏ nổi bật' : 'Nổi bật'}
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Eye className="h-3 w-3" />
-                </Button>
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button 
-                  variant={product.status === 'PUBLISHED' ? 'destructive' : 'default'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => updateProductStatus(product.id, product.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')}
-                >
-                  {product.status === 'PUBLISHED' ? 'Chuyển nháp' : 'Đăng bán'}
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-3 w-3" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Product Table */}
+      <div className="rounded-md bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sản phẩm</TableHead>
+              <TableHead>Danh mục</TableHead>
+              <TableHead>Cửa hàng</TableHead>
+              <TableHead>Giá</TableHead>
+              <TableHead>Tồn kho</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Đánh giá</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        Không tìm thấy sản phẩm nào
+                    </TableCell>
+                </TableRow>
+            ) : (
+                products.map((product) => (
+                <TableRow key={product.id}>
+                    <TableCell>
+                    <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {product.images && product.images.length > 0 ? (
+                                <img 
+                                src={product.images[0].url} 
+                                alt={product.images[0].alt}
+                                className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <Package className="h-5 w-5 text-gray-400" />
+                            )}
+                        </div>
+                        <div className="min-w-0">
+                            <div className="font-medium truncate max-w-[200px]" title={product.title}>{product.title}</div>
+                            <div className="text-xs text-muted-foreground font-mono">{product.sku}</div>
+                        </div>
+                    </div>
+                    </TableCell>
+                    <TableCell>
+                        <Badge variant="outline">{product.category.name}</Badge>
+                    </TableCell>
+                    <TableCell>
+                        <span className="text-sm truncate max-w-[150px] block" title={product.shop.name}>{product.shop.name}</span>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex flex-col">
+                            <span className="font-medium text-red-600">
+                                {formatCurrency(product.salePrice || product.basePrice)}
+                            </span>
+                            {product.salePrice && (
+                                <span className="text-xs text-gray-400 line-through">
+                                    {formatCurrency(product.basePrice)}
+                                </span>
+                            )}
+                        </div>
+                    </TableCell>
+                    <TableCell>
+                        <Badge variant={product.stockQuantity > 10 ? 'outline' : 'destructive'}>
+                            {product.stockQuantity}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <Badge className={getStatusColor(product.status)}>
+                            {product.status === 'PUBLISHED' ? 'Đã đăng' : 
+                            product.status === 'DRAFT' ? 'Nháp' : 
+                            'Đã lưu trữ'}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            <span>{product.rating.toFixed(1)}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedProduct(product)}>
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className={product.isFeatured ? "text-yellow-500" : "text-gray-400"}
+                                onClick={() => toggleFeatured(product.id, product.isFeatured)}
+                            >
+                                <Star className={`h-4 w-4 ${product.isFeatured ? 'fill-current' : ''}`} />
+                            </Button>
+                        </div>
+                    </TableCell>
+                </TableRow>
+                ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2">
+        <div className="flex justify-end items-center space-x-2">
           <Button
             variant="outline"
             size="sm"
@@ -429,6 +393,132 @@ export default function ProductManagement() {
           </Button>
         </div>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Chi tiết sản phẩm</DialogTitle>
+                <DialogDescription>Thông tin chi tiết về sản phẩm</DialogDescription>
+            </DialogHeader>
+            {selectedProduct && (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Images */}
+                        <div>
+                            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 flex items-center justify-center">
+                                {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                                    <img 
+                                        src={selectedProduct.images[0].url} 
+                                        alt={selectedProduct.images[0].alt}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Package className="h-24 w-24 text-gray-300" />
+                                )}
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {selectedProduct.images.slice(1).map((img, idx) => (
+                                    <div key={idx} className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+                                        <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="space-y-4">
+                            <div>
+                                <h2 className="text-2xl font-bold">{selectedProduct.title}</h2>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <Badge variant="outline">{selectedProduct.category.name}</Badge>
+                                    <Badge className={getStatusColor(selectedProduct.status)}>
+                                        {selectedProduct.status === 'PUBLISHED' ? 'Đã đăng' : 
+                                        selectedProduct.status === 'DRAFT' ? 'Nháp' : 
+                                        'Đã lưu trữ'}
+                                    </Badge>
+                                    {selectedProduct.isFeatured && (
+                                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                            Nổi bật
+                                        </Badge>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold text-red-600">
+                                    {formatCurrency(selectedProduct.salePrice || selectedProduct.basePrice)}
+                                </span>
+                                {selectedProduct.salePrice && (
+                                    <span className="text-sm text-gray-500 line-through">
+                                        {formatCurrency(selectedProduct.basePrice)}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-gray-500 block">Mã sản phẩm (SKU)</span>
+                                    <span className="font-mono">{selectedProduct.sku}</span>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block">Tồn kho</span>
+                                    <span className="font-medium">{selectedProduct.stockQuantity}</span>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block">Thương hiệu</span>
+                                    <span>{selectedProduct.brand || "---"}</span>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block">Chất liệu</span>
+                                    <span>{selectedProduct.material || "---"}</span>
+                                </div>
+                            </div>
+
+                            <div className="border-t pt-4">
+                                <span className="text-gray-500 block mb-1">Cửa hàng</span>
+                                <div className="font-medium">{selectedProduct.shop.name}</div>
+                                <div className="text-sm text-muted-foreground">@{selectedProduct.shop.slug}</div>
+                            </div>
+
+                            <div className="border-t pt-4">
+                                <span className="text-gray-500 block mb-1">Thống kê</span>
+                                <div className="flex gap-4 text-sm">
+                                    <div className="flex items-center gap-1">
+                                        <Eye className="h-4 w-4 text-gray-400" />
+                                        <span>{selectedProduct.viewCount} xem</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Star className="h-4 w-4 text-yellow-400" />
+                                        <span>{selectedProduct.rating.toFixed(1)} ({selectedProduct.reviewCount} đánh giá)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="border-t pt-6">
+                        <h3 className="font-semibold mb-2">Mô tả sản phẩm</h3>
+                        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 whitespace-pre-wrap">
+                            {selectedProduct.description}
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <Button variant="outline" onClick={() => setSelectedProduct(null)}>Đóng</Button>
+                        <Button 
+                            variant={selectedProduct.status === 'PUBLISHED' ? 'secondary' : 'default'}
+                            onClick={() => updateProductStatus(selectedProduct.id, selectedProduct.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')}
+                        >
+                            {selectedProduct.status === 'PUBLISHED' ? 'Gỡ sản phẩm (Nháp)' : 'Đăng sản phẩm'}
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

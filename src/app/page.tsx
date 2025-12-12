@@ -143,15 +143,6 @@ export default function HomePage() {
     } catch {}
   }, []);
 
-  const categoryFromFeatured = (p: { styleTags: string[] }) => {
-    const tags = (p.styleTags || []).map(t => t.toLowerCase())
-    if (tags.some(t => t.includes('dress') || t.includes('đầm'))) return 'dress'
-    if (tags.some(t => t.includes('outer') || t.includes('jacket') || t.includes('coat'))) return 'outerwear'
-    if (tags.some(t => t.includes('bottom') || t.includes('quần') || t.includes('skirt') || t.includes('váy'))) return 'bottoms'
-    if (tags.some(t => t.includes('accessor') || t.includes('phụ kiện'))) return 'accessories'
-    return 'tops'
-  }
-
   return (
     <>
       <OptimizedHomePage
@@ -205,73 +196,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Featured Products */}
-      {/* <div className="max-w-7xl mx-auto mt-12 px-4">
-        <h2 className="text-2xl font-bold mb-4">Sản phẩm nổi bật</h2>
-        {featuredLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-5 w-2/3" />
-                  <Skeleton className="h-4 w-1/3" />
-                  <div className="flex gap-2 mt-2">
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 w-28" />
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : featuredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Chưa có sản phẩm nổi bật</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <div className="aspect-square bg-gray-100 dark:bg-gray-800 relative">
-                  {product.imageUrl ? (
-                    <Image src={product.imageUrl} alt={product.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingBag className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                  <Badge className="absolute top-4 right-4">
-                    {formatVND(product.price)}
-                  </Badge>
-                </div>
-                <div className="p-4 space-y-2">
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg">{product.shop.name}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button asChild className="flex-1" aria-label={`Xem chi tiết sản phẩm ${product.name}`}>
-                      <Link href={`/products/${product.id}`}>Xem chi tiết</Link>
-                    </Button>
-                    <Button asChild variant="outline" aria-label={`Mở cửa hàng ${product.shop.name}`}>
-                      <a href={product.shop.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        Mua ngay
-                      </a>
-                    </Button>
-                    <Button asChild variant="secondary" aria-label={`Thử đồ với ${product.name}`}>
-                      <Link href={`/?garmentImage=${encodeURIComponent(product.imageUrl)}&category=${categoryFromFeatured(product)}`}>
-                        Thử đồ online
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div> */}
       <InsufficientTokensModal
         isOpen={insufficientOpen}
         onClose={() => setInsufficientOpen(false)}

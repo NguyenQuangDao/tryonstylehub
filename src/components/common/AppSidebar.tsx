@@ -35,7 +35,7 @@ export default function AppSidebar() {
     const role = (user as { role?: "SHOPPER" | "SELLER" | "ADMIN" } | null)?.role
     const seller: NavItem[] = role === "SELLER"
       ? [{ href: "/dashboard/seller", label: "Bảng người bán", icon: Store }]
-      : [{ href: "/dashboard/seller", label: "Đăng ký người bán", icon: Store }]
+      : role === "ADMIN" ? [] : [{ href: "/dashboard/seller", label: "Đăng ký người bán", icon: Store }]
     const admin: NavItem[] = role === "ADMIN" ? [
       { href: "/admin/dashboard", label: "Admin Dashboard", icon: LineChart },
     ] : []

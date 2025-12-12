@@ -34,7 +34,7 @@ export default function AppHeader() {
           <Breadcrumbs />
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {user?.role !== "SELLER" && (
+          {user?.role !== "SELLER" && user?.role !== "ADMIN" && (
             <Button variant="outline" className="h-8 px-3" asChild>
               <Link href="/dashboard/seller">Đăng ký người bán</Link>
             </Button>

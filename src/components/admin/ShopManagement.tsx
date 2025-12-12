@@ -3,18 +3,32 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-    Edit,
-    Eye,
-    Globe,
-    Mail,
-    MapPin,
-    Phone,
-    Search,
-    Star
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Eye,
+  Globe,
+  Mail,
+  MapPin,
+  Phone,
+  Search,
+  Star
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -56,13 +70,14 @@ export default function ShopManagement() {
   const [sortBy, setSortBy] = useState('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
 
   const fetchShops = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '12',
+        limit: '10', // Increased limit for table view or keep 10/12
         search: searchTerm,
         status: statusFilter,
         sortBy: sortBy
@@ -82,8 +97,6 @@ export default function ShopManagement() {
     fetchShops();
   }, [fetchShops]);
 
-  
-
   const updateShopStatus = async (shopId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/shops/${shopId}`, {
@@ -96,6 +109,9 @@ export default function ShopManagement() {
 
       if (response.ok) {
         fetchShops();
+        if (selectedShop && selectedShop.id === shopId) {
+            setSelectedShop({...selectedShop, status: newStatus});
+        }
       }
     } catch (error) {
       console.error('Failed to update shop status:', error);
@@ -114,6 +130,9 @@ export default function ShopManagement() {
 
       if (response.ok) {
         fetchShops();
+        if (selectedShop && selectedShop.id === shopId) {
+            setSelectedShop({...selectedShop, featured: !featured});
+        }
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
@@ -127,8 +146,6 @@ export default function ShopManagement() {
       day: 'numeric'
     });
   };
-
-  
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -145,26 +162,14 @@ export default function ShopManagement() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
-                    <div className="h-3 bg-gray-200 rounded w-24"></div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                <div className="h-3 bg-gray-200 rounded w-20"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="p-6 space-y-4">
+         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+         <div className="h-12 w-full bg-gray-200 rounded animate-pulse"></div>
+         <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 w-full bg-gray-200 rounded animate-pulse"></div>
+            ))}
+         </div>
       </div>
     );
   }
@@ -214,7 +219,6 @@ export default function ShopManagement() {
               <SelectContent>
                 <SelectItem value="createdAt">Ngày tạo</SelectItem>
                 <SelectItem value="name">Tên cửa hàng</SelectItem>
-                
                 <SelectItem value="averageRating">Đánh giá</SelectItem>
               </SelectContent>
             </Select>
@@ -222,123 +226,95 @@ export default function ShopManagement() {
         </CardContent>
       </Card>
 
-      {/* Shop Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {shops.map((shop) => (
-          <Card key={shop.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={shop.logoUrl} alt={shop.name} />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {shop.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{shop.name}</h3>
-                    <p className="text-sm text-gray-500 truncate">@{shop.slug}</p>
-                  </div>
-                </div>
-                {shop.featured && (
-                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                    <Star className="h-3 w-3 mr-1" />
-                    Nổi bật
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              <p className="text-sm text-gray-600 line-clamp-2">
-                {shop.description || 'Chưa có mô tả'}
-              </p>
-              
-              <div className="space-y-2 text-sm">
-                {shop.email && (
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-3 w-3 text-gray-400" />
-                    <span className="truncate">{shop.email}</span>
-                  </div>
-                )}
-                {shop.phone && (
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-3 w-3 text-gray-400" />
-                    <span>{shop.phone}</span>
-                  </div>
-                )}
-                {shop.address && (
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-3 w-3 text-gray-400" />
-                    <span className="truncate">{shop.address}</span>
-                  </div>
-                )}
-                {shop.website && (
-                  <div className="flex items-center space-x-2">
-                    <Globe className="h-3 w-3 text-gray-400" />
-                    <span className="truncate">{shop.website}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex items-center space-x-2">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium">{shop.averageRating.toFixed(1)}</span>
-                  
-                </div>
-                <span className="text-sm font-medium text-blue-600">
-                  {shop.totalProducts} SP
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Badge className={getStatusColor(shop.status)}>
-                  {shop.status === 'ACTIVE' ? 'Đang hoạt động' : 
-                   shop.status === 'PENDING' ? 'Chờ duyệt' : 
-                   'Đã tạm dừng'}
-                </Badge>
-                <span className="text-xs text-gray-500">
-                  {formatDate(shop.createdAt)}
-                </span>
-              </div>
-              
-              <div className="flex space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => toggleFeatured(shop.id, shop.featured)}
-                >
-                  <Star className={`h-3 w-3 mr-1 ${shop.featured ? 'fill-current' : ''}`} />
-                  {shop.featured ? 'Bỏ nổi bật' : 'Nổi bật'}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => router.push(`/shops/${shop.slug}`)}>
-                  <Eye className="h-3 w-3" />
-                </Button>
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button 
-                  variant={shop.status === 'ACTIVE' ? 'destructive' : 'default'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => updateShopStatus(shop.id, shop.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE')}
-                >
-                  {shop.status === 'ACTIVE' ? 'Tạm dừng' : 'Kích hoạt'}
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-3 w-3" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Shop Table */}
+      <div className="rounded-md bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Cửa hàng</TableHead>
+              <TableHead>Chủ sở hữu</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Sản phẩm</TableHead>
+              <TableHead>Đánh giá</TableHead>
+              <TableHead>Ngày tạo</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {shops.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        Không tìm thấy cửa hàng nào
+                    </TableCell>
+                </TableRow>
+            ) : (
+                shops.map((shop) => (
+                <TableRow key={shop.id}>
+                    <TableCell>
+                    <div className="flex items-center space-x-3">
+                        <Avatar>
+                        <AvatarImage src={shop.logoUrl} alt={shop.name} />
+                        <AvatarFallback>{shop.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                        <div className="font-medium flex items-center gap-2">
+                            {shop.name}
+                            {shop.featured && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                        </div>
+                        <div className="text-sm text-muted-foreground">@{shop.slug}</div>
+                        </div>
+                    </div>
+                    </TableCell>
+                    <TableCell>
+                    <div className="flex flex-col">
+                        <span className="font-medium text-sm">{shop.owner.name}</span>
+                        <span className="text-xs text-muted-foreground">{shop.owner.email}</span>
+                    </div>
+                    </TableCell>
+                    <TableCell>
+                    <Badge className={getStatusColor(shop.status)}>
+                        {shop.status === 'ACTIVE' ? 'Hoạt động' : 
+                        shop.status === 'PENDING' ? 'Chờ duyệt' : 
+                        'Tạm dừng'}
+                    </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <span className="font-medium">{shop.totalProducts}</span>
+                    </TableCell>
+                    <TableCell>
+                    <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <span>{shop.averageRating.toFixed(1)}</span>
+                    </div>
+                    </TableCell>
+                    <TableCell>
+                        <span className="text-sm text-muted-foreground">{formatDate(shop.createdAt)}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedShop(shop)}>
+                        <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className={shop.featured ? "text-yellow-500" : "text-gray-400"}
+                            onClick={() => toggleFeatured(shop.id, shop.featured)}
+                        >
+                            <Star className={`h-4 w-4 ${shop.featured ? 'fill-current' : ''}`} />
+                        </Button>
+                    </div>
+                    </TableCell>
+                </TableRow>
+                ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2">
+        <div className="flex justify-end items-center space-x-2">
           <Button
             variant="outline"
             size="sm"
@@ -362,6 +338,99 @@ export default function ShopManagement() {
           </Button>
         </div>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedShop} onOpenChange={(open) => !open && setSelectedShop(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Chi tiết cửa hàng</DialogTitle>
+                <DialogDescription>Thông tin chi tiết về cửa hàng và chủ sở hữu</DialogDescription>
+            </DialogHeader>
+            {selectedShop && (
+                <div className="space-y-6">
+                    {/* Header Info */}
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-20 w-20">
+                            <AvatarImage src={selectedShop.logoUrl} alt={selectedShop.name} />
+                            <AvatarFallback className="text-xl">{selectedShop.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h2 className="text-2xl font-bold flex items-center gap-2">
+                                {selectedShop.name}
+                                <Badge className={getStatusColor(selectedShop.status)}>
+                                    {selectedShop.status === 'ACTIVE' ? 'Hoạt động' : 
+                                    selectedShop.status === 'PENDING' ? 'Chờ duyệt' : 
+                                    'Tạm dừng'}
+                                </Badge>
+                            </h2>
+                            <p className="text-muted-foreground">@{selectedShop.slug}</p>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    {selectedShop.averageRating.toFixed(1)} Đánh giá
+                                </span>
+                                <span>•</span>
+                                <span>{selectedShop.totalProducts} Sản phẩm</span>
+                                <span>•</span>
+                                <span>Ngày tạo: {formatDate(selectedShop.createdAt)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <h3 className="font-semibold mb-2">Mô tả</h3>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                            {selectedShop.description || "Chưa có mô tả"}
+                        </p>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 className="font-semibold mb-2">Thông tin liên hệ</h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <Mail className="h-4 w-4 text-gray-400" />
+                                    <span>{selectedShop.email || "Chưa cập nhật"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4 text-gray-400" />
+                                    <span>{selectedShop.phone || "Chưa cập nhật"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Globe className="h-4 w-4 text-gray-400" />
+                                    <span>{selectedShop.website || "Chưa cập nhật"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-gray-400" />
+                                    <span>{selectedShop.address || "Chưa cập nhật"}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold mb-2">Chủ sở hữu</h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="font-medium">{selectedShop.owner.name}</div>
+                                <div className="text-muted-foreground">{selectedShop.owner.email}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <Button variant="outline" onClick={() => setSelectedShop(null)}>Đóng</Button>
+                        <Button 
+                            variant={selectedShop.status === 'ACTIVE' ? 'destructive' : 'default'}
+                            onClick={() => updateShopStatus(selectedShop.id, selectedShop.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE')}
+                        >
+                            {selectedShop.status === 'ACTIVE' ? 'Tạm dừng cửa hàng' : 'Kích hoạt cửa hàng'}
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
