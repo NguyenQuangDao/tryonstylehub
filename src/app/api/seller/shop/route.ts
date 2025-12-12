@@ -1,8 +1,8 @@
 import { verifyToken } from '@/lib/auth'
+import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
 import { uploadFileToS3 } from '@/lib/s3'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { NextRequest, NextResponse } from 'next/server'
 
 function isEmail(v: string) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
     const shop = await prisma.shop.findUnique({ where: { ownerId: String(userId) } })
     if (!shop) {
-      return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Bạn phải đăng ký làm seller trước' }, { status: 404 })
     }
     return NextResponse.json({ shop })
   } catch {
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
 
     const existing = await prisma.shop.findUnique({ where: { ownerId: String(userId) } })
     if (!existing) {
-      return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Bạn phải đăng ký làm seller trước' }, { status: 404 })
     }
 
     let logoUrl: string | undefined
