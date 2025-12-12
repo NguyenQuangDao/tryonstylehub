@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -52,16 +52,30 @@ interface Product {
     name: string;
     slug: string;
   };
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
+  productCategories: Array<{
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }>;
   images: Array<{
     url: string;
     alt: string;
     isPrimary: boolean;
   }>;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId?: string;
+  parent?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 export default function ProductManagement() {
@@ -75,9 +89,11 @@ export default function ProductManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, [searchTerm, statusFilter, categoryFilter, shopFilter, sortBy, currentPage]);
 
   const fetchProducts = async () => {
@@ -101,6 +117,16 @@ export default function ProductManagement() {
       console.error('Failed to fetch products:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/categories');
+      const data = await response.json();
+      setCategories(data.categories);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
     }
   };
 
@@ -143,6 +169,36 @@ export default function ProductManagement() {
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
+    }
+  };
+
+  const updateProductCategories = async (productId: string, categoryIds: string[]) => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/categories`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ categoryIds }),
+      });
+
+      if (response.ok) {
+        fetchProducts();
+        // Refresh selected product if it's the one being updated
+        if (selectedProduct && selectedProduct.id === productId) {
+          const updatedCategories = categories.filter(cat => categoryIds.includes(cat.id));
+          const productCategories = updatedCategories.map(cat => ({
+            category: {
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug
+            }
+          }));
+          setSelectedProduct({...selectedProduct, productCategories});
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update product categories:', error);
     }
   };
 
@@ -232,10 +288,11 @@ export default function ProductManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả danh mục</SelectItem>
-                <SelectItem value="ao">Áo</SelectItem>
-                <SelectItem value="quan">Quần</SelectItem>
-                <SelectItem value="vay-dam">Váy đầm</SelectItem>
-                <SelectItem value="ao-khoac">Áo khoác</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.slug}>
+                    {category.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             
@@ -310,7 +367,11 @@ export default function ProductManagement() {
                     </div>
                     </TableCell>
                     <TableCell>
-                        <Badge variant="outline">{product.category.name}</Badge>
+                        <div className="flex flex-wrap gap-1">
+                            {product.productCategories.map((pc, index) => (
+                                <Badge key={index} variant="outline">{pc.category.name}</Badge>
+                            ))}
+                        </div>
                     </TableCell>
                     <TableCell>
                         <span className="text-sm truncate max-w-[150px] block" title={product.shop.name}>{product.shop.name}</span>
@@ -345,19 +406,19 @@ export default function ProductManagement() {
                             <span>{product.rating.toFixed(1)}</span>
                         </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-center">
                         <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="icon" onClick={() => setSelectedProduct(product)}>
                                 <Eye className="h-4 w-4" />
                             </Button>
-                            <Button 
+                            {/* <Button 
                                 variant="ghost" 
                                 size="icon"
                                 className={product.isFeatured ? "text-yellow-500" : "text-gray-400"}
                                 onClick={() => toggleFeatured(product.id, product.isFeatured)}
                             >
                                 <Star className={`h-4 w-4 ${product.isFeatured ? 'fill-current' : ''}`} />
-                            </Button>
+                            </Button> */}
                         </div>
                     </TableCell>
                 </TableRow>
@@ -396,7 +457,7 @@ export default function ProductManagement() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
                 <DialogTitle>Chi tiết sản phẩm</DialogTitle>
                 <DialogDescription>Thông tin chi tiết về sản phẩm</DialogDescription>
@@ -430,19 +491,38 @@ export default function ProductManagement() {
                         <div className="space-y-4">
                             <div>
                                 <h2 className="text-2xl font-bold">{selectedProduct.title}</h2>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <Badge variant="outline">{selectedProduct.category.name}</Badge>
+                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                    {selectedProduct.productCategories.map((pc, index) => (
+                                        <Badge key={index} variant="outline">{pc.category.name}</Badge>
+                                    ))}
                                     <Badge className={getStatusColor(selectedProduct.status)}>
                                         {selectedProduct.status === 'PUBLISHED' ? 'Đã đăng' : 
                                         selectedProduct.status === 'DRAFT' ? 'Nháp' : 
                                         'Đã lưu trữ'}
                                     </Badge>
-                                    {selectedProduct.isFeatured && (
+                                    {/* {selectedProduct.isFeatured && (
                                         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                                             Nổi bật
                                         </Badge>
-                                    )}
+                                    )} */}
                                 </div>
+                                {/* <div className="mt-4">
+                                    <Label className="text-sm font-medium mb-2 block">Chỉnh sửa danh mục:</Label>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            const currentCategoryIds = selectedProduct.productCategories.map(pc => pc.category.id);
+                                            const newCategoryIds = prompt('Nhập ID danh mục (phân cách bằng dấu phẩy):', currentCategoryIds.join(','));
+                                            if (newCategoryIds !== null) {
+                                                const categoryIds = newCategoryIds.split(',').map(id => id.trim()).filter(id => id);
+                                                updateProductCategories(selectedProduct.id, categoryIds);
+                                            }
+                                        }}
+                                    >
+                                        Cập nhật danh mục
+                                    </Button>
+                                </div> */}
                             </div>
 
                             <div className="flex items-baseline gap-2">
@@ -508,12 +588,12 @@ export default function ProductManagement() {
                     {/* Actions */}
                     <div className="flex justify-end gap-3 pt-4 border-t">
                         <Button variant="outline" onClick={() => setSelectedProduct(null)}>Đóng</Button>
-                        <Button 
+                        {/* <Button 
                             variant={selectedProduct.status === 'PUBLISHED' ? 'secondary' : 'default'}
                             onClick={() => updateProductStatus(selectedProduct.id, selectedProduct.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')}
                         >
                             {selectedProduct.status === 'PUBLISHED' ? 'Gỡ sản phẩm (Nháp)' : 'Đăng sản phẩm'}
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
             )}

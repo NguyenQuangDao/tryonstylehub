@@ -295,14 +295,14 @@ export default function ShopManagement() {
                         <Button variant="ghost" size="icon" onClick={() => setSelectedShop(shop)}>
                         <Eye className="h-4 w-4" />
                         </Button>
-                        <Button 
+                        {/* <Button 
                             variant="ghost" 
                             size="icon"
                             className={shop.featured ? "text-yellow-500" : "text-gray-400"}
                             onClick={() => toggleFeatured(shop.id, shop.featured)}
                         >
                             <Star className={`h-4 w-4 ${shop.featured ? 'fill-current' : ''}`} />
-                        </Button>
+                        </Button> */}
                     </div>
                     </TableCell>
                 </TableRow>
@@ -341,7 +341,7 @@ export default function ShopManagement() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedShop} onOpenChange={(open) => !open && setSelectedShop(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
                 <DialogTitle>Chi tiết cửa hàng</DialogTitle>
                 <DialogDescription>Thông tin chi tiết về cửa hàng và chủ sở hữu</DialogDescription>
@@ -420,12 +420,12 @@ export default function ShopManagement() {
                     {/* Actions */}
                     <div className="flex justify-end gap-3 pt-4 border-t">
                         <Button variant="outline" onClick={() => setSelectedShop(null)}>Đóng</Button>
-                        <Button 
+                        {/* <Button 
                             variant={selectedShop.status === 'ACTIVE' ? 'destructive' : 'default'}
                             onClick={() => updateShopStatus(selectedShop.id, selectedShop.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE')}
                         >
                             {selectedShop.status === 'ACTIVE' ? 'Tạm dừng cửa hàng' : 'Kích hoạt cửa hàng'}
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
             )}

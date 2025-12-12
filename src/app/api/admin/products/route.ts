@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
-        { title: { contains: search } }, // Removed mode: 'insensitive' for compatibility if db doesn't support it, or add it back if using Postgres
+        { title: { contains: search } },
         { description: { contains: search } },
         { sku: { contains: search } }
       ];
@@ -49,7 +49,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (category !== 'all') {
-      where.category = { slug: category };
+      where.productCategories = {
+        some: {
+          category: {
+            slug: category
+          }
+        }
+      };
     }
 
     if (shop !== 'all') {
@@ -75,6 +81,7 @@ export async function GET(request: NextRequest) {
         orderBy.createdAt = sortOrder;
     }
 
+    // Get products and total count
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -88,23 +95,65 @@ export async function GET(request: NextRequest) {
               name: true,
               slug: true
             }
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true
-            }
           }
         }
       }),
       prisma.product.count({ where })
     ]);
 
+    // Get categories for each product
+    const productIds = products.map(p => p.id);
+    const productCategories = await prisma.$queryRawUnsafe(`
+      SELECT pc.productId, c.id, c.name, c.slug
+      FROM ProductCategory pc
+      JOIN Category c ON pc.categoryId = c.id
+      WHERE pc.productId IN (${productIds.map(() => '?').join(',')})
+    `, ...productIds) as any[];
+
+    // Combine products with their categories
+    const productsWithCategories = products.map(product => {
+      const categories = productCategories
+        .filter((pc: any) => pc.productId === product.id)
+        .map((pc: any) => ({
+          category: {
+            id: pc.id,
+            name: pc.name,
+            slug: pc.slug
+          }
+        }));
+
+      // Transform images
+      let images: any[] = [];
+      if (Array.isArray(product.images)) {
+        images = (product.images as any[]).map((img: any, index: number) => {
+          if (typeof img === 'string') {
+            return {
+              url: img,
+              alt: product.title,
+              isPrimary: index === 0
+            };
+          } else if (typeof img === 'object' && img !== null) {
+             return {
+               url: img.url || '',
+               alt: img.alt || product.title,
+               isPrimary: img.isPrimary || index === 0
+             };
+          }
+          return null;
+        }).filter(Boolean);
+      }
+
+      return {
+        ...product,
+        productCategories: categories,
+        images
+      };
+    });
+
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
-      products,
+      products: productsWithCategories,
       pagination: {
         page,
         limit,
@@ -113,7 +162,7 @@ export async function GET(request: NextRequest) {
         hasNext: page < totalPages,
         hasPrev: page > 1
       },
-      totalPages // Keeping this for compatibility with frontend which expects totalPages at root
+      totalPages
     });
 
   } catch (error) {

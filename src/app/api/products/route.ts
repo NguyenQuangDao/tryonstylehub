@@ -23,8 +23,12 @@ export async function GET(request: NextRequest) {
         };
 
         if (categorySlug) {
-            where.category = {
-                slug: categorySlug,
+            where.productCategories = {
+                some: {
+                    category: {
+                        slug: categorySlug,
+                    },
+                },
             };
         }
 
@@ -51,11 +55,15 @@ export async function GET(request: NextRequest) {
                             averageRating: true,
                         },
                     },
-                    category: {
-                        select: {
-                            id: true,
-                            name: true,
-                            slug: true,
+                    productCategories: {
+                        include: {
+                            category: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    slug: true,
+                                },
+                            },
                         },
                     },
                     variants: {
@@ -87,6 +95,9 @@ export async function GET(request: NextRequest) {
                     return { url: it?.url || '' }
                 })
             )
+            
+            // Get the first category if available
+            const primaryCategory = product.productCategories[0]?.category || { id: '', name: 'Uncategorized', slug: '' };
 
             return {
                 id: product.id,
@@ -97,9 +108,9 @@ export async function GET(request: NextRequest) {
                 status: product.status,
                 totalStock: product.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
                 category: {
-                    id: product.category.id,
-                    name: product.category.name,
-                    slug: product.category.slug,
+                    id: primaryCategory.id,
+                    name: primaryCategory.name,
+                    slug: primaryCategory.slug,
                 },
                 shop: {
                     id: product.shop.id,

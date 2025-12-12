@@ -27,19 +27,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
     }
 
-    // For now, allow reviews without order validation (simplified version)
-    // In a production app, you would check if the user has completed orders from this shop
-    const hasOrder = await prisma.order.findFirst({
-      where: {
-        buyerId: payload.userId,
-        shopId: shopId,
-        status: 'DELIVERED'
-      }
-    });
+    // Order validation removed to allow anyone to rate
 
-    if (!hasOrder) {
-      return NextResponse.json({ error: 'Bạn cần mua hàng từ shop này để có thể đánh giá' }, { status: 400 });
-    }
 
     // Check if user has already reviewed this shop
     const existingReview = await prisma.review.findFirst({

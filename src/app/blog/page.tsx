@@ -51,9 +51,7 @@ export default function BlogPage() {
                     <SafeImage src={fallback.url} alt={p.title} width={1200} height={800} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw" className="w-full h-auto object-cover transition group-hover:scale-[1.02]" />
                   )
                 ) : null}
-                <div className="absolute inset-0 hidden group-hover:flex items-start justify-end p-2">
-                  <span className="rounded-full bg-black/80 text-white text-xs px-3 py-1">Lưu</span>
-                </div>
+               
                 <div className="p-3">
                   <div className="font-medium truncate">{p.title}</div>
                   <div className="mt-2 flex items-center justify-between text-muted-foreground">

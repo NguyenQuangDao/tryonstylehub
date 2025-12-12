@@ -25,12 +25,18 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
 
   const prods = await prisma.product.findMany({
     where: { shopId: shop.id },
-    include: { category: true },
+    include: { 
+      productCategories: {
+        include: {
+          category: true
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' },
   })
   const productCount = prods.length
   const categoryCount = new Set(
-    prods.map((p) => (p.category?.name ? p.category.name : null)).filter(Boolean)
+    prods.flatMap((p) => p.productCategories.map(pc => pc.category.name)).filter(Boolean)
   ).size
   const items = await Promise.all(
     prods.map(async (p) => {
@@ -52,12 +58,15 @@ export default async function ShopDetailPage(props: { params: Promise<{ slug: st
           imageUrl = obj.url
         }
       }
+      // Get primary category name
+      const categoryName = p.productCategories[0]?.category?.name ?? null;
+
       return {
         id: p.id,
         title: p.title,
         imageUrl,
         price: Number(p.basePrice ?? 0),
-        category: p.category?.name ?? null,
+        category: categoryName,
       }
     })
   )

@@ -66,32 +66,32 @@ model Shop {
 }
 
 model Category {
-  id        String     @id @default(cuid())
-  name      String
-  slug      String     @unique
-  imageUrl  String?
-  parentId  String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-  products  Product[]
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  imageUrl         String?
+  parentId         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  parent           Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children         Category[]        @relation("CategoryHierarchy")
+  productCategories ProductCategory[]
 
   @@index([slug])
   @@index([parentId])
 }
 
 model Product {
-  id               String           @id @default(cuid())
+  id               String            @id @default(cuid())
   title            String
-  description      String           @db.LongText
+  description      String            @db.LongText
   shortDescription String?
   images           Json
-  basePrice        Decimal          @db.Decimal(10, 2)
-  salePrice        Decimal?         @db.Decimal(10, 2)
-  sku              String           @unique
-  stockQuantity    Int              @default(0)
-  weight           Decimal?         @db.Decimal(8, 3)
+  basePrice        Decimal           @db.Decimal(10, 2)
+  salePrice        Decimal?          @db.Decimal(10, 2)
+  sku              String            @unique
+  stockQuantity    Int               @default(0)
+  weight           Decimal?          @db.Decimal(8, 3)
   dimensions       Json?
   material         String?
   brand            String?
@@ -101,24 +101,22 @@ model Product {
   shippingInfo     Json?
   warranty         String?
   returnPolicy     String?
-  status           ProductStatus    @default(DRAFT)
-  isFeatured       Boolean          @default(false)
-  isNew            Boolean          @default(true)
-  viewCount        Int              @default(0)
-  rating           Float            @default(0)
-  reviewCount      Int              @default(0)
+  status           ProductStatus     @default(DRAFT)
+  isFeatured       Boolean           @default(false)
+  isNew            Boolean           @default(true)
+  viewCount        Int               @default(0)
+  rating           Float             @default(0)
+  reviewCount      Int               @default(0)
   shopId           String
-  categoryId       String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   orderItems       OrderItem[]
-  category         Category         @relation(fields: [categoryId], references: [id])
-  shop             Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop             Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
   variants         ProductVariant[]
   reviews          Review[]
+  productCategories ProductCategory[]
 
   @@index([shopId])
-  @@index([categoryId])
   @@index([status])
   @@index([isFeatured])
   @@index([sku])
@@ -145,6 +143,20 @@ model Review {
   @@index([productId])
   @@index([shopId])
   @@index([orderId])
+}
+
+model ProductCategory {
+  id         String   @id @default(cuid())
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+  @@index([productId])
+  @@index([categoryId])
 }
 
 model ProductVariant {

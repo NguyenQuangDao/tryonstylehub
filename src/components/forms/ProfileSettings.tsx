@@ -7,7 +7,6 @@ import {
   Input,
   Label,
   Separator,
-  Textarea
 } from "@/components/ui";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
@@ -23,17 +22,15 @@ interface ProfileSettingsProps {
 
 export default function ProfileSettings({
   initialDisplayName = "",
-  initialUsername = "",
   initialEmail = "",
-  initialBio = "",
   avatarUrl = null,
   isEmailVerified = true,
 }: ProfileSettingsProps) {
   const { refetchUser } = useAuth();
   const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [username, setUsername] = useState(initialUsername);
+  // const [username, setUsername] = useState(initialUsername);
   const [email, setEmail] = useState(initialEmail || "name@example.com");
-  const [bio, setBio] = useState(initialBio);
+  // const [bio, setBio] = useState(initialBio);
   const [gender, setGender] = useState<'male' | 'female' | 'non-binary'>('male')
   const [height, setHeight] = useState<number>(170)
   const [weight, setWeight] = useState<number>(65)
@@ -45,30 +42,69 @@ export default function ProfileSettings({
   useEffect(() => {
     setDisplayName(initialDisplayName);
   }, [initialDisplayName]);
-  useEffect(() => {
+  /* useEffect(() => {
     setUsername(initialUsername);
-  }, [initialUsername]);
+  }, [initialUsername]); */
   useEffect(() => {
     setEmail(initialEmail || "name@example.com");
   }, [initialEmail]);
-  useEffect(() => {
+  /* useEffect(() => {
     setBio(initialBio);
-  }, [initialBio]);
+  }, [initialBio]); */
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('avatarDefaults')
-      if (raw) {
-        const d = JSON.parse(raw)
-        if (d.gender) setGender(d.gender)
-        if (typeof d.height === 'number') setHeight(d.height)
-        if (typeof d.weight === 'number') setWeight(d.weight)
-        if (d.skinTone) setSkinTone(d.skinTone)
-        if (d.eyeColor) setEyeColor(d.eyeColor)
-        if (d.hairColor) setHairColor(d.hairColor)
-        if (d.hairStyle) setHairStyle(d.hairStyle)
+    const fetchDefaults = async () => {
+      try {
+        const res = await fetch('/api/virtual-models');
+        if (res.ok) {
+          const data = await res.json();
+          // Find the model that represents the default settings
+          // In the update API, it is saved with avatarName: 'Default Avatar Settings'
+          const defaults = data.virtualModels?.find((m: any) => m.avatarName === 'Default Avatar Settings');
+          
+          if (defaults) {
+            setGender(defaults.gender || 'male');
+            setHeight(defaults.height || 170);
+            setWeight(defaults.weight || 65);
+            setSkinTone(defaults.skinTone || 'medium');
+            setEyeColor(defaults.eyeColor || 'brown');
+            setHairColor(defaults.hairColor || 'black');
+            setHairStyle(defaults.hairStyle || 'short');
+            
+            // Sync to local storage for backup
+            const d = { 
+              gender: defaults.gender, 
+              height: defaults.height, 
+              weight: defaults.weight, 
+              skinTone: defaults.skinTone, 
+              eyeColor: defaults.eyeColor, 
+              hairColor: defaults.hairColor, 
+              hairStyle: defaults.hairStyle 
+            };
+            localStorage.setItem('avatarDefaults', JSON.stringify(d));
+          } else {
+             // Fallback to local storage if no server data found
+            try {
+              const raw = localStorage.getItem('avatarDefaults')
+              if (raw) {
+                const d = JSON.parse(raw)
+                if (d.gender) setGender(d.gender)
+                if (typeof d.height === 'number') setHeight(d.height)
+                if (typeof d.weight === 'number') setWeight(d.weight)
+                if (d.skinTone) setSkinTone(d.skinTone)
+                if (d.eyeColor) setEyeColor(d.eyeColor)
+                if (d.hairColor) setHairColor(d.hairColor)
+                if (d.hairStyle) setHairStyle(d.hairStyle)
+              }
+            } catch {}
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch defaults", e);
       }
-    } catch {}
+    };
+    
+    fetchDefaults();
   }, [])
 
   const [saving, setSaving] = useState(false)
@@ -100,6 +136,11 @@ export default function ProfileSettings({
         setSaving(false)
         return
       }
+      
+      // Update local storage
+      const d = { gender, height, weight, skinTone, eyeColor, hairColor, hairStyle }
+      try { localStorage.setItem('avatarDefaults', JSON.stringify(d)) } catch {}
+
       await refetchUser()
       setSaveOk(true)
     } catch {
@@ -109,10 +150,10 @@ export default function ProfileSettings({
     }
   };
 
-  const handleSaveDefaults = () => {
+  /* const handleSaveDefaults = () => {
     const d = { gender, height, weight, skinTone, eyeColor, hairColor, hairStyle }
     try { localStorage.setItem('avatarDefaults', JSON.stringify(d)) } catch {}
-  }
+  } */
 
   return (
     <div className="w-full space-y-6">
@@ -158,12 +199,9 @@ export default function ProfileSettings({
             onChange={(e) => setEmail(e.target.value)}
             disabled={isEmailVerified}
           />
-          <p className="text-[12px] text-muted-foreground">
-            {isEmailVerified ? "Email của bạn đã được xác minh." : "Chúng tôi sẽ gửi thông báo đến địa chỉ này."}
-          </p>
         </div>
 
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <Label htmlFor="bio" className="text-sm font-medium">Giới thiệu</Label>
           <Textarea
             id="bio"
@@ -173,7 +211,7 @@ export default function ProfileSettings({
             placeholder="Hãy giới thiệu đôi chút về bạn"
           />
           <p className="text-[12px] text-muted-foreground">Bạn có thể viết một phần giới thiệu ngắn.</p>
-        </div>
+        </div> */}
 
         <Separator className="my-2" />
 

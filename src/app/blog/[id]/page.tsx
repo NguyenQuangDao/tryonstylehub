@@ -72,9 +72,6 @@ export default function BlogDetailPage() {
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr),360px] gap-6">
       <div>
         <div className="relative rounded-2xl overflow-hidden bg-white shadow">
-          <div className="absolute inset-x-0 top-0 flex justify-end p-3">
-            <button onClick={toggleSave} className="rounded-full bg-black text-white text-sm px-4 py-2">Lưu</button>
-          </div>
           {(() => {
             const images = Array.isArray(post.media)
               ? post.media.filter((m) => (m.type || '').startsWith('image')).map((m) => m.url)
@@ -151,7 +148,7 @@ export default function BlogDetailPage() {
         </div>
       </div>
       <div className="lg:sticky lg:top-16 h-fit px-4 sm:px-0">
-        <h2 className="font-medium mb-3">Gợi ý cho bạn</h2>
+        {/* <h2 className="font-medium mb-3">Gợi ý cho bạn</h2> */}
         <div className="columns-1 sm:columns-2 lg:columns-1 gap-3 [column-fill:_balance]">
           {related.map((r) => {
             const cover = Array.isArray(r.media) ? r.media.find((m) => (m.type || '').startsWith('image')) || r.media[0] : undefined
