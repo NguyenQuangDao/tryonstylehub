@@ -487,7 +487,7 @@ export default function OptimizedHomePage({
                 <div className="absolute bottom-[-3rem] right-[-2rem] h-56 w-56 rounded-full bg-gradient-to-tr from-violet-500/25 to-cyan-500/25 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
               </div>
 
-              <div className="grid grid-cols-1 p-6" style={{ height: "500px" }}>
+              <div className="p-6" style={{ height: "500px", display:'flex', justifyContent:'center' }}>
                 {Array.from({ length: 1 }).map((_, i) => (
                   <motion.div
                     key={i}

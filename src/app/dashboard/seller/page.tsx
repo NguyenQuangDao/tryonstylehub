@@ -108,7 +108,7 @@ function ProductsTab() {
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>{p.category || "—"}</TableCell>
                     <TableCell>{p.stock ?? 0}</TableCell>
-                    <TableCell>{formatCurrency(p.price ?? 0, "USD")}</TableCell>
+                    <TableCell>{formatCurrency(p.price ?? 0, "VND")}</TableCell>
                     <TableCell>{p.status}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

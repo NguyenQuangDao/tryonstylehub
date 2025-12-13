@@ -30,9 +30,17 @@ export async function GET(_request: NextRequest) {
 
     const rows = await prisma.product.findMany({
       where: { shopId: shop.id },
-      select: { categoryId: true },
+      select: { 
+        productCategories: {
+          select: {
+            categoryId: true
+          }
+        }
+      },
     });
-    const ids = Array.from(new Set(rows.map(r => r.categoryId))).filter(Boolean) as string[];
+    const ids = Array.from(new Set(
+      rows.flatMap(r => r.productCategories.map(pc => pc.categoryId))
+    )).filter(Boolean) as string[];
     if (ids.length === 0) return NextResponse.json({ categories: [] });
 
     const categories = await prisma.category.findMany({
