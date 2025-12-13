@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
   images: {
     remotePatterns: [
       {
@@ -115,7 +115,6 @@ const nextConfig: NextConfig = {
         : "default-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http: https: ws:; font-src 'self' https: data:; frame-src 'self'",
   },
   experimental: {
-    serverActions: { allowedOrigins: [] },
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
   compiler: {
@@ -126,28 +125,28 @@ const nextConfig: NextConfig = {
   // Enable static optimization
   trailingSlash: false,
   // Optimize bundle
-  webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            enforce: true,
-          },
-        },
-      };
-    }
-    return config;
-  },
+  // webpack: (config, { dev, isServer }) => {
+  //   // Optimize bundle size
+  //   if (!dev && !isServer) {
+  //     config.optimization.splitChunks = {
+  //       chunks: 'all',
+  //       cacheGroups: {
+  //         vendor: {
+  //           test: /[\\/]node_modules[\\/]/,
+  //           name: 'vendors',
+  //           chunks: 'all',
+  //         },
+  //         common: {
+  //           name: 'common',
+  //           minChunks: 2,
+  //           chunks: 'all',
+  //           enforce: true,
+  //         },
+  //       },
+  //     };
+  //   }
+  //   return config;
+  // },
 };
 
 export default nextConfig;
