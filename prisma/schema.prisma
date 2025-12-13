@@ -35,8 +35,8 @@ model Shop {
   id            String     @id @default(cuid())
   name          String
   slug          String     @unique
-  logoUrl       String?
-  bannerUrl     String?
+  logoUrl       String?    @db.Text
+  bannerUrl     String?    @db.Text
   avatarImage   String?    @db.LongText
   description   String?    @db.LongText
   address       String?

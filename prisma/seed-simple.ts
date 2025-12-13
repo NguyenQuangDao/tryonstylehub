@@ -201,7 +201,11 @@ async function main() {
             isFeatured: Math.random() > 0.8,
             isNew: Math.random() > 0.6,
             shopId: store.id,
-            categoryId: category.id,
+            productCategories: {
+              create: {
+                categoryId: category.id
+              }
+            },
             images: [
               {
                 url: `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=${encodeURIComponent(productType)}+${encodeURIComponent(color)}+1`,

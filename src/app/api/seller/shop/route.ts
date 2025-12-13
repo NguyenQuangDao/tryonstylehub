@@ -45,6 +45,7 @@ export async function PATCH(request: NextRequest) {
     let phone = ''
     let email = ''
     let logo: File | null = null
+    let banner: File | null = null
 
     if (contentType.includes('application/json')) {
       const body = await request.json()
@@ -61,6 +62,7 @@ export async function PATCH(request: NextRequest) {
       phone = String(form.get('phone') || '').trim()
       email = String(form.get('email') || '').trim()
       logo = form.get('logo') as File | null
+      banner = form.get('banner') as File | null
     }
 
     if (name && name.length < 2) {
@@ -91,6 +93,16 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    let bannerUrl: string | undefined
+    if (banner && typeof banner.size === 'number' && banner.size > 0) {
+      try {
+        bannerUrl = await uploadFileToS3(banner, 'shops/banners')
+      } catch (e) {
+        console.error('Upload banner error:', e)
+        bannerUrl = undefined
+      }
+    }
+
     const updated = await prisma.shop.update({
       where: { id: existing.id },
       data: {
@@ -100,6 +112,7 @@ export async function PATCH(request: NextRequest) {
         ...(phone ? { phone } : {}),
         ...(email ? { email } : {}),
         ...(logoUrl ? { logoUrl } : {}),
+        ...(bannerUrl ? { bannerUrl } : {}),
       },
     })
     return NextResponse.json({ shop: updated })

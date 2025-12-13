@@ -1,10 +1,10 @@
+import { JWTPayload, verifyToken } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { cookies } from 'next/headers';
-import { JWTPayload, verifyToken } from '@/lib/auth';
 
 const updateSchema = z.object({
   name: z.string().min(3).max(255).optional(),
@@ -22,6 +22,7 @@ const updateSchema = z.object({
 });
 
 export async function GET(_request: NextRequest, context: unknown) {
+  console.log('GET /api/seller/products/[id] called - forcing reload');
   try {
     const session = await getServerSession(authOptions);
     const cookieStore = await cookies();
@@ -43,11 +44,14 @@ export async function GET(_request: NextRequest, context: unknown) {
     if (!shop) return NextResponse.json({ error: 'Bạn chưa có cửa hàng' }, { status: 400 });
 
     const id = params.id;
-    const product = await prisma.product.findFirst({ where: { id, shopId: shop.id }, include: { category: true } });
+    const product = await prisma.product.findFirst({ where: { id, shopId: shop.id }, include: { productCategories: { include: { category: true } } } });
 
     if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
 
-    return NextResponse.json(product);
+    return NextResponse.json({
+      ...product,
+      category: product.productCategories?.[0]?.category?.name
+    });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 });
@@ -100,7 +104,10 @@ export async function PATCH(request: NextRequest, context: unknown) {
       if (!category) {
         category = await prisma.category.create({ data: { name: data.category, slug: categorySlug } });
       }
-      updates.categoryId = category.id;
+      updates.productCategories = {
+        deleteMany: {},
+        create: { categoryId: category.id }
+      };
     }
 
     await prisma.product.update({ where: { id }, data: updates });

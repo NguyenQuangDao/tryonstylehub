@@ -1,16 +1,17 @@
 import { JWTPayload, verifyToken } from '@/lib/auth';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
+import { getPresignedUrl } from '@/lib/s3';
 import { getServerSession } from 'next-auth';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { getPresignedUrl } from '@/lib/s3';
 
 // dùng prisma singleton
 
 
 // GET: Get seller's products
 export async function GET(request: NextRequest) {
+  console.log('GET /api/seller/products called - forcing reload');
   try {
     const session = await getServerSession(authOptions);
 
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     const total = await prisma.product.count({ where: { shopId: shop.id } });
     const rows = await prisma.product.findMany({
       where: { shopId: shop.id },
-      include: { category: true, variants: true },
+      include: { productCategories: { include: { category: true } }, variants: true },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
         name: p.title,
         description: p.description,
         price: Number(p.basePrice),
-        category: p.category?.name ?? '',
+        category: p.productCategories?.[0]?.category?.name ?? '',
         status: p.status,
         stock: p.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
         images: mappedImages,
@@ -215,7 +216,11 @@ export async function POST(request: NextRequest) {
           basePrice: priceNum,
           status: isFeatured ? 'PUBLISHED' : 'DRAFT',
           shopId,
-          categoryId: category.id,
+          productCategories: {
+            create: {
+              categoryId: category.id
+            }
+          }
         },
       });
 

@@ -152,6 +152,7 @@ function SettingsTab() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
 
   useEffect(() => {
     const run = async () => {
@@ -186,6 +187,7 @@ function SettingsTab() {
     if (phone) fd.append('phone', phone)
     if (email) fd.append('email', email)
     if (logoFile) fd.append('logo', logoFile)
+    if (bannerFile) fd.append('banner', bannerFile)
     try {
       const res = await fetch('/api/seller/shop', { method: 'PATCH', body: fd })
       const data = await res.json().catch(() => ({}))
@@ -241,6 +243,10 @@ function SettingsTab() {
               <div>
                 <label className="text-sm text-muted-foreground">Logo</label>
                 <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.currentTarget.files?.[0] || null)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Banner</label>
+                <input type="file" accept="image/*" onChange={(e) => setBannerFile(e.currentTarget.files?.[0] || null)} className="mt-1" />
               </div>
               <div className="flex items-center justify-end gap-3">
                 {saved && <div className="text-xs text-green-600">Đã lưu</div>}
