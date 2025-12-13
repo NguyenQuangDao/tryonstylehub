@@ -1,26 +1,24 @@
-'use client';
+"use client";
 
-import { FileInput } from '@/components';
-import { TokenDisplay } from '@/components/tokens/TokenComponents';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TOKEN_CONFIG } from '@/config/tokens';
-import { useAuth } from '@/lib/auth-context';
-import { cn } from '@/lib/utils';
-import { VirtualModel } from '@/types';
-import { motion } from 'framer-motion';
+import { FileInput } from "@/components";
+import { TokenDisplay } from "@/components/tokens/TokenComponents";
+import { Button } from "@/components/ui/button";
 import {
-  ArrowRight,
-  Loader2,
-  Shirt,
-  Sparkles,
-  User,
-  X
-} from 'lucide-react';
-import Image from 'next/image';
-import { FormEvent } from 'react';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { TOKEN_CONFIG } from "@/config/tokens";
+import { useAuth } from "@/lib/auth-context";
+import { cn } from "@/lib/utils";
+import { VirtualModel } from "@/types";
+import { motion } from "framer-motion";
+import { ArrowRight, Loader2, Shirt, Sparkles, User, X } from "lucide-react";
+import Image from "next/image";
+import { FormEvent } from "react";
 
 interface ImageUpload {
   imagePreview: string | null;
@@ -36,8 +34,8 @@ interface OptimizedHomePageProps {
   garmentImageUpload: ImageUpload;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
-  quality: 'standard' | 'high';
-  setQuality: (q: 'standard' | 'high') => void;
+  quality: "standard" | "high";
+  setQuality: (q: "standard" | "high") => void;
   isLoading: boolean;
   errorMessage: string;
   resultGallery: string[];
@@ -53,30 +51,30 @@ export default function OptimizedHomePage({
   setIsVirtualModelSelectorOpen,
   personImageUpload,
   garmentImageUpload,
-  selectedCategory,
-  setSelectedCategory,
+  // selectedCategory,
+  // setSelectedCategory,
   quality,
   setQuality,
   isLoading,
   errorMessage,
   resultGallery,
   onClearSelectedVirtualModel,
-  onSubmit
+  onSubmit,
 }: OptimizedHomePageProps) {
-  const { user } = useAuth()
+  const { user } = useAuth();
   // Example images
   const personExamples = [
-    '/image/personExamples/mau1.png',
-    '/image/personExamples/mau2.png',
-    '/image/personExamples/mau3.png',
-    '/image/personExamples/mau4.png'
+    "/image/personExamples/mau1.png",
+    "/image/personExamples/mau2.png",
+    "/image/personExamples/mau3.png",
+    "/image/personExamples/mau4.png",
   ];
 
   const garmentExamples = [
-    '/image/garmentExamples/do1.png',
-    '/image/garmentExamples/do2.png',
-    '/image/garmentExamples/do3.png',
-    '/image/garmentExamples/do4.png'
+    "/image/garmentExamples/do1.png",
+    "/image/garmentExamples/do2.png",
+    "/image/garmentExamples/do3.png",
+    "/image/garmentExamples/do4.png",
   ];
 
   return (
@@ -109,13 +107,27 @@ export default function OptimizedHomePage({
           <div className="flex items-center justify-between">
             <TokenDisplay balance={user?.tokenBalance ?? 0} />
             <div className="flex items-center gap-3">
-              <Button type="button" variant={quality === 'standard' ? 'default' : 'outline'} onClick={() => setQuality('standard')} className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={quality === "standard" ? "default" : "outline"}
+                onClick={() => setQuality("standard")}
+                className="flex items-center gap-2"
+              >
                 Chất lượng thường
-                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">{TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount} token</span>
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">
+                  {TOKEN_CONFIG.COSTS.TRY_ON_STANDARD.amount} token
+                </span>
               </Button>
-              <Button type="button" variant={quality === 'high' ? 'default' : 'outline'} onClick={() => setQuality('high')} className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={quality === "high" ? "default" : "outline"}
+                onClick={() => setQuality("high")}
+                className="flex items-center gap-2"
+              >
                 Chất lượng cao
-                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">{TOKEN_CONFIG.COSTS.TRY_ON_HIGH.amount} token</span>
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-black">
+                  {TOKEN_CONFIG.COSTS.TRY_ON_HIGH.amount} token
+                </span>
               </Button>
             </div>
           </div>
@@ -133,13 +145,17 @@ export default function OptimizedHomePage({
                     <User className="w-6 h-6 text-blue-600" />
                     <div>
                       <CardTitle className="text-base">Ảnh người mẫu</CardTitle>
-                      <CardDescription className="text-xs">Chọn hoặc tải lên ảnh người</CardDescription>
+                      <CardDescription className="text-xs">
+                        Chọn hoặc tải lên ảnh người
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium">Tải lên ảnh người mẫu</Label>
+                    <Label className="text-sm font-medium">
+                      Tải lên ảnh người mẫu
+                    </Label>
                     {personImageUpload.imagePreview ? (
                       <div className="relative group">
                         <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
@@ -200,11 +216,11 @@ export default function OptimizedHomePage({
                     )}
                   </div>
 
-
-
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Ảnh mẫu người</Label>
+                      <Label className="text-sm font-medium">
+                        Ảnh mẫu người
+                      </Label>
                       <Button
                         type="button"
                         variant="link"
@@ -220,17 +236,23 @@ export default function OptimizedHomePage({
                         <div
                           key={idx}
                           className="relative h-32 md:h-36 rounded-lg overflow-hidden bg-muted/20 border group cursor-pointer"
-                          onClick={() => personImageUpload.loadExampleImage(url)}
+                          onClick={() =>
+                            personImageUpload.loadExampleImage(url)
+                          }
                           role="button"
                           aria-label={`Chọn ảnh người mẫu ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Ví dụ người mẫu ${idx + 1}`} fill className="object-contain transition-transform duration-300 group-hover:scale-105" />
+                          <Image
+                            src={url}
+                            alt={`Ví dụ người mẫu ${idx + 1}`}
+                            fill
+                            className="object-contain transition-transform duration-300 group-hover:scale-105"
+                          />
                         </div>
                       ))}
                     </div>
                   </div>
                 </CardContent>
-
               </Card>
             </motion.div>
 
@@ -245,15 +267,21 @@ export default function OptimizedHomePage({
                   <div className="flex items-center gap-3">
                     <Shirt className="w-6 h-6 text-purple-600" />
                     <div>
-                      <CardTitle className="text-base">Ảnh trang phục</CardTitle>
-                      <CardDescription className="text-xs">Chọn hoặc tải lên ảnh trang phục</CardDescription>
+                      <CardTitle className="text-base">
+                        Ảnh trang phục
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        Chọn hoặc tải lên ảnh trang phục
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Garment Upload */}
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium">Tải lên ảnh trang phục</Label>
+                    <Label className="text-sm font-medium">
+                      Tải lên ảnh trang phục
+                    </Label>
                     {garmentImageUpload.imagePreview ? (
                       <div className="relative group">
                         <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-muted/20">
@@ -287,17 +315,26 @@ export default function OptimizedHomePage({
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium">Ảnh mẫu trang phục</Label>
+                    <Label className="text-sm font-medium">
+                      Ảnh mẫu trang phục
+                    </Label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {garmentExamples.map((url, idx) => (
                         <div
                           key={idx}
                           className="relative h-32 md:h-36 rounded-lg overflow-hidden bg-muted/20 border group cursor-pointer"
-                          onClick={() => garmentImageUpload.loadExampleImage(url)}
+                          onClick={() =>
+                            garmentImageUpload.loadExampleImage(url)
+                          }
                           role="button"
                           aria-label={`Chọn ảnh trang phục ví dụ ${idx + 1}`}
                         >
-                          <Image src={url} alt={`Ví dụ trang phục ${idx + 1}`} fill className="object-contain transition-transform duration-300 group-hover:scale-105" />
+                          <Image
+                            src={url}
+                            alt={`Ví dụ trang phục ${idx + 1}`}
+                            fill
+                            className="object-contain transition-transform duration-300 group-hover:scale-105"
+                          />
                         </div>
                       ))}
                     </div>
@@ -308,7 +345,7 @@ export default function OptimizedHomePage({
           </div>
 
           {/* Category Selection */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -328,7 +365,7 @@ export default function OptimizedHomePage({
                 </SelectContent>
               </Select>
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Provider Selection removed: hệ thống chỉ dùng FASHN trên server */}
 
@@ -339,11 +376,7 @@ export default function OptimizedHomePage({
             transition={{ duration: 0.3 }}
             className="flex flex-col sm:flex-row gap-3 justify-center"
           >
-            <Button
-              type="submit"
-              className="px-6"
-              aria-live="polite"
-            >
+            <Button type="submit" className="px-6" aria-live="polite">
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -381,49 +414,57 @@ export default function OptimizedHomePage({
             transition={{ duration: 0.6 }}
             className="mt-12"
           >
-            <Card className="shadow-soft">
-              <CardHeader>
-                <div className="flex items-center justify-start">
-                  <div>
-                    <CardTitle className="text-lg">Kết quả thử đồ</CardTitle>
-                    <CardDescription className="text-xs">Ảnh đã được xử lý bằng AI</CardDescription>
-                  </div>
-                </div>
+            <Card className="shadow-soft overflow-hidden border-none bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+              <CardHeader className="text-center pb-8 pt-8">
+                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Kết quả thử đồ
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Ảnh đã được xử lý bằng AI
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className={cn(
-                  "grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                )}>
+                <div
+                  className={cn(
+                    "grid gap-8",
+                    resultGallery.length === 1
+                      ? "grid-cols-1 max-w-sm mx-auto"
+                      : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-items-center"
+                  )}
+                >
                   {resultGallery.map((result, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2, delay: index * 0.05 }}
-                      className="relative group"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      className="relative group w-full"
                     >
-                      <div className="aspect-[3/4] md:aspect-[2/3] rounded-lg overflow-hidden bg-muted/20">
+                      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all duration-300 ring-1 ring-black/5 dark:ring-white/10">
                         <Image
                           src={result}
                           alt={`Kết quả thử đồ ${index + 1}`}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-contain transition-transform duration-300 group-hover:scale-105"
+                          className="object-contain transition-transform duration-500 group-hover:scale-105"
                         />
-                      </div>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-2xl flex items-center justify-center">
-                        <Button
-                          variant="secondary"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = result;
-                            link.download = `tryon-result-${index + 1}.jpg`;
-                            link.click();
-                          }}
-                        >
-                          Tải xuống
-                        </Button>
+
+                        {/* Overlay actions */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                          <Button
+                            variant="secondary"
+                            className="w-full bg-white/90 hover:bg-white text-gray-900 shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 font-medium"
+                            onClick={() => {
+                              const link = document.createElement("a");
+                              link.href = result;
+                              link.download = `tryon-result-${index + 1}.jpg`;
+                              link.click();
+                            }}
+                          >
+                            <Sparkles className="w-4 h-4 mr-2 text-purple-600" />
+                            Tải xuống
+                          </Button>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -446,7 +487,7 @@ export default function OptimizedHomePage({
                 <div className="absolute bottom-[-3rem] right-[-2rem] h-56 w-56 rounded-full bg-gradient-to-tr from-violet-500/25 to-cyan-500/25 blur-2xl animate-[pulse_2s_ease-in-out_infinite]" />
               </div>
 
-              <div className="grid grid-cols-1 p-6">
+              <div className="grid grid-cols-1 p-6" style={{ height: "500px" }}>
                 {Array.from({ length: 1 }).map((_, i) => (
                   <motion.div
                     key={i}
@@ -454,6 +495,7 @@ export default function OptimizedHomePage({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: i * 0.06 }}
                     className="relative aspect-[3/4] md:aspect-[2/3] rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900"
+                    style={{ height: "460px" }}
                   >
                     <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.08),transparent_60%)]" />
                     <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 [mask-image:linear-gradient(to_right,transparent,black,transparent)]" />
@@ -463,11 +505,15 @@ export default function OptimizedHomePage({
                       Đang tạo ảnh...
                     </div>
 
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center" style={{ height: "460px" }}>
                       <motion.div
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ repeat: Infinity, repeatType: 'mirror', duration: 1.2 }}
+                        transition={{
+                          repeat: Infinity,
+                          repeatType: "mirror",
+                          duration: 1.2,
+                        }}
                         className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-300"
                       >
                         <Sparkles className="w-4 h-4 animate-[spin_3s_linear_infinite]" />

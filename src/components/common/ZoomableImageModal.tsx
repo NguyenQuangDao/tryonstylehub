@@ -27,12 +27,13 @@ export default function ZoomableImageModal({ images, isOpen, initialIndex = 0, o
   const resetTransform = useCallback(() => { setScale(1); setOffset({ x: 0, y: 0 }); }, []);
 
   const navigate = useCallback((dir: 'prev' | 'next') => {
-    setIndex(i => {
-      const next = dir === 'prev' ? Math.max(0, i - 1) : Math.min(images.length - 1, i + 1);
-      if (next !== i) { resetTransform(); onIndexChange?.(next); }
-      return next;
-    });
-  }, [images.length, onIndexChange, resetTransform]);
+    const next = dir === 'prev' ? Math.max(0, index - 1) : Math.min(images.length - 1, index + 1);
+    if (next !== index) {
+      resetTransform();
+      onIndexChange?.(next);
+      setIndex(next);
+    }
+  }, [index, images.length, onIndexChange, resetTransform]);
 
   useEffect(() => {
     if (!isOpen) return;

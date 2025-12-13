@@ -38,13 +38,30 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const form = await request.formData()
-    const name = String(form.get('name') || '').trim()
-    const description = String(form.get('description') || '').trim()
-    const address = String(form.get('address') || '').trim()
-    const phone = String(form.get('phone') || '').trim()
-    const email = String(form.get('email') || '').trim()
-    const logo = form.get('logo') as File | null
+    const contentType = request.headers.get('content-type') || ''
+    let name = ''
+    let description = ''
+    let address = ''
+    let phone = ''
+    let email = ''
+    let logo: File | null = null
+
+    if (contentType.includes('application/json')) {
+      const body = await request.json()
+      name = String(body.name || '').trim()
+      description = String(body.description || '').trim()
+      address = String(body.address || '').trim()
+      phone = String(body.phone || '').trim()
+      email = String(body.email || '').trim()
+    } else {
+      const form = await request.formData()
+      name = String(form.get('name') || '').trim()
+      description = String(form.get('description') || '').trim()
+      address = String(form.get('address') || '').trim()
+      phone = String(form.get('phone') || '').trim()
+      email = String(form.get('email') || '').trim()
+      logo = form.get('logo') as File | null
+    }
 
     if (name && name.length < 2) {
       return NextResponse.json({ error: 'Tên shop không hợp lệ' }, { status: 400 })
@@ -68,7 +85,8 @@ export async function PATCH(request: NextRequest) {
     if (logo && typeof logo.size === 'number' && logo.size > 0) {
       try {
         logoUrl = await uploadFileToS3(logo, 'shops/logos')
-      } catch {
+      } catch (e) {
+        console.error('Upload logo error:', e)
         logoUrl = undefined
       }
     }
@@ -86,6 +104,7 @@ export async function PATCH(request: NextRequest) {
     })
     return NextResponse.json({ shop: updated })
   } catch (error) {
+    console.error('Update shop error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

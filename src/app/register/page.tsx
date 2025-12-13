@@ -184,6 +184,7 @@ export default function RegisterPage() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        style={{boxShadow:'none'}}
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -213,7 +214,8 @@ export default function RegisterPage() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className="absolute right-0 top-0 h-full px-3 py-2 bg-transparent hover:bg-transparent"
+                        style={{boxShadow:'none'}}
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? (
