@@ -29,7 +29,6 @@ type RecommendationPayload = {
 
 const recommendSchema = z.object({
   style: z.string().min(3, "Mô tả phong cách là bắt buộc"),
-  wishlistIds: z.array(z.union([z.string(), z.number()])).optional().default([]),
   preferredShops: z.array(z.string()).optional().default([]),
   recentStyles: z.array(z.string()).optional().default([]),
 });
@@ -48,9 +47,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { style, wishlistIds, preferredShops, recentStyles } = parseResult.data;
+    const { style, preferredShops, recentStyles } = parseResult.data;
     const normalizedStyle = style.trim().toLowerCase();
-    const prefKey = JSON.stringify({ w: wishlistIds, s: preferredShops });
+    const prefKey = JSON.stringify({ s: preferredShops });
     const cacheKey = `recommend:${normalizedStyle}:${prefKey}`;
 
     const cached = getCache<RecommendationPayload>(cacheKey);
@@ -59,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const products = await prisma.product.findMany({
-      include: { shop: true, category: true },
+      include: { shop: true, productCategories: { include: { category: true } } },
     });
 
     if (!products.length) {
@@ -71,7 +70,8 @@ export async function POST(request: NextRequest) {
 
     const enrichedProducts = await Promise.all(products.map(async (p) => {
       const name = (p as any).name ?? (p as any).title ?? '';
-      const type = (p as any).type ?? p.category?.name ?? 'Khác';
+      const firstCat = (p as any).productCategories?.[0]?.category;
+      const type = (p as any).type ?? firstCat?.name ?? 'Khác';
       const price = typeof (p as any).price === 'number' ? (p as any).price : Number((p as any).basePrice ?? 0);
 
       let rawImage: any = (p as any).imageUrl;
@@ -117,12 +117,10 @@ export async function POST(request: NextRequest) {
 
     // Re-rank by personalization if available
     if (selectedProducts.length) {
-      const wl = new Set((wishlistIds || []).map(String));
       const shopsPref = new Set((preferredShops || []).map(s => s.toLowerCase()));
       selectedProducts = selectedProducts
         .map(product => {
           let boost = 0;
-          if (wl.has(String(product.id))) boost += 5;
           const slug = (product as any)?.shop?.slug ? String((product as any).shop.slug).toLowerCase() : '';
           const shopName = (product as any)?.shop?.name ? String((product as any).shop.name).toLowerCase() : '';
           if (slug && shopsPref.has(slug)) boost += 3;
@@ -148,7 +146,6 @@ export async function POST(request: NextRequest) {
         .filter(word => word.length > 3);
 
       // Score products based on tag and name matching
-      const wl = new Set((wishlistIds || []).map(String));
       const shopsPref = new Set((preferredShops || []).map(s => s.toLowerCase()));
       const rs = (recentStyles || []).join(' ').toLowerCase();
       const scoredProducts = enrichedProducts.map((product) => {
@@ -169,7 +166,6 @@ export async function POST(request: NextRequest) {
         });
 
         // Personalization boosts
-        if (wl.has(String(product.id))) score += 5;
         const slug = (product as any)?.shop?.slug ? String((product as any).shop.slug).toLowerCase() : '';
         const shopName = (product as any)?.shop?.name ? String((product as any).shop.name).toLowerCase() : '';
         if (slug && shopsPref.has(slug)) score += 3;

@@ -1,9 +1,9 @@
 'use client'
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Clock, ExternalLink, Info, Loader2, Sparkles, Star, Wand2, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -40,7 +40,6 @@ export default function RecommendPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [useWishlistPref, setUseWishlistPref] = useState(true);
   const [useFollowedShopsPref, setUseFollowedShopsPref] = useState(true);
 
   // Load search history from localStorage
@@ -66,14 +65,13 @@ export default function RecommendPage() {
     setOutfit([]);
 
     try {
-      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
       const followedShops = JSON.parse(localStorage.getItem('followedShops') || '[]');
       const response = await fetch('/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           style: searchValue,
-          wishlistIds: useWishlistPref ? wishlist : [],
+          wishlistIds: [],
           preferredShops: useFollowedShopsPref ? followedShops : [],
           recentStyles: searchHistory,
         }),
@@ -238,9 +236,6 @@ export default function RecommendPage() {
                 ))}
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant={useWishlistPref ? 'secondary' : 'outline'} size="sm" onClick={() => setUseWishlistPref((v) => !v)}>
-                  {useWishlistPref ? 'Ưu tiên sản phẩm yêu thích' : 'Không ưu tiên sản phẩm yêu thích'}
-                </Button>
                 <Button type="button" variant={useFollowedShopsPref ? 'secondary' : 'outline'} size="sm" onClick={() => setUseFollowedShopsPref((v) => !v)}>
                   {useFollowedShopsPref ? 'Ưu tiên cửa hàng theo dõi' : 'Không ưu tiên cửa hàng theo dõi'}
                 </Button>
