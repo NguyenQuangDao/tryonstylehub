@@ -77,7 +77,6 @@ export default function SafeImage({ src, srcList, alt, width, height, sizes, cla
           className={className}
           width={width}
           height={height}
-          unoptimized
           priority={priority}
           onError={handleError}
         />

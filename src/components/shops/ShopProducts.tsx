@@ -91,7 +91,6 @@ export function ShopProducts({ products }: { products: ProductItem[] }) {
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
-                unoptimized
                 onError={(e) => {
                   try {
                     (e.currentTarget as HTMLImageElement).src = PLACEHOLDER_IMAGE

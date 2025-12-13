@@ -98,7 +98,6 @@ function ProductsTab() {
                           alt={p.name || 'Product image'}
                           fill
                           className="object-cover"
-                          unoptimized
                           onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                             e.currentTarget.src = PLACEHOLDER_IMAGE;
                           }}

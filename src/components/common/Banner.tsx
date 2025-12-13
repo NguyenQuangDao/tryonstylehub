@@ -69,7 +69,6 @@ export default function Banner() {
               width={70}
               height={70}
               className="rounded-lg shadow-lg"
-              unoptimized
             />
           </motion.div>
           <div className="text-center sm:text-left">

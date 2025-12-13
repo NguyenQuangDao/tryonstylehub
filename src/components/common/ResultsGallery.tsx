@@ -217,7 +217,6 @@ export const ResultsGallery: React.FC<ResultsGalleryProps> = ({
                           className="max-w-full max-h-full object-contain p-3"
                           width={300}
                           height={400}
-                          unoptimized
                         />
                       </div>
 
