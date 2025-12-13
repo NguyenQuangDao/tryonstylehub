@@ -24,12 +24,12 @@ interface Product {
 
 // Popular style suggestions
 const POPULAR_STYLES = [
-  { label: '🏖️ Summer Beach', value: 'casual summer beach style with pastel colors', icon: '🏖️' },
-  { label: '💼 Office Professional', value: 'professional business casual for office work', icon: '💼' },
-  { label: '🌆 Urban Street', value: 'modern urban streetwear with edgy vibe', icon: '🌆' },
-  { label: '🌸 Romantic Date', value: 'romantic elegant date night outfit', icon: '🌸' },
-  { label: '🏃 Athletic Casual', value: 'comfortable athletic casual sporty style', icon: '🏃' },
-  { label: '✨ Party Glam', value: 'glamorous party outfit with bold colors', icon: '✨' },
+  { label: 'Summer Beach', value: 'casual summer beach style with pastel colors', icon: '' },
+  { label: 'Office Professional', value: 'professional business casual for office work', icon: '' },
+  { label: 'Urban Street', value: 'modern urban streetwear with edgy vibe', icon: '' },
+  { label: 'Romantic Date', value: 'romantic elegant date night outfit', icon: '' },
+  { label: 'Athletic Casual', value: 'comfortable athletic casual sporty style', icon: '' },
+  { label: 'Party Glam', value: 'glamorous party outfit with bold colors', icon: '' },
 ];
 
 export default function RecommendPage() {

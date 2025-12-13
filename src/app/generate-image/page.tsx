@@ -154,7 +154,7 @@ export default function GenerateImagePage() {
           className="space-y-8 relative z-10"
         >
           {/* Phần tiêu đề */}
-          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-100 dark:border-purple-900/30">
+          <Card >
             <CardHeader className="text-center space-y-6">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
@@ -188,7 +188,7 @@ export default function GenerateImagePage() {
           </Card>
 
           {/* Hướng dẫn sử dụng */}
-          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+          <Card >
             <CardHeader>
               <div className={`flex items-center justify-between ${showGuide ? 'mb-4' : ''}`}>
                 <div className="flex items-center gap-3">
@@ -486,8 +486,8 @@ export default function GenerateImagePage() {
           {!imageUrl && !loading && (
             <Card className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700">
               <CardContent className="p-16 text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-                  <ImageIcon className="h-10 w-10 text-white" />
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center">
+                  <ImageIcon className="h-10 w-10 text-black dark:text-white" />
                 </div>
                 <CardTitle className="text-xl mb-2">
                   Sẵn sàng tạo ảnh
