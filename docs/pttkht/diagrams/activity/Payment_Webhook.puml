@@ -1,49 +1,44 @@
 @startuml
 skinparam linetype ortho
 start
-:Đọc provider từ query;
-if (Hỗ trợ provider?) then (Stripe)
-  :Đọc header stripe-signature và secret;
-  if (Có signature và secret?) then (Có)
-    :Construct event từ raw body;
-    if (Chữ ký hợp lệ?) then (Có)
-      :Đọc payment_intent, metadata {packageId,userId};
-      if (Có metadata?) then (Có)
-        if (event.type là payment_intent.succeeded?) then (Có)
-          :Kiểm tra trùng stripePaymentId;
-          if (Đã xử lý?) then (Có)
-            :200: Already processed;
+:Đọc raw body và header PayPal;
+if (Có đủ header PayPal?) then (Có)
+  :Xác thực chữ ký bằng webhookId;
+  if (Chữ ký hợp lệ?) then (Có)
+    :Parse event JSON;
+    :Đọc event_type, resource, metadata {packageId,userId};
+    if (Có metadata?) then (Có)
+      if (event_type là PAYMENT.CAPTURE.COMPLETED?) then (Có)
+        :Kiểm tra trùng paypalEventId;
+        if (Đã xử lý?) then (Có)
+          :200: Already processed;
+          end
+        else (Không)
+          :Tìm package trong TOKEN_CONFIG;
+          if (Tồn tại gói?) then (Có)
+            :Prisma transaction: tạo purchase + tăng tokenBalance;
+            :Log PURCHASE_COMPLETED từ PayPal;
+            :200: Payment processed successfully;
             end
           else (Không)
-            :Tìm package trong TOKEN_CONFIG;
-            if (Tồn tại gói?) then (Có)
-              :Prisma transaction: tạo purchase + tăng tokenBalance;
-              :Log PURCHASE_COMPLETED;
-              :200: Payment processed successfully;
-              end
-            else (Không)
-              :400: Package not found;
-              end
-            endif
+            :400: Package not found;
+            end
           endif
-        else (Không)
-          :400: Payment not completed;
-          end
         endif
       else (Không)
-        :400: Missing metadata;
+        :400: Payment not completed;
         end
       endif
     else (Không)
-      :400: Invalid Stripe signature;
+      :400: Missing metadata;
       end
     endif
   else (Không)
-    :400: Thiếu chữ ký/secret;
+    :400: Invalid PayPal signature;
     end
   endif
 else (Không)
-  :400: Unsupported/Missing provider;
+  :400: Missing PayPal headers;
   end
 endif
 @enduml

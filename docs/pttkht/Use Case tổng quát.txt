@@ -9,7 +9,6 @@ flowchart LR
         UC_Upload([Tải ảnh/Body scan])
         UC_Recommend([Gợi ý trang phục])
         UC_Wishlist([Yêu thích & Theo dõi])
-        UC_Cart([Giỏ hàng])
         UC_Checkout([Thanh toán & Đặt hàng])
         UC_Track([Theo dõi đơn hàng])
         UC_Review([Đánh giá & Bình luận])
@@ -19,7 +18,6 @@ flowchart LR
         UC_AdminProduct([Quản lý sản phẩm])
         UC_AdminOrder([Quản lý đơn hàng])
         UC_AdminUser([Quản lý người dùng & phân quyền])
-        UC_Promo([Khuyến mãi & Mã giảm giá])
         UC_ContentMod([Kiểm duyệt nội dung])
         UC_Reports([Báo cáo & Phân tích])
     end
@@ -38,7 +36,6 @@ flowchart LR
     actorUser --> UC_Upload
     actorUser --> UC_Recommend
     actorUser --> UC_Wishlist
-    actorUser --> UC_Cart
     actorUser --> UC_Checkout
     actorUser --> UC_Track
     actorUser --> UC_Review
@@ -52,7 +49,6 @@ flowchart LR
     actorAdmin --> UC_AdminProduct
     actorAdmin --> UC_AdminOrder
     actorAdmin --> UC_AdminUser
-    actorAdmin --> UC_Promo
     actorAdmin --> UC_ContentMod
     actorAdmin --> UC_Reports
 

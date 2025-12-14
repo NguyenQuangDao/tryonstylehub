@@ -3,6 +3,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   
   const { register, user, loading } = useAuth();
   const router = useRouter();
@@ -73,6 +75,11 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError('Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    if (!acceptTerms) {
+      setError('Bạn cần chấp nhận điều khoản dịch vụ');
       return;
     }
 
@@ -225,6 +232,23 @@ export default function RegisterPage() {
                         )}
                       </Button>
                     </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={acceptTerms}
+                      onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Tôi đồng ý với{' '}
+                      <Link href="/terms" className="text-primary hover:underline" target="_blank">
+                        điều khoản dịch vụ
+                      </Link>
+                    </label>
                   </div>
 
                   <Button

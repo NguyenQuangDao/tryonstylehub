@@ -1,3 +1,4 @@
+import MainContentWrapper from '@/components/layout/MainContentWrapper';
 import AppHeader from '../components/common/AppHeader';
 import AppSidebar from '../components/common/AppSidebar';
 import Navigation from '../components/common/Navigation';
@@ -16,13 +17,13 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <AppSidebar />
-            <div className="min-h-screen ml-64">
+            <MainContentWrapper>
               <Navigation />
               <AppHeader />
               <main className="max-w-full py-8">
                 {children}
               </main>
-            </div>
+            </MainContentWrapper>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -6,17 +6,15 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
-  const publicPaths = ['/login', '/register', '/auth/login', '/auth/register'];
+  const publicPaths = ['/login', '/register', '/auth/login', '/auth/register', '/terms'];
+  const authRedirectPaths = ['/login', '/register', '/auth/login', '/auth/register'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  const isAuthRedirectPath = authRedirectPaths.some(path => pathname.startsWith(path));
 
-  // API routes are handled separately
   const isApiRoute = pathname.startsWith('/api');
 
-  // Allow access to public routes and API routes
   if (isPublicPath || isApiRoute) {
-    // If user is already logged in and trying to access login/register, redirect to home
-    if (isPublicPath && token) {
+    if (isAuthRedirectPath && token) {
       const payload = await verifyToken(token);
       if (payload) {
         return NextResponse.redirect(new URL('/', request.url));

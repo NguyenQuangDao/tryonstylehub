@@ -74,9 +74,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const isAuthPage = pathname === '/register' || pathname === '/login';
+    const isPublicPage =
+      pathname === '/register' ||
+      pathname === '/login' ||
+      pathname === '/terms';
     if (loading) return;
-    if (!isAuthPage && !user) {
+    if (!isPublicPage && !user) {
       const redirect = pathname && pathname !== '/' ? `?redirect=${encodeURIComponent(pathname)}` : '';
       router.replace(`/login${redirect}`);
     }

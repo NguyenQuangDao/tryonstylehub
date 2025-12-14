@@ -7,7 +7,6 @@ rectangle "Chức năng Người dùng" {
   usecase "Tải ảnh/Body scan" as UC_Upload
   usecase "Gợi ý trang phục" as UC_Recommend
   usecase "Yêu thích" as UC_Wishlist
-  usecase "Giỏ hàng" as UC_Cart
   usecase "Thanh toán" as UC_Checkout
   usecase "Theo dõi đơn" as UC_Track
   usecase "Đánh giá/Bình luận" as UC_Review
@@ -25,7 +24,6 @@ actorUser --> UC_TryOn
 actorUser --> UC_Upload
 actorUser --> UC_Recommend
 actorUser --> UC_Wishlist
-actorUser --> UC_Cart
 actorUser --> UC_Checkout
 actorUser --> UC_Track
 actorUser --> UC_Review
