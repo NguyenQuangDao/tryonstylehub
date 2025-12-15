@@ -19,16 +19,17 @@ const updateSchema = z.object({
   isFeatured: z.boolean().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'DRAFT']).optional(),
   isActive: z.boolean().optional(),
+  externalUrl: z.string().url().optional().or(z.literal('')),
 });
 
-export async function GET(_request: NextRequest, context: unknown) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   console.log('GET /api/seller/products/[id] called - forcing reload');
   try {
     const session = await getServerSession(authOptions);
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     const payload: JWTPayload | null = token ? await verifyToken(token) : null;
-    const { params } = context as { params: { id: string } };
+    const params = await context.params;
     const tryParseId = (idValue: unknown): string | null => {
       if (typeof idValue === 'string') return idValue;
       if (typeof idValue === 'number') return String(idValue);
@@ -58,9 +59,9 @@ export async function GET(_request: NextRequest, context: unknown) {
   }
 }
 
-export async function PATCH(request: NextRequest, context: unknown) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { params } = context as { params: { id: string } };
+    const params = await context.params;
     const session = await getServerSession(authOptions);
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
@@ -91,6 +92,7 @@ export async function PATCH(request: NextRequest, context: unknown) {
     if (data.description !== undefined) updates.description = data.description;
     if (data.price !== undefined) updates.basePrice = data.price;
     if (data.isActive !== undefined) updates.status = data.isActive ? 'PUBLISHED' : 'ARCHIVED';
+    if (data.externalUrl !== undefined) updates.externalUrl = data.externalUrl || null;
 
     if (data.category !== undefined) {
       const slugify = (s: string) => s
@@ -124,13 +126,13 @@ export async function PATCH(request: NextRequest, context: unknown) {
   }
 }
 
-export async function DELETE(_request: NextRequest, context: unknown) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     const payload: JWTPayload | null = token ? await verifyToken(token) : null;
-    const { params } = context as { params: { id: string } };
+    const params = await context.params;
     const tryParseId = (idValue: unknown): string | null => {
       if (typeof idValue === 'string') return idValue;
       if (typeof idValue === 'number') return String(idValue);

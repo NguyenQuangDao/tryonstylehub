@@ -35,7 +35,8 @@ type ApiProduct = {
   styleTags?: string[]
   category?: { name?: string }
   type?: string
-  shop?: { name?: string; slug?: string }
+  shop?: { name?: string; slug?: string; website?: string }
+  externalUrl?: string
   brand?: string
   description?: string
 }
@@ -73,7 +74,7 @@ export default function ProductsPage() {
                   styleTags: Array.isArray(p.styleTags) ? p.styleTags : [],
                   shop: { 
                     name: p?.shop?.name || "Unknown Shop", 
-                    url: p?.shop?.slug ? `/shops/${p.shop.slug}` : "" 
+                    url: p?.externalUrl || p?.shop?.website || (p?.shop?.slug ? `/shops/${p.shop.slug}` : "") 
                   },
                   brand: p.brand,
                   description: typeof p?.description === "string" ? p.description : "",
@@ -308,7 +309,13 @@ export default function ProductsPage() {
                   <div className="flex gap-2">
                     {p?.shop?.url ? (
                       <Button asChild variant="outline" size="sm" className="w-full">
-                        <Link href={p.shop.url}>Xem</Link>
+                        <Link 
+                          href={p.shop.url}
+                          target={p.shop.url.startsWith('http') ? "_blank" : undefined}
+                          rel={p.shop.url.startsWith('http') ? "noopener noreferrer" : undefined}
+                        >
+                          Xem
+                        </Link>
                       </Button>
                     ) : (
                       <Button variant="outline" size="sm" className="w-full" disabled>

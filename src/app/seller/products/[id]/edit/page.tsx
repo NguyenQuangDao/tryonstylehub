@@ -4,12 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Upload, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth-context';
+import { Loader2, Upload, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -47,6 +47,7 @@ export default function EditProductPage() {
     images: [] as string[],
     sizes: [] as string[],
     colors: [] as string[],
+    externalUrl: '',
     isFeatured: false,
     isActive: true,
   });
@@ -87,6 +88,7 @@ export default function EditProductPage() {
                 images: Array.isArray(data.images) ? data.images.map((img: any) => (typeof img === 'string' ? img : img.url)).filter(Boolean) : [],
                 sizes: Array.isArray(data.sizes) ? data.sizes : [],
                 colors: Array.isArray(data.colors) ? data.colors : [],
+                externalUrl: data.externalUrl ?? '',
                 isFeatured: data.status ? data.status === 'PUBLISHED' : !!data.isFeatured,
                 isActive: data.status ? data.status === 'PUBLISHED' : !!data.isActive,
               });
@@ -358,6 +360,20 @@ export default function EditProductPage() {
                   placeholder="0.00"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="externalUrl">Link sản phẩm (Tùy chọn)</Label>
+              <Input
+                id="externalUrl"
+                type="url"
+                value={formData.externalUrl}
+                onChange={(e) => setFormData(prev => ({ ...prev, externalUrl: e.target.value }))}
+                placeholder="https://..."
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Nhập link sản phẩm trên website của bạn (nếu có). Khi người dùng nhấn &quot;Xem&quot;, họ sẽ được chuyển đến link này.
+              </p>
             </div>
 
             <div>

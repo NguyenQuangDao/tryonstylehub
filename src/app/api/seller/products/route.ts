@@ -156,6 +156,7 @@ export async function POST(request: NextRequest) {
     const priceStr = String(form.get('price') || '').trim();
     const categoryName = String(form.get('category') || '').trim();
     const isFeatured = String(form.get('isFeatured') || 'false') === 'true';
+    const externalUrl = String(form.get('externalUrl') || '').trim();
     const stockStr = String(form.get('stock') || '0');
     const rawFiles = form.getAll('images');
     const files = rawFiles.filter((f) => typeof (f as File).arrayBuffer === 'function') as File[];
@@ -214,6 +215,7 @@ export async function POST(request: NextRequest) {
           images: uploaded,
           sku: `${slugify(name)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`,
           basePrice: priceNum,
+          externalUrl: externalUrl || null,
           status: isFeatured ? 'PUBLISHED' : 'DRAFT',
           shopId,
           productCategories: {

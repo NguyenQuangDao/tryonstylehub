@@ -48,6 +48,7 @@ export default function NewProductPage() {
     sizes: [] as string[],
     colors: [] as string[],
     stock: '',
+    externalUrl: '',
     isFeatured: false,
   });
 
@@ -90,6 +91,7 @@ export default function NewProductPage() {
       fd.append('price', formData.price);
       fd.append('category', formData.category);
       fd.append('stock', formData.stock);
+      fd.append('externalUrl', formData.externalUrl);
       fd.append('isFeatured', String(formData.isFeatured));
       selectedFiles.forEach((file) => fd.append('images', file));
 
@@ -194,6 +196,20 @@ export default function NewProductPage() {
                   placeholder="0.00"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="externalUrl">Link sản phẩm (Tùy chọn)</Label>
+              <Input
+                id="externalUrl"
+                type="url"
+                value={formData.externalUrl}
+                onChange={(e) => setFormData(prev => ({ ...prev, externalUrl: e.target.value }))}
+                placeholder="https://..."
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Nhập link sản phẩm trên website của bạn (nếu có). Khi người dùng nhấn &quot;Xem&quot;, họ sẽ được chuyển đến link này.
+              </p>
             </div>
 
             <div>

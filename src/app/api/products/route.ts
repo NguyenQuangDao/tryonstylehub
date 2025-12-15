@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
                             name: true,
                             slug: true,
                             averageRating: true,
+                            website: true,
                         },
                     },
                     productCategories: {
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
                 title: product.title,
                 description: product.description,
                 basePrice: Number(product.basePrice),
+                externalUrl: product.externalUrl,
                 images: presignedImages,
                 status: product.status,
                 totalStock: product.variants.reduce((sum, v) => sum + (v.stock || 0), 0),
@@ -116,6 +118,7 @@ export async function GET(request: NextRequest) {
                     id: product.shop.id,
                     name: product.shop.name,
                     slug: product.shop.slug,
+                    website: product.shop.website,
                     rating: product.shop.averageRating,
                 },
                 createdAt: product.createdAt,

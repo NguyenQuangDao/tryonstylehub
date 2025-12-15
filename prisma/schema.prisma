@@ -95,6 +95,7 @@ model Product {
   dimensions       Json?
   material         String?
   brand            String?
+  externalUrl      String?           @db.Text
   tags             Json?
   specifications   Json?
   features         Json?
