@@ -1,0 +1,57 @@
+@startuml
+skinparam linetype ortho
+start
+:Kiểm tra FASHN_API_KEY;
+if (Có API key?) then (Có)
+  :Đọc FormData: personImage|virtualModelId, garmentImage|garmentImageUrl, category, quality;
+  :Kiểm tra đầu vào bắt buộc;
+  if (Thiếu ảnh/người mẫu hoặc áo?) then (Có)
+    :400: Missing inputs;
+    end
+  else (Không)
+    :Kiểm tra số dư token theo tier quality;
+    if (Đủ token?) then (Có)
+      :Chuyển ảnh sang Base64 (file/URL→dataURI);
+      :Build payload (model tryon-v1.6, inputs);
+      :Gọi FASHN predictions.run → predId;
+      if (APIError?) then (Có)
+        if (Mã lỗi?) then (401/403)
+          :401: Invalid API key, requiresApiKey;
+          stop
+        elseif (Mã lỗi?) then (429)
+          :429: Rate limit exceeded;
+          stop
+        else (Khác)
+          :API run failed: cause;
+          stop
+        endif
+      elseif (Nhận predId?) then (Có)
+        :Polling status mỗi 2s ≤180s;
+        if (Trạng thái?) then (completed)
+          :Hậu xử lý ảnh: sharp metadata, resize, encode JPG/PNG;
+          :Upload S3 theo prefix users/{userId}/tryon;
+          :Lưu gallery.json: prepend entries;
+          :Charge tokens theo chất lượng;
+          :200: Trả về danh sách images;
+          stop
+        elseif (Trạng thái?) then (failed)
+          :500: Prediction failed;
+          stop
+        else (timeout)
+          :504: Maximum polling time exceeded;
+          stop
+        endif
+      else (Không)
+        :500: Không có prediction ID;
+        stop
+      endif
+    else (Không)
+      :401/402: createInsufficientTokensResponse;
+      end
+    endif
+  endif
+else (Không)
+  :500: Missing FASHN_API_KEY;
+  stop
+endif
+@enduml

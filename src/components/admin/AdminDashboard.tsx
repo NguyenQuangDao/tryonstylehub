@@ -3,12 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Calendar,
+  FileText,
   Package,
   Store,
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ArticleManagement from './ArticleManagement';
 import ProductManagement from './ProductManagement';
 import ShopManagement from './ShopManagement';
 import UserManagement from './UserManagement';
@@ -98,6 +99,14 @@ export default function AdminDashboard() {
       color: "text-purple-600",
       bgColor: "bg-purple-100"
     },
+    {
+      title: "Tổng bài viết",
+      value: formatNumber(stats.overview.totalBlogPosts),
+      icon: FileText,
+      description: "Bài viết đã đăng",
+      color: "text-orange-600",
+      bgColor: "bg-orange-100"
+    },
   ];
 
   return (
@@ -111,7 +120,7 @@ export default function AdminDashboard() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
           <select 
             value={timeRange} 
@@ -123,7 +132,7 @@ export default function AdminDashboard() {
             <option value="30d">30 ngày qua</option>
             <option value="90d">90 ngày qua</option>
           </select>
-        </div>
+        </div> */}
       </div>
 
       {/* Stats Cards */}
@@ -154,6 +163,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="stores">Danh sách cửa hàng</TabsTrigger>
           <TabsTrigger value="products">Danh sách sản phẩm</TabsTrigger>
           <TabsTrigger value="users">Danh sách người dùng</TabsTrigger>
+          <TabsTrigger value="articles">Danh sách bài viết</TabsTrigger>
         </TabsList>
         
         <TabsContent value="stores" className="space-y-4">
@@ -166,6 +176,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="users" className="space-y-4">
           <UserManagement />
+        </TabsContent>
+
+        <TabsContent value="articles" className="space-y-4">
+          <ArticleManagement />
         </TabsContent>
       </Tabs>
     </div>

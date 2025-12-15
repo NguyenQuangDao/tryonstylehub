@@ -1,0 +1,185 @@
+Chương 2: Phân tích và Thiết kế Hệ thống
+
+2.2 Kiến trúc Tổng quan Hệ thống (System Architecture Overview)
+
+Hệ thống được thiết kế theo mô hình Client-Server hiện đại, tách biệt rõ ràng giữa Frontend, Backend và các dịch vụ AI bên ngoài (External AI Services).
+
+2.2.1 Các thành phần chính
+
+1.  Frontend (Client-side):
+    -   Xây dựng trên nền tảng Next.js (React Framework), cung cấp giao diện người dùng tương tác cao (Interactive UI).
+    -   Chịu trách nhiệm hiển thị thư viện trang phục mẫu, giao diện thử đồ, dashboard quản lý và tương tác với người dùng.
+    -   Giao tiếp với Backend thông qua RESTful API.
+
+2.  Backend (Server-side):
+    -   Cũng sử dụng Next.js API Routes (Serverless Functions) để xử lý logic nghiệp vụ.
+    -   Authentication & Authorization: Quản lý xác thực người dùng và phân quyền (Guest, Member, Admin).
+    -   Data Processing: Xử lý ảnh đầu vào (Validation, Resize, Base64 Encoding) trước khi gửi đi và xử lý ảnh đầu ra (Optimization) sử dụng thư viện sharp.
+    -   Token Management: Quản lý số dư token/quota, trừ lượt sau khi sử dụng dịch vụ thành công.
+
+3.  External AI Service (AI Engine):
+    -   Là thành phần cốt lõi thực hiện các tác vụ AI nặng (GPU-intensive).
+    -   Sử dụng mô hình IDM-VTON (Image-based Virtual Try-On Network) để thực hiện thử đồ.
+    -   Tích hợp các module con: OpenPose (ước lượng tư thế), DensePose (phân đoạn cơ thể), và Diffusion Model (sinh ảnh).
+    -   Giao tiếp với Backend qua API (JSON payload).
+
+4.  Storage & Database:
+    -   AWS S3 (Cloud Storage): Lưu trữ hình ảnh người dùng upload và ảnh kết quả sau khi thử đồ để đảm bảo tốc độ truy xuất cao và khả năng mở rộng.
+    -   Database (PostgreSQL/MongoDB): Lưu trữ thông tin người dùng, metadata của ảnh và lịch sử thử đồ.
+
+2.3 Phân tích chi tiết các chức năng
+
+2.3.2 Chi tiết chức năng Thử đồ ảo (Virtual Try-On)
+
+Chức năng Thử đồ ảo là tính năng cốt lõi của hệ thống, sử dụng công nghệ Generative AI để tạo ra hình ảnh người dùng mặc trang phục đã chọn một cách chân thực. Quy trình này tích hợp các mô hình Deep Learning tiên tiến (như IDM-VTON) thông qua API và xử lý dữ liệu trên nền tảng Cloud.
+
+a. Mô tả luồng xử lý (Workflow)
+
+Quy trình xử lý một yêu cầu thử đồ (Try-On Request) được thực hiện qua các bước tuần tự sau:
+
+1.  Thu thập dữ liệu và Tiền xử lý (Data Collection & Pre-processing):
+    -   Input: Người dùng tải lên ảnh cá nhân (person_image) hoặc chọn người mẫu ảo (virtual_model), và chọn sản phẩm thời trang (garment_image).
+    -   Validation: Hệ thống kiểm tra định dạng ảnh (JPEG/PNG), kích thước tối thiểu và số dư token của người dùng (dựa trên gói dịch vụ: Standard hoặc High Quality).
+    -   Encoding: Ảnh đầu vào được chuyển đổi sang định dạng Base64 để chuẩn bị cho payload gửi đi.
+
+2.  Gửi yêu cầu Inference (API Request):
+    -   Backend (Next.js) đóng gói dữ liệu vào một bản tin JSON, bao gồm các tham số cấu hình cho model AI:
+        -   category: Loại trang phục (tops, bottoms, one-pieces).
+        -   mode: Chế độ xử lý (ví dụ: balanced, performance).
+        -   segmentation_free: Tùy chọn hỗ trợ xử lý ảnh không cần mask thủ công.
+    -   Hệ thống gọi đến API của Fashn.ai (wrapper cho IDM-VTON) để bắt đầu quá trình suy luận (Inference).
+
+3.  Xử lý AI (AI Inference & Masking):
+    -   Pose Estimation: Model sử dụng OpenPose hoặc DensePose để xác định tư thế và khung xương của người trong ảnh.
+    -   Semantic Segmentation: Tạo mặt nạ (mask) để tách biệt vùng cơ thể cần thay đổi trang phục và giữ nguyên các chi tiết khác (khuôn mặt, tóc, background).
+    -   Image Generation: Diffusion Model thực hiện quá trình in-painting, tổng hợp ảnh trang phục vào vùng mask đã tạo, đồng thời điều chỉnh ánh sáng và nếp gấp (warping) để phù hợp với tư thế người mẫu.
+
+4.  Xử lý hàng đợi và Phản hồi (Queue & Polling):
+    -   Do quá trình Inference tốn tài nguyên GPU và có độ trễ (Latency) nhất định (thường từ 10-30 giây tùy thuộc vào tải hệ thống), hệ thống sử dụng cơ chế Polling (hỏi vòng).
+    -   Backend sẽ liên tục kiểm tra trạng thái xử lý (status: completed/failed) từ AI Server theo chu kỳ định sẵn (ví dụ: mỗi 2 giây) cho đến khi nhận được kết quả hoặc hết thời gian chờ (Timeout).
+
+5.  Hậu xử lý và Lưu trữ (Post-processing & Storage):
+    -   Khi nhận được kết quả (API Response), hệ thống thực hiện:
+        -   Download & Resize: Tải ảnh về và sử dụng thư viện sharp để tối ưu hóa kích thước và định dạng (JPEG/PNG).
+        -   Cloud Storage: Upload ảnh kết quả lên AWS S3 để đảm bảo tốc độ truy xuất và độ bền dữ liệu.
+        -   Data Persistence: Lưu metadata (URL, timestamp) vào cơ sở dữ liệu và cập nhật lịch sử thử đồ của người dùng.
+
+b. Yêu cầu đầu vào (Input Requirements)
+
+Để đảm bảo chất lượng ảnh đầu ra tốt nhất, hệ thống yêu cầu dữ liệu đầu vào tuân thủ các tiêu chuẩn sau:
+
+-   Ảnh người mẫu (Person Image):
+    -   Độ phân giải: Tối thiểu 512x512 pixels, khuyến nghị 1024x768 trở lên.
+    -   Tư thế: Đứng thẳng hoặc tạo dáng đơn giản, không bị che khuất quá nhiều phần cơ thể.
+    -   Ánh sáng: Đủ sáng, không bị ngược sáng hoặc bóng đổ quá mạnh.
+-   Ảnh trang phục (Garment Image):
+    -   Loại ảnh: Ảnh chụp trải phẳng (flat-lay) hoặc ảnh chụp trên ma-nơ-canh (ghost mannequin).
+    -   Nền (Background): Nền đơn giản (trắng hoặc xám), độ tương phản cao với sản phẩm.
+
+2.3.3 Hệ thống Token (Quota)
+
+Hệ thống sử dụng cơ chế "Credit-based" (Token/Quota) để quản lý việc sử dụng các dịch vụ AI tốn kém tài nguyên, không có chức năng mua bán.
+
+-   Mô hình Token/Quota:
+    -   Mỗi lượt thử đồ (Try-on) tiêu tốn một lượng token/lượt nhất định tùy thuộc vào chất lượng (Standard/High Quality).
+    -   Người dùng mới được tặng một lượng token miễn phí để trải nghiệm.
+    -   Có thể áp dụng quota theo ngày/tuần hoặc do Admin cấp bổ sung khi cần.
+
+2.3.4 Gợi ý thông minh (AI Recommendation)
+
+Tính năng này sử dụng AI để tư vấn phong cách thời trang cho người dùng dựa trên nhu cầu cụ thể.
+
+-   Đầu vào (Input):
+    -   Mô tả văn bản (Prompt): Ví dụ "trang phục đi biển mùa hè, màu pastel".
+    -   Lịch sử tìm kiếm: Dựa trên các từ khóa người dùng đã tìm trước đó.
+-   Xử lý (Processing):
+    -   Hệ thống phân tích ngữ nghĩa của prompt để trích xuất các thuộc tính: Phong cách (Style), Dịp (Occasion), Màu sắc (Color).
+    -   Tìm kiếm và lọc trang phục mẫu trong thư viện nội bộ phù hợp với các thuộc tính đã trích xuất.
+-   Đầu ra (Output):
+    -   Danh sách các gợi ý phối đồ phù hợp nhất.
+    -   Gợi ý các phong cách phổ biến (Trending Styles).
+
+2.3.5 (Loại bỏ) Kênh Người bán & Thương mại điện tử
+
+Không nằm trong phạm vi hệ thống hiện tại. Hệ thống không hỗ trợ mua bán, giỏ hàng, checkout hoặc theo dõi đơn hàng.
+
+2.3.6 Blog & Tin tức thời trang
+
+-   Cung cấp các bài viết về xu hướng thời trang, mẹo phối đồ.
+-   Hỗ trợ định dạng Rich Text, hình ảnh minh họa.
+
+
+2.4 Biểu đồ Usecase
+
+2.4.1 Các tác nhân (Actors)
+
+-   Khách hàng (Customer):
+    -   Khách vãng lai (Guest): Có thể xem thư viện trang phục mẫu, tìm kiếm, xem blog, nhưng bị giới hạn tính năng thử đồ.
+    -   Thành viên (Member): Đã đăng ký tài khoản, có thể thực hiện thử đồ, quản lý tủ đồ ảo, xem số dư token/quota, xem lịch sử và sử dụng tính năng Gợi ý AI.
+-   Quản trị viên (Admin): Người quản lý hệ thống, chịu trách nhiệm quản lý người dùng, cấu hình tham số hệ thống và quản lý nội dung Blog.
+-   Hệ thống AI (AI System - Tác nhân phụ): Service bên ngoài (External System) chịu trách nhiệm nhận dữ liệu ảnh và trả về kết quả xử lý (Try-on, Recommendation).
+
+2.4.2 Danh sách Usecase chính
+
+1.  Quản lý tài khoản: Đăng ký, Đăng nhập, Quên mật khẩu, Cập nhật hồ sơ.
+2.  Thử đồ ảo (Virtual Try-on): Upload ảnh, Chọn người mẫu, Thử đồ, Xem kết quả, Lưu vào Gallery.
+3.  Gợi ý phối đồ (AI Recommendation): Nhập yêu cầu phối đồ, Xem danh sách gợi ý.
+4.  Hệ thống Token/Quota: Xem số dư, quản lý lượt sử dụng (không mua bán).
+5.  Quản trị (Admin): Quản lý người dùng, Quản lý Blog.
+
+2.4.3 Kịch bản chi tiết (Scenario) cho Usecase "Thực hiện thử đồ"
+
+Tên Usecase: Thực hiện thử đồ (Perform Virtual Try-On)
+Tác nhân chính: Thành viên (Member)
+Tiền điều kiện: Người dùng đã đăng nhập và có đủ số dư token trong tài khoản.
+
+Luồng sự kiện chính (Basic Flow):
+1.  Người dùng truy cập phòng thử đồ ảo hoặc trang thư viện trang phục.
+2.  Người dùng chọn một ảnh người mẫu (từ thư viện có sẵn hoặc upload ảnh cá nhân).
+3.  Người dùng chọn một sản phẩm trang phục (áo, quần, hoặc váy).
+4.  Người dùng nhấn nút "Thử ngay" (Try On).
+5.  Hệ thống kiểm tra tính hợp lệ của ảnh và số dư token.
+6.  Hệ thống gửi yêu cầu đến Hệ thống AI (API Request).
+7.  Hệ thống hiển thị trạng thái "Đang xử lý" (Processing/Loading) cho người dùng.
+8.  Hệ thống AI xử lý và trả về hình ảnh kết quả.
+9.  Hệ thống trừ token/lượt của người dùng và lưu ảnh vào "Tủ đồ của tôi".
+10. Hệ thống hiển thị ảnh kết quả lên màn hình.
+
+Luồng ngoại lệ (Alternative Flows):
+-   Tại bước 5: Nếu ảnh không hợp lệ (sai định dạng, quá mờ), hệ thống báo lỗi và yêu cầu upload lại.
+-   Tại bước 5: Nếu không đủ token/quota, hệ thống hiển thị thông báo và gợi ý chờ cấp thêm lượt (quota theo ngày) hoặc liên hệ Admin.
+-   Tại bước 8: Nếu Hệ thống AI gặp lỗi (Time out, Server Error), hệ thống thông báo "Thử đồ thất bại, vui lòng thử lại sau" và không trừ token của người dùng.
+
+2.5 Mô tả Biểu đồ hoạt động (Activity Diagram) - Chức năng Thử đồ
+
+Biểu đồ hoạt động mô tả chi tiết dòng chảy công việc (workflow) của chức năng Thử đồ, từ phía người dùng đến hệ thống và AI.
+
+Các trạng thái và luồng xử lý:
+
+1.  Start Node: Người dùng nhấn nút "Thử ngay".
+2.  Kiểm tra tính hợp lệ (Validation):
+    -   Decision Node: Kiểm tra Input (Ảnh có tồn tại? Định dạng đúng?) và Token (Số dư > Cost).
+    -   Nhánh Sai (No): Hiển thị thông báo lỗi -> Kết thúc (Flow Final).
+    -   Nhánh Đúng (Yes): Chuyển sang bước tiếp theo.
+3.  Chuẩn bị dữ liệu (Data Preparation):
+    -   Hệ thống chuyển đổi ảnh sang Base64.
+    -   Tạo payload JSON chứa cấu hình (Category, Mode).
+4.  Gọi AI Service (Call External API):
+    -   Gửi POST Request đến AI Server.
+5.  Chờ xử lý (Waiting/Polling):
+    -   Hệ thống đi vào vòng lặp kiểm tra trạng thái (Polling Loop).
+    -   Decision Node: Trạng thái là gì?
+        -   Processing: Đợi (Delay) và kiểm tra lại.
+        -   Failed: Ghi log lỗi -> Thông báo người dùng -> Kết thúc.
+        -   Completed: Lấy URL ảnh kết quả.
+6.  Xử lý kết quả (Result Processing):
+    -   Tải ảnh về server.
+    -   Resize và tối ưu hóa ảnh (Sharp).
+    -   Upload ảnh lên Cloud Storage (S3).
+7.  Cập nhật dữ liệu (Update Data):
+    -   Trừ token trong tài khoản người dùng.
+    -   Lưu thông tin giao dịch và đường dẫn ảnh vào Database.
+8.  Hiển thị (Display):
+    -   Trả về URL ảnh cho Client.
+    -   Client hiển thị ảnh kết quả cho người dùng.
+9.  End Node: Kết thúc quy trình.

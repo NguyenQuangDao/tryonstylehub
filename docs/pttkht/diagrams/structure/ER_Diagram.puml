@@ -1,0 +1,286 @@
+@startuml
+title Sơ đồ ER (Entity-Relationship)
+left to right direction
+
+enum UserRole {
+  ADMIN
+  USER
+  SELLER
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum TransactionType {
+  DEPOSIT
+  PURCHASE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum TokenPurchaseStatus {
+  pending
+  completed
+  failed
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+entity "User" as User {
+  * id : String
+    email : String
+    password : String
+    name : String
+    avatarUrl : String?
+    role : UserRole
+    tokenBalance : Int
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Shop" as Shop {
+  * id : String
+    name : String
+    slug : String
+    logoUrl : String?
+    bannerUrl : String?
+    description : String?
+    status : ShopStatus
+    averageRating : Float
+    totalSales : Int
+    ownerId : String
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Category" as Category {
+  * id : String
+    name : String
+    slug : String
+    imageUrl : String?
+    parentId : String?
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Product" as Product {
+  * id : String
+    title : String
+    description : String
+    images : Json
+    basePrice : Decimal(10,2)
+    status : ProductStatus
+    shopId : String
+    categoryId : String
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "ProductVariant" as ProductVariant {
+  * id : String
+    productId : String
+    name : String
+    price : Decimal?
+    stock : Int
+    sku : String
+    attributes : Json
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Order" as Order {
+  * id : String
+    buyerId : String
+    shopId : String
+    totalAmount : Decimal(10,2)
+    shippingAddress : Json
+    status : OrderStatus
+    paymentStatus : PaymentStatus
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "OrderItem" as OrderItem {
+  * id : String
+    orderId : String
+    productId : String
+    productVariantId : String?
+    quantity : Int
+    price : Decimal(10,2)
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Transaction" as Transaction {
+  * id : String
+    userId : String
+    amount : Decimal(10,2)
+    type : TransactionType
+    status : TransactionStatus
+    description : String?
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Review" as Review {
+  * id : String
+    rating : Int
+    comment : String?
+    images : Json
+    userId : String
+    productId : String
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "TokenPurchase" as TokenPurchase {
+  * id : String
+    userId : String
+    stripePaymentId : String
+    amount : Decimal(10,2)
+    tokens : Int
+    status : TokenPurchaseStatus
+    createdAt : DateTime
+}
+
+entity "CostTracking" as CostTracking {
+  * id : String
+    userId : String?
+    service : String
+    operation : String
+    cost : Int
+    details : String?
+    createdAt : DateTime
+}
+
+entity "VirtualModel" as VirtualModel {
+  * id : String
+    userId : String?
+    sessionId : String?
+    avatarName : String
+    avatarImage : String?
+    isPublic : Boolean
+    height : Float
+    weight : Float
+    gender : String
+    hairColor : String
+    hairStyle : String
+    bodyShape : String?
+    skinTone : String?
+    eyeColor : String?
+    faceShape : String?
+    beardStyle : String?
+    tattoos : String?
+    piercings : String?
+    clothingStyle : String?
+    accessories : String?
+    footwearType : String?
+    colorPalette : String?
+    ageAppearance : Int?
+    bodyProportionPreset : String?
+    muscleLevel : Int?
+    fatLevel : Int?
+    shoulderWidth : Float?
+    waistSize : Float?
+    hipSize : Float?
+    legLength : Float?
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "BlogPost" as BlogPost {
+  * id : String
+    authorId : String
+    title : String
+    content : String
+    media : Json
+    category : String?
+    tags : Json
+    status : BlogPostStatus
+    likesCount : Int
+    savesCount : Int
+    commentsCount : Int
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "BlogComment" as BlogComment {
+  * id : String
+    postId : String
+    userId : String
+    content : String
+    media : Json
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "BlogLike" as BlogLike {
+  * id : String
+    postId : String
+    userId : String
+    createdAt : DateTime
+}
+
+entity "BlogSave" as BlogSave {
+  * id : String
+    postId : String
+    userId : String
+    createdAt : DateTime
+}
+
+User ||--|| Shop : owner
+User ||--o{ Order : buyer
+Shop ||--o{ Product
+Shop ||--o{ Order
+Category ||--o{ Product
+Category ||--o{ Category : children
+Product ||--o{ ProductVariant
+Product ||--o{ Review
+Product ||--o{ OrderItem
+Order ||--o{ OrderItem
+User ||--o{ Review
+User ||--o{ Transaction
+User ||--o{ TokenPurchase
+User ||--o{ CostTracking
+User ||--o{ VirtualModel
+User ||--o{ BlogPost : author
+BlogPost ||--o{ BlogComment
+BlogPost ||--o{ BlogLike
+BlogPost ||--o{ BlogSave
+User ||--o{ BlogComment
+User ||--o{ BlogLike
+User ||--o{ BlogSave
+
+@enduml

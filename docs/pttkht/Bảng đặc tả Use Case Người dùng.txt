@@ -1,0 +1,163 @@
+Tên Use Case: Duyệt & Tìm kiếm trang phục mẫu
+
+Actors: Khách hàng
+
+Mô tả: Người dùng duyệt thư viện trang phục mẫu, tìm kiếm theo từ khóa, áp dụng bộ lọc/sắp xếp và xem chi tiết trang phục mẫu.
+
+Tiền điều kiện: Dữ liệu trang phục mẫu khả dụng; kết nối mạng ổn định; bộ lọc hợp lệ.
+
+Luồng sự kiện chính:
+1. Người dùng mở trang danh mục hoặc tìm kiếm.
+2. Nhập từ khóa hoặc chọn bộ lọc/sắp xếp.
+3. Hệ thống thực thi truy vấn và hiển thị kết quả.
+4. Người dùng mở trang chi tiết trang phục mẫu.
+5. Hệ thống ghi nhận hành vi để phục vụ gợi ý/analytics.
+
+Luồng sự kiện phụ:
+A. Không có kết quả: hiển thị gợi ý thay thế, đề xuất nới lỏng bộ lọc.
+B. Lưu bộ lọc/tìm kiếm: người dùng lưu, hệ thống đồng bộ vào tài khoản.
+
+Ngoại lệ/Lỗi:
+- Timeout/lỗi mạng: thông báo, cho phép thử lại.
+- Từ khóa/bộ lọc không hợp lệ: yêu cầu chỉnh sửa.
+
+----------------------------------------
+
+Tên Use Case: Thử đồ ảo (Try-On)
+
+Actors: Khách hàng
+
+Mô tả: Người dùng chọn trang phục mẫu và ảnh/body scan để thử đồ ảo; hệ thống gửi yêu cầu tới dịch vụ AI và hiển thị kết quả.
+
+Tiền điều kiện: Dịch vụ AI Try-On khả dụng; ảnh/body scan hợp lệ; quyền sử dụng dữ liệu; CDN hoạt động.
+
+Luồng sự kiện chính:
+1. Người dùng chọn trang phục mẫu và ảnh/body scan.
+2. Hệ thống kiểm tra định dạng, kích thước ảnh.
+3. Hệ thống gửi yêu cầu tới dịch vụ AI Try-On.
+4. Nhận kết quả render và hiển thị cho người dùng.
+5. Người dùng lưu kết quả vào Yêu thích hoặc chia sẻ.
+
+Luồng sự kiện phụ:
+A. Điều chỉnh tham số (kích cỡ/tư thế/phông nền): hệ thống tái tạo kết quả.
+B. Dùng body scan có sẵn: hệ thống lấy mẫu đã lưu để thử đồ.
+
+Ngoại lệ/Lỗi:
+- Dịch vụ AI lỗi/timeout: hiển thị thông báo và cho phép thử lại.
+- Ảnh không hợp lệ/vượt giới hạn: yêu cầu đổi ảnh.
+
+----------------------------------------
+
+Tên Use Case: Tải ảnh/Body scan
+
+Actors: Khách hàng
+
+Mô tả: Người dùng tải lên ảnh hoặc thực hiện body scan để phục vụ thử đồ/gợi ý.
+
+Tiền điều kiện: Định dạng ảnh được hỗ trợ; dung lượng trong giới hạn; quyền máy ảnh/thiết bị.
+
+Luồng sự kiện chính:
+1. Người dùng mở chức năng tải ảnh/body scan.
+2. Chọn ảnh từ thiết bị hoặc chụp trực tiếp.
+3. Hệ thống xác thực định dạng/kích thước và nén/resize khi cần.
+4. Tải lên CDN và lưu metadata.
+5. Hiển thị preview và trạng thái thành công.
+
+Luồng sự kiện phụ:
+A. Xóa/thay thế ảnh: cập nhật metadata và CDN.
+B. Thiết lập quyền riêng tư cho ảnh/scan.
+
+Ngoại lệ/Lỗi:
+- Dung lượng vượt giới hạn/định dạng không hỗ trợ.
+- Lỗi CDN/timeout.
+
+----------------------------------------
+
+Tên Use Case: Gợi ý phối đồ
+
+Actors: Khách hàng
+
+Mô tả: Hệ thống gợi ý phối đồ dựa trên hành vi, hồ sơ, body scan và sở thích.
+
+Tiền điều kiện: Người dùng chấp thuận sử dụng dữ liệu; dịch vụ AI/analytics khả dụng.
+
+Luồng sự kiện chính:
+1. Người dùng mở trang gợi ý.
+2. Hệ thống tổng hợp đặc trưng (hành vi, profile, scan).
+3. Gọi dịch vụ AI để tạo danh sách gợi ý.
+4. Hiển thị gợi ý; người dùng lưu gợi ý vào Yêu thích hoặc thử ngay.
+
+Luồng sự kiện phụ:
+A. Tùy chỉnh tiêu chí gợi ý (giá, phong cách, kích cỡ).
+B. Ẩn sản phẩm không phù hợp để cải thiện mô hình.
+
+Ngoại lệ/Lỗi:
+- Không có đề xuất phù hợp: hiển thị danh mục phổ biến.
+- Lỗi AI/analytics: thông báo và fallback.
+
+----------------------------------------
+
+Tên Use Case: Yêu thích (Trang phục/Gợi ý)
+
+Actors: Khách hàng
+
+Mô tả: Người dùng lưu/xóa trang phục mẫu hoặc gợi ý phối đồ vào danh sách yêu thích, xem và quản lý danh sách.
+
+Tiền điều kiện: Người dùng đã đăng nhập; trang phục mẫu/gợi ý tồn tại.
+
+Luồng sự kiện chính:
+1. Người dùng nhấn "Yêu thích" trên trang phục mẫu hoặc gợi ý.
+2. Hệ thống thêm sản phẩm vào danh sách và đồng bộ.
+3. Người dùng mở trang Yêu thích để xem/quản lý.
+
+Luồng sự kiện phụ:
+A. Đồng bộ đa thiết bị: cập nhật thời gian thực.
+B. Chia sẻ danh sách yêu thích.
+
+Ngoại lệ/Lỗi:
+- Chưa đăng nhập: yêu cầu xác thực.
+- Sản phẩm đã bị xóa/không còn khả dụng.
+
+----------------------------------------
+
+Tên Use Case: (Loại bỏ) Giỏ hàng
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ mua bán/giỏ hàng.
+
+----------------------------------------
+
+Tên Use Case: (Loại bỏ) Thanh toán
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ thanh toán/đơn hàng.
+
+----------------------------------------
+
+Tên Use Case: (Loại bỏ) Theo dõi đơn
+Mô tả: Không áp dụng. Hệ thống không hỗ trợ đơn hàng.
+
+----------------------------------------
+
+Tên Use Case: (Loại bỏ) Đánh giá/Bình luận sản phẩm
+Mô tả: Không áp dụng. Hệ thống không có sản phẩm để mua/bán.
+
+----------------------------------------
+
+Tên Use Case: Quản lý tài khoản
+
+Actors: Khách hàng
+
+Mô tả: Cập nhật hồ sơ, địa chỉ, bảo mật (đổi mật khẩu, 2FA), quản lý thiết bị/phiên và yêu cầu xóa tài khoản.
+
+Tiền điều kiện: Người dùng đã đăng nhập; xác minh khi thao tác nhạy cảm.
+
+Luồng sự kiện chính:
+1. Người dùng mở trang Tài khoản.
+2. Cập nhật thông tin hồ sơ/địa chỉ.
+3. Thực hiện thao tác bảo mật (đổi mật khẩu/2FA) với xác minh email/OTP.
+4. Hệ thống lưu và xác nhận thay đổi.
+
+Luồng sự kiện phụ:
+A. Quản lý thiết bị/phiên: đăng xuất phiên khác.
+B. Xuất dữ liệu cá nhân theo yêu cầu.
+
+Ngoại lệ/Lỗi:
+- Xác minh thất bại/chính sách mật khẩu không đạt.
+- Lỗi đồng bộ dữ liệu.

@@ -1,0 +1,105 @@
+flowchart LR
+
+    subgraph External[Hệ thống tích hợp]
+        actorAI([Dịch vụ AI Try-On])
+        actorAuth([Nhà cung cấp đăng nhập])
+        actorPayment([Cổng thanh toán])
+        actorStore([Kho/Inventory])
+        actorCDN([Lưu trữ hình ảnh/CDN])
+        actorAnalytics([Phân tích/Tracking])
+    end
+
+    subgraph System[Hệ thống TryOnStyleHub]
+        UC_TryOn([Thử đồ ảo])
+        UC_Recommend([Gợi ý trang phục])
+        UC_Auth([Đăng nhập/Đăng ký/OAuth])
+        UC_Checkout([Thanh toán])
+        UC_AdminProduct([Quản lý sản phẩm])
+        UC_AdminOrder([Quản lý đơn hàng])
+        UC_Upload([Tải ảnh/Body scan])
+        UC_Reports([Báo cáo])
+
+        subgraph TryOn[Thử đồ ảo - chi tiết]
+            TryOn_Upload([Tải ảnh đầu vào])
+            TryOn_Select([Chọn trang phục])
+            TryOn_AI([Xử lý AI fitting])
+            TryOn_Render([Tạo ảnh/video kết quả])
+            TryOn_Save([Lưu/Chia sẻ])
+            TryOn_Upload --> TryOn_Select --> TryOn_AI --> TryOn_Render --> TryOn_Save
+        end
+
+        subgraph Recommend[Gợi ý trang phục - chi tiết]
+            Rec_Profile([Hồ sơ sở thích])
+            Rec_Size([Suy luận kích cỡ])
+            Rec_Rerank([Xếp hạng/gợi ý])
+            Rec_Feed([Nguồn đề xuất cá nhân hóa])
+            Rec_Profile --> Rec_Size --> Rec_Rerank --> Rec_Feed
+        end
+
+        subgraph Auth[Đăng nhập/OAuth - chi tiết]
+            Auth_EmailPwd([Email/Mật khẩu])
+            Auth_OAuth([Đăng nhập qua nhà cung cấp])
+            Auth_Token([Làm mới token])
+            Auth_Profile([Quản lý hồ sơ])
+            Auth_EmailPwd --> Auth_Token
+            Auth_OAuth --> Auth_Token
+            Auth_Token --> Auth_Profile
+        end
+
+        subgraph Checkout[Thanh toán - chi tiết]
+            Cart_Add([Thêm/xóa giỏ hàng])
+            Pay_Create([Tạo phiên thanh toán])
+            Pay_Capture([Xác nhận/ghi nhận thanh toán])
+            Order_Confirm([Xác nhận đơn hàng])
+            Webhook_Handle([Xử lý webhook])
+            Cart_Add --> Pay_Create --> Pay_Capture --> Order_Confirm --> Webhook_Handle
+        end
+
+        subgraph AdminProduct[Quản lý sản phẩm - chi tiết]
+            Prod_CRUD([Tạo/Sửa/Xóa sản phẩm])
+            Prod_InventorySync([Đồng bộ tồn kho])
+            Prod_ImageUpload([Tải ảnh sản phẩm])
+            Prod_Pricing([Giá/khuyến mãi])
+            Prod_CRUD --> Prod_ImageUpload --> Prod_InventorySync --> Prod_Pricing
+        end
+
+        subgraph AdminOrder[Quản lý đơn hàng - chi tiết]
+            Order_List([Danh sách/chi tiết])
+            Order_Status([Cập nhật trạng thái])
+            Order_Returns([Hủy/trả hàng])
+            Order_Fulfill([Giao hàng/fulfillment])
+            Order_List --> Order_Status --> Order_Fulfill --> Order_Returns
+        end
+
+        subgraph Upload[Tải ảnh/Body scan - chi tiết]
+            Upload_Image([Tải ảnh])
+            Upload_BodyScan([Quét cơ thể])
+            Upload_BGRemove([Xóa nền])
+            Upload_CDNStore([Lưu trữ CDN])
+            Upload_Image --> Upload_BGRemove --> Upload_CDNStore
+            Upload_BodyScan --> Upload_CDNStore
+        end
+
+        subgraph Reports[Báo cáo - chi tiết]
+            Reports_Sales([Doanh thu])
+            Reports_TryOnUsage([Sử dụng Try-On])
+            Reports_Funnel([Chuyển đổi/funnel])
+            Reports_Sales --> Reports_Funnel
+            Reports_TryOnUsage --> Reports_Funnel
+        end
+    end
+
+    TryOn_AI -.-> actorAI
+    Rec_Rerank -.-> actorAI
+    Auth_OAuth -.-> actorAuth
+    Pay_Create -.-> actorPayment
+    Pay_Capture -.-> actorPayment
+    Prod_InventorySync -.-> actorStore
+    Order_Fulfill -.-> actorStore
+    Upload_BGRemove -.-> actorAI
+    Upload_BodyScan -.-> actorAI
+    Upload_CDNStore -.-> actorCDN
+    TryOn_Render -.-> actorCDN
+    TryOn_Save -.-> actorCDN
+    Reports_Sales -.-> actorAnalytics
+    Reports_TryOnUsage -.-> actorAnalytics

@@ -1,0 +1,19 @@
+flowchart LR
+
+    subgraph System[Hệ thống TryOnStyleHub]
+        subgraph Checkout[Thanh toán - chi tiết]
+            Cart_Add([Thêm/xóa giỏ hàng])
+            Pay_Create([Tạo phiên thanh toán])
+            Pay_Capture([Xác nhận/ghi nhận thanh toán])
+            Order_Confirm([Xác nhận đơn hàng])
+            Webhook_Handle([Xử lý webhook])
+            Cart_Add --> Pay_Create --> Pay_Capture --> Order_Confirm --> Webhook_Handle
+        end
+    end
+
+    subgraph External[Hệ thống tích hợp]
+        actorPayment([Cổng thanh toán])
+    end
+
+    Pay_Create -.-> actorPayment
+    Pay_Capture -.-> actorPayment

@@ -1,0 +1,58 @@
+Spec: Quản lý sản phẩm (AdminProduct)
+
+---
+Prod_CRUD
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Tạo/Sửa/Xóa sản phẩm |
+| Đầu vào | Tên, mô tả, thuộc tính, giá, SKU |
+| Xử lý | Xác thực; versioning; audit |
+| Đầu ra | Bản ghi sản phẩm |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Ràng buộc SKU duy nhất; đồng bộ danh mục |
+| Lỗi | `SKU_CONFLICT`, `PRODUCT_SAVE_FAILED` |
+| KPI | Tốc độ cập nhật; tỉ lệ lỗi CRUD |
+
+---
+Prod_ImageUpload
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Tải ảnh sản phẩm |
+| Đầu vào | Ảnh JPEG/PNG; alt text |
+| Xử lý | Nén; tạo thumbnail; gán biến thể |
+| Đầu ra | URL ảnh sản phẩm |
+| Tích hợp ngoài | `actorCDN` |
+| Ràng buộc | Kích thước; định dạng web |
+| Lỗi | `CDN_UPLOAD_FAILED`, `IMAGE_INVALID` |
+| KPI | Thời gian upload; điểm Lighthouse ảnh |
+
+---
+Prod_InventorySync
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Đồng bộ tồn kho |
+| Đầu vào | SKU, số lượng, kho |
+| Xử lý | Pull/Push tồn kho; reconcile |
+| Đầu ra | Trạng thái tồn kho cập nhật |
+| Tích hợp ngoài | `actorStore` |
+| Ràng buộc | Giao dịch atomic; idempotent |
+| Lỗi | `INVENTORY_SYNC_FAILED` |
+| KPI | Độ lệch tồn; tần suất đồng bộ |
+
+---
+Prod_Pricing
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Quản lý giá/khuyến mãi |
+| Đầu vào | Bảng giá, rules, thời gian hiệu lực |
+| Xử lý | Tính giá theo rule; ưu tiên; cache |
+| Đầu ra | Giá cuối; lịch sử giá |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Chính xác, khả truy vết |
+| Lỗi | `PRICING_RULE_CONFLICT` |
+| KPI | Tốc độ tính giá; tỉ lệ sai giá |
+

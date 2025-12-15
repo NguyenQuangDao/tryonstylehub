@@ -1,0 +1,22 @@
+@startuml
+skinparam linetype ortho
+start
+:Đọc jobId từ params;
+:Tra cứu trạng thái từ cache/DB;
+if (Có job?) then (Có)
+  if (status == completed) then (Có)
+    :200: Trả urls/images;
+    end
+  elseif (status == failed) then (Có)
+    :500: Prediction failed;
+    end
+  else (pending)
+    :200: Trả trạng thái đang xử lý;
+    end
+  endif
+else (Không)
+  :404: Job không tồn tại;
+  end
+endif
+@enduml
+

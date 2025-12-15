@@ -1,0 +1,21 @@
+@startuml
+title Try-On Upload ảnh người dùng
+actor User
+boundary WebApp
+control Backend
+entity S3
+
+User -> WebApp: Chọn ảnh chân dung
+WebApp -> Backend: POST /api/tryon/upload
+Backend -> Backend: Validate + làm sạch EXIF/quét virus
+alt Hợp lệ
+  Backend -> S3: Upload users/{id}/tryon/source
+  S3 --> Backend: {imageId, url}
+  Backend --> WebApp: 200 {imageId, url}
+  WebApp --> User: Sẵn sàng chọn item
+else Không hợp lệ
+  Backend --> WebApp: 400 Bad Request
+  WebApp --> User: Báo lỗi ảnh
+end
+@enduml
+

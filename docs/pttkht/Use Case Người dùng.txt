@@ -1,0 +1,43 @@
+flowchart LR
+    actorUser([Khách hàng])
+
+    subgraph System[Chức năng Người dùng]
+        UC_Browse([Duyệt & Tìm kiếm])
+        UC_TryOn([Thử đồ ảo])
+        UC_Upload([Tải ảnh/Body scan])
+        UC_Recommend([Gợi ý trang phục])
+        UC_Wishlist([Yêu thích])
+        UC_Checkout([Thanh toán])
+        UC_Track([Theo dõi đơn])
+        UC_Review([Đánh giá/Bình luận])
+        UC_Account([Quản lý tài khoản])
+        UC_Auth([Đăng nhập/Đăng ký/OAuth])
+    end
+
+    subgraph External[Hệ thống bên ngoài]
+        actorAI([Dịch vụ AI Try-On])
+        actorAuth([Nhà cung cấp đăng nhập])
+        actorPayment([Cổng thanh toán])
+        actorCDN([Lưu trữ hình ảnh/CDN])
+        actorAnalytics([Phân tích/Tracking])
+    end
+
+    actorUser --> UC_Browse
+    actorUser --> UC_TryOn
+    actorUser --> UC_Upload
+    actorUser --> UC_Recommend
+    actorUser --> UC_Wishlist
+    actorUser --> UC_Checkout
+    actorUser --> UC_Track
+    actorUser --> UC_Review
+    actorUser --> UC_Account
+    actorUser --> UC_Auth
+
+    UC_TryOn -.-> actorAI
+    UC_Recommend -.-> actorAI
+    UC_Auth -.-> actorAuth
+    UC_Checkout -.-> actorPayment
+    UC_Upload -.-> actorCDN
+    UC_TryOn -.-> actorCDN
+    UC_Track -.-> actorAnalytics
+    UC_Review -.-> actorAnalytics

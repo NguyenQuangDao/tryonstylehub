@@ -1,0 +1,27 @@
+@startuml
+title Virtual Models - Delete
+actor User
+boundary WebApp
+control Backend
+entity S3
+database DB
+
+WebApp -> Backend: DELETE /api/virtual-models/{id}
+Backend -> Backend: Kiểm tra quyền
+alt Đủ quyền
+  Backend -> DB: Xoá bản ghi model
+  DB --> Backend: Ok
+  alt Có cấu hình cleanup S3
+    Backend -> S3: Xoá ảnh liên quan
+    S3 --> Backend: Ok
+  else Bỏ qua cleanup
+    Backend -> Backend: Hoàn tất
+  end
+  Backend --> WebApp: 200/204
+  WebApp --> User: Xoá thành công
+else Thiếu quyền/Không tồn tại
+  Backend --> WebApp: 403/404
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

@@ -1,0 +1,37 @@
+@startuml
+title Try-On AI Pipeline
+actor User
+boundary WebApp
+control Backend
+entity AIService
+entity S3
+database DB
+
+User -> WebApp: Bấm Try-On
+WebApp -> Backend: POST /api/tryon/ai {imageId, item}
+Backend -> Backend: Kiểm tra token & API key
+alt Đủ điều kiện
+  Backend -> AIService: Tạo prediction job
+  AIService --> Backend: {jobId}
+  loop Polling trạng thái
+    Backend -> AIService: GET /status {jobId}
+    AIService --> Backend: pending/completed/failed
+  end
+  alt completed
+    Backend -> Backend: Hậu xử lý/encode
+    Backend -> S3: Upload kết quả
+    S3 --> Backend: URLs kết quả
+    Backend -> DB: Trừ token, lưu metadata
+    DB --> Backend: Ok
+    Backend --> WebApp: 200 {resultUrls, jobId}
+    WebApp --> User: Hiển thị kết quả
+  else failed/timeout
+    Backend --> WebApp: 503/500 Lỗi xử lý
+    WebApp --> User: Báo lỗi
+  end
+else Thiếu quyền/thiếu dữ liệu
+  Backend --> WebApp: 400/401
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

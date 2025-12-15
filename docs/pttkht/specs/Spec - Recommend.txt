@@ -1,0 +1,58 @@
+Spec: Gợi ý trang phục (Recommend)
+
+---
+Rec_Profile
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Thu thập và quản lý hồ sơ sở thích người dùng |
+| Đầu vào | Lịch sử xem/mua, like, kích cỡ, phong cách |
+| Xử lý | Chuẩn hoá, ẩn danh hoá, lưu trữ có phiên bản |
+| Đầu ra | Hồ sơ đề xuất chuẩn hoá |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Bảo vệ dữ liệu cá nhân; tuân thủ xóa dữ liệu khi yêu cầu |
+| Lỗi | `PROFILE_NOT_FOUND`, `PROFILE_SAVE_FAILED` |
+| KPI | Tỉ lệ cập nhật hồ sơ; độ đầy đủ hồ sơ |
+
+---
+Rec_Size
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Suy luận kích cỡ phù hợp |
+| Đầu vào | Số đo (nếu có), lịch sử mua, brand fit |
+| Xử lý | Heuristic + mô hình; ràng buộc theo brand |
+| Đầu ra | Bảng size khuyến nghị per-category |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Sai số hiển thị; có mức tự tin |
+| Lỗi | `SIZE_INFERENCE_FAILED` |
+| KPI | Tỉ lệ đúng size; giảm trả hàng do sai size |
+
+---
+Rec_Rerank
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Xếp hạng/gợi ý sản phẩm |
+| Đầu vào | Hồ sơ, size gợi ý, catalog hiện hành |
+| Xử lý | Model gợi ý + business rules; loại sản phẩm hết hàng |
+| Đầu ra | Danh sách sản phẩm đề xuất |
+| Tích hợp ngoài | `actorAI` (mô hình gợi ý) |
+| Ràng buộc | Thời gian < 300ms; kiểm soát bias |
+| Lỗi | `AI_ERROR`, `CATALOG_MISMATCH` |
+| KPI | CTR đề xuất; tỉ lệ thêm giỏ từ đề xuất |
+
+---
+Rec_Feed
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Sinh nguồn đề xuất cá nhân hoá |
+| Đầu vào | Top-N từ Rerank, ngữ cảnh phiên |
+| Xử lý | Pagination, diversification, caching |
+| Đầu ra | API feed cho UI |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Cache TTL; idempotent |
+| Lỗi | `FEED_EMPTY`, `CACHE_STALE` |
+| KPI | Tốc độ phản hồi; độ mới nội dung |
+

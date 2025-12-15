@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+actor "Quản trị" as actorAdmin
+rectangle "Chức năng Quản trị" {
+  usecase "Quản lý sản phẩm" as UC_AdminProduct
+  usecase "Quản lý đơn hàng" as UC_AdminOrder
+  usecase "Quản lý người dùng & phân quyền" as UC_AdminUser
+  usecase "Khuyến mãi/Mã giảm giá" as UC_Promo
+  usecase "Kiểm duyệt nội dung" as UC_ContentMod
+  usecase "Báo cáo" as UC_Reports
+}
+rectangle "Hệ thống bên ngoài" {
+  actor "Kho/Inventory" as actorStore
+  actor "Phân tích/Tracking" as actorAnalytics
+  actor "Lưu trữ hình ảnh/CDN" as actorCDN
+}
+actorAdmin --> UC_AdminProduct
+actorAdmin --> UC_AdminOrder
+actorAdmin --> UC_AdminUser
+actorAdmin --> UC_Promo
+actorAdmin --> UC_ContentMod
+actorAdmin --> UC_Reports
+UC_AdminProduct ..> actorStore
+UC_AdminOrder ..> actorStore
+UC_AdminProduct ..> actorCDN
+UC_ContentMod ..> actorCDN
+UC_Reports ..> actorAnalytics
+@enduml

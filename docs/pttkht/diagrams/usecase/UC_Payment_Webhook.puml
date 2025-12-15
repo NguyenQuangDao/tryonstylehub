@@ -1,0 +1,14 @@
+@startuml
+skinparam linetype ortho
+actor Stripe as PSP
+rectangle TryOnStyleHub {
+  usecase "Xử lý webhook thanh toán" as UC_Payment_Webhook
+}
+PSP --> UC_Payment_Webhook
+note right of UC_Payment_Webhook
+Trigger: Sự kiện payment_intent.succeeded từ Stripe
+Post: Ghi nhận purchase, tăng tokenBalance, trả 200
+Exceptions: 400 chữ ký/metadata sai; 400 package not found
+end note
+@enduml
+

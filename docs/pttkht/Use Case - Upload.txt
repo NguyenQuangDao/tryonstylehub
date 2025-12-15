@@ -1,0 +1,15 @@
+flowchart LR
+
+    subgraph System[Hệ thống TryOnStyleHub]
+        subgraph Upload[Tải ảnh/Body scan - chi tiết]
+            Upload_Image([Tải ảnh])
+            Upload_CDNStore([Lưu trữ CDN])
+            Upload_Image --> Upload_CDNStore
+        end
+    end
+
+    subgraph External[Hệ thống tích hợp]
+        actorCDN([Lưu trữ hình ảnh/CDN])
+    end
+
+    Upload_CDNStore -.-> actorCDN

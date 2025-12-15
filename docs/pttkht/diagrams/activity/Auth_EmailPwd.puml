@@ -1,0 +1,47 @@
+@startuml
+skinparam linetype ortho
+start
+:Phân tích Content-Type;
+if (JSON) then (Có)
+  :request.json;
+elseif (Form-URL-Encoded) then (Có)
+  :URLSearchParams;
+elseif (Multipart) then (Có)
+  :request.formData;
+else (Fallback)
+  :Thử request.json;
+endif
+:Trích email, mật khẩu;
+:Kiểm tra định dạng email và trường bắt buộc;
+if (Email hợp lệ?) then (Có)
+  :Kiểm tra kết nối cơ sở dữ liệu;
+  if (DB khả dụng?) then (Có)
+    :Tra cứu người dùng theo email;
+    if (Tồn tại người dùng?) then (Có)
+      :So khớp mật khẩu đã băm;
+      if (Mật khẩu đúng?) then (Có)
+        :Thử tạo JWT và set cookie;
+        if (Tạo JWT thành công?) then (Có)
+          :200: Trả về user + accessToken/refreshToken;
+          end
+        else (Không)
+          :500: AUTH_TOKEN_CREATE_FAILED;
+          end
+        endif
+      else (Không)
+        :401: Sai thông tin đăng nhập;
+        end
+      endif
+    else (Không)
+      :401: Sai thông tin đăng nhập;
+      end
+    endif
+  else (Không)
+    :503: DB không khả dụng;
+    end
+  endif
+else (Không)
+:400: Email không hợp lệ;
+end
+endif
+@enduml

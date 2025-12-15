@@ -1,0 +1,21 @@
+@startuml
+title Upload Image Sản phẩm
+actor User
+boundary WebApp
+control Backend
+entity S3
+
+User -> WebApp: Chọn ảnh sản phẩm
+WebApp -> Backend: POST /api/upload/images
+Backend -> Backend: Kiểm tra MIME/kích thước
+alt Hợp lệ
+  Backend -> S3: Upload thư mục products
+  S3 --> Backend: URLs đã lưu
+  Backend --> WebApp: 200 {urls}
+  WebApp --> User: Upload thành công
+else Không hợp lệ
+  Backend --> WebApp: 400 Bad Request
+  WebApp --> User: Báo lỗi input
+end
+@enduml
+

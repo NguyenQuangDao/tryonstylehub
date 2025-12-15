@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+actor "Khách hàng" as actorUser
+actor "Người bán" as actorSeller
+actor "Quản trị viên" as actorAdmin
+rectangle "Chức năng Đăng nhập" {
+  usecase "Đăng nhập bằng mật khẩu" as UC_LoginPwd
+  usecase "Đăng xuất" as UC_Logout
+  usecase "Quản lý phiên & thông tin" as UC_ManageAccount
+}
+rectangle "Hệ thống bên ngoài" {
+}
+actorUser --> UC_LoginPwd
+actorUser --> UC_Logout
+actorUser --> UC_ManageAccount
+actorSeller --> UC_LoginPwd
+actorSeller --> UC_Logout
+actorAdmin --> UC_LoginPwd
+actorAdmin --> UC_Logout
+@enduml

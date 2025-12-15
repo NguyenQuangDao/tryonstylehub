@@ -1,0 +1,35 @@
+@startuml
+skinparam linetype ortho
+start
+:Fetch ảnh kết quả từ FASHN;
+:Đọc metadata bằng sharp;
+if (Đủ độ phân giải? ≥1080) then (Có)
+  :Giữ kích thước;
+else (Không)
+  :Resize fit inside 1080;
+  :Giữ kích thước;
+endif
+if (Có alpha hoặc định dạng PNG/WebP?) then (Có)
+  :Encode PNG, compressionLevel:9;
+else (Không)
+  :Encode JPEG, quality:92;
+endif
+:Đọc lại metadata;
+if (Kích thước ≤25MB?) then (Có)
+  :Upload S3: generateS3Key(prefix,"tryon.{ext}");
+else (Không)
+  :Re-encode/resize để ≤25MB;
+  :Upload S3: generateS3Key(prefix,"tryon.{ext}");
+endif
+if (Upload S3 thành công?) then (Có)
+  if (URL truy cập trực tiếp OK?) then (Có)
+    :DONE;
+  else (Không)
+    :Phát sinh presigned URL;
+    :DONE;
+  endif
+else (Không)
+  :500: CDN_UPLOAD_FAILED;
+endif
+end
+@enduml

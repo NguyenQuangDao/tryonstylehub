@@ -1,0 +1,32 @@
+@startuml
+title Blog - Quản lý bình luận
+actor User
+actor Moderator
+boundary WebApp
+control Backend
+database DB
+
+User -> WebApp: Tạo bình luận
+WebApp -> Backend: POST /api/blog/comments
+Backend -> Backend: Xác thực & validate
+alt Hợp lệ
+  Backend -> DB: Tạo comment
+  DB --> Backend: Comment
+  Backend --> WebApp: 201
+  WebApp --> User: Đã đăng
+else Không hợp lệ
+  Backend --> WebApp: 400/401
+end
+
+Moderator -> WebApp: Kiểm duyệt/Xoá
+WebApp -> Backend: PATCH/DELETE /api/blog/comments/{id}
+Backend -> Backend: Kiểm tra quyền Moderator
+alt Đủ quyền
+  Backend -> DB: Update/Delete
+  DB --> Backend: Ok
+  Backend --> WebApp: 200
+else Thiếu quyền
+  Backend --> WebApp: 403 Forbidden
+end
+@enduml
+

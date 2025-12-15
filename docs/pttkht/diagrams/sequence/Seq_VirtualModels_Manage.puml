@@ -1,0 +1,83 @@
+@startuml
+title Virtual Models - Manage (List/Create/Update/Delete/SetDefault)
+actor User
+boundary WebApp
+control Backend
+entity S3
+database DB
+
+User -> WebApp: Thao tác quản lý models
+WebApp -> Backend: /api/virtual-models {action, payload}
+Backend -> Backend: Xác thực token
+alt Token hợp lệ
+  alt action == create
+    Backend -> Backend: Validate dữ liệu
+    alt Hợp lệ
+      Backend -> S3: Upload ảnh avatar/source
+      S3 --> Backend: URLs
+      Backend -> DB: Tạo virtual model (gắn userId)
+      DB --> Backend: Model
+      Backend --> WebApp: 201 {model}
+      WebApp --> User: Tạo thành công
+    else Không hợp lệ
+      Backend --> WebApp: 400 Bad Request
+    end
+  else action == update
+    Backend -> Backend: Validate dữ liệu
+    Backend -> DB: Tìm model theo modelId + userId
+    alt Tồn tại
+      alt Có ảnh mới
+        Backend -> S3: Upload ảnh mới
+        S3 --> Backend: URLs mới
+      else Không ảnh mới
+        Backend -> Backend: Giữ URLs cũ
+      end
+      Backend -> DB: Cập nhật model
+      DB --> Backend: Model đã cập nhật
+      Backend --> WebApp: 200 {model}
+      WebApp --> User: Cập nhật thành công
+    else Không tồn tại
+      Backend --> WebApp: 404 Not Found
+    end
+  else action == delete
+    Backend -> Backend: Kiểm tra quyền sở hữu
+    Backend -> DB: Tìm model theo modelId + userId
+    alt Tồn tại
+      Backend -> DB: Xoá model
+      DB --> Backend: Ok
+      alt Cleanup S3?
+        Backend -> S3: Xoá ảnh liên quan
+        S3 --> Backend: Ok
+      else Bỏ qua cleanup
+        Backend -> Backend: Hoàn tất
+      end
+      Backend --> WebApp: 200/204
+      WebApp --> User: Xoá thành công
+    else Không tồn tại
+      Backend --> WebApp: 404 Not Found
+    end
+  else action == setDefault
+    Backend -> Backend: Kiểm tra quyền sở hữu
+    Backend -> DB: Tìm model theo modelId + userId
+    alt Tồn tại
+      Backend -> DB: Unset default các model khác
+      DB --> Backend: Ok
+      Backend -> DB: Set default cho modelId
+      DB --> Backend: Ok
+      Backend --> WebApp: 200 {defaultId}
+      WebApp --> User: Đặt mặc định thành công
+    else Không tồn tại
+      Backend --> WebApp: 404 Not Found
+    end
+  else action == list
+    Backend -> DB: Query danh sách theo userId (phân trang/sort)
+    DB --> Backend: {models}
+    Backend --> WebApp: 200 {models}
+    WebApp --> User: Hiển thị danh sách
+  end
+else Token không hợp lệ
+  Backend --> WebApp: 401 Unauthorized
+  WebApp --> User: Đăng nhập để tiếp tục
+end
+@enduml
+

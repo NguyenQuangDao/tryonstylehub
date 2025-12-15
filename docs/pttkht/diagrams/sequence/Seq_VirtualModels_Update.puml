@@ -1,0 +1,27 @@
+@startuml
+title Virtual Models - Update
+actor User
+boundary WebApp
+control Backend
+entity S3
+database DB
+
+WebApp -> Backend: PUT /api/virtual-models/{id} {data, images?}
+Backend -> Backend: Validate input + quyền
+alt Hợp lệ
+  alt Có ảnh mới
+    Backend -> S3: Upload ảnh avatar/source
+    S3 --> Backend: URLs mới
+  else Không có ảnh
+    Backend -> Backend: Giữ URLs cũ
+  end
+  Backend -> DB: Update bản ghi model
+  DB --> Backend: Model đã cập nhật
+  Backend --> WebApp: 200 {model}
+  WebApp --> User: Cập nhật thành công
+else Không hợp lệ/Thiếu quyền
+  Backend --> WebApp: 400/401/403
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

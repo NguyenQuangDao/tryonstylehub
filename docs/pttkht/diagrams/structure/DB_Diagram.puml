@@ -1,0 +1,234 @@
+@startuml
+title Sơ đồ Database (Bảng và Khóa)
+left to right direction
+
+class User <<table>> {
+  id : String [PK]
+  email : String [UNIQUE]
+  password : String
+  name : String
+  avatarUrl : String?
+  role : UserRole [INDEX]
+  tokenBalance : Int
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Shop <<table>> {
+  id : String [PK]
+  name : String
+  slug : String [UNIQUE, INDEX]
+  logoUrl : String?
+  bannerUrl : String?
+  description : String?
+  status : ShopStatus
+  averageRating : Float
+  totalSales : Int
+  ownerId : String [UNIQUE, FK -> User.id]
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Category <<table>> {
+  id : String [PK]
+  name : String
+  slug : String [UNIQUE, INDEX]
+  imageUrl : String?
+  parentId : String? [FK -> Category.id, INDEX]
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Product <<table>> {
+  id : String [PK]
+  title : String
+  description : String
+  images : Json
+  basePrice : Decimal(10,2)
+  status : ProductStatus
+  shopId : String [FK -> Shop.id, INDEX]
+  categoryId : String [FK -> Category.id, INDEX]
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class ProductVariant <<table>> {
+  id : String [PK]
+  productId : String [FK -> Product.id, INDEX]
+  name : String
+  price : Decimal(10,2)?
+  stock : Int
+  sku : String [UNIQUE]
+  attributes : Json
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Order <<table>> {
+  id : String [PK]
+  buyerId : String [FK -> User.id, INDEX]
+  shopId : String [FK -> Shop.id, INDEX]
+  totalAmount : Decimal(10,2)
+  shippingAddress : Json
+  status : OrderStatus
+  paymentStatus : PaymentStatus
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class OrderItem <<table>> {
+  id : String [PK]
+  orderId : String [FK -> Order.id, INDEX]
+  productId : String [FK -> Product.id, INDEX]
+  productVariantId : String? [FK -> ProductVariant.id, INDEX]
+  quantity : Int
+  price : Decimal(10,2)
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Transaction <<table>> {
+  id : String [PK]
+  userId : String [FK -> User.id, INDEX]
+  amount : Decimal(10,2)
+  type : TransactionType
+  status : TransactionStatus [INDEX]
+  description : String?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class Review <<table>> {
+  id : String [PK]
+  rating : Int
+  comment : String?
+  images : Json
+  userId : String [FK -> User.id, INDEX]
+  productId : String [FK -> Product.id, INDEX]
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class TokenPurchase <<table>> {
+  id : String [PK]
+  userId : String [FK -> User.id, INDEX]
+  stripePaymentId : String [UNIQUE]
+  amount : Decimal(10,2)
+  tokens : Int
+  status : TokenPurchaseStatus
+  createdAt : DateTime
+}
+
+class CostTracking <<table>> {
+  id : String [PK]
+  userId : String?
+  service : String
+  operation : String
+  cost : Int
+  details : String?
+  createdAt : DateTime
+  [INDEX(userId, service)]
+}
+
+class VirtualModel <<table>> {
+  id : String [PK]
+  userId : String? [FK -> User.id, INDEX]
+  sessionId : String? [INDEX]
+  avatarName : String
+  avatarImage : LongText?
+  isPublic : Boolean
+  height : Float
+  weight : Float
+  gender : String
+  hairColor : String
+  hairStyle : String
+  bodyShape : String?
+  skinTone : String?
+  eyeColor : String?
+  faceShape : String?
+  beardStyle : String?
+  tattoos : String?
+  piercings : String?
+  clothingStyle : String?
+  accessories : String?
+  footwearType : String?
+  colorPalette : String?
+  ageAppearance : Int?
+  bodyProportionPreset : String?
+  muscleLevel : Int?
+  fatLevel : Int?
+  shoulderWidth : Float?
+  waistSize : Float?
+  hipSize : Float?
+  legLength : Float?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class BlogPost <<table>> {
+  id : String [PK]
+  authorId : String [FK -> User.id, INDEX]
+  title : String
+  content : LongText
+  media : Json
+  category : String? [INDEX]
+  tags : Json
+  status : BlogPostStatus [INDEX]
+  likesCount : Int
+  savesCount : Int
+  commentsCount : Int
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class BlogComment <<table>> {
+  id : String [PK]
+  postId : String [FK -> BlogPost.id, INDEX]
+  userId : String [FK -> User.id, INDEX]
+  content : LongText
+  media : Json
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+class BlogLike <<table>> {
+  id : String [PK]
+  postId : String [FK -> BlogPost.id]
+  userId : String [FK -> User.id, INDEX]
+  createdAt : DateTime
+  [UNIQUE(postId, userId)]
+}
+
+class BlogSave <<table>> {
+  id : String [PK]
+  postId : String [FK -> BlogPost.id]
+  userId : String [FK -> User.id, INDEX]
+  createdAt : DateTime
+  [UNIQUE(postId, userId)]
+}
+
+User "1" -- "1" Shop : ownerId
+User "1" -- "*" Order : buyerId
+Shop "1" -- "*" Product : shopId
+Shop "1" -- "*" Order : shopId
+Category "1" -- "*" Product : categoryId
+Category "1" -- "*" Category : children
+Product "1" -- "*" ProductVariant : productId
+Product "1" -- "*" Review : productId
+Product "1" -- "*" OrderItem : productId
+Order "1" -- "*" OrderItem : orderId
+ProductVariant "1" -- "*" OrderItem : productVariantId
+User "1" -- "*" Review : userId
+User "1" -- "*" Transaction : userId
+User "1" -- "*" TokenPurchase : userId
+User "1" -- "*" CostTracking : userId
+User "1" -- "*" VirtualModel : userId
+User "1" -- "*" BlogPost : authorId
+BlogPost "1" -- "*" BlogComment : postId
+BlogPost "1" -- "*" BlogLike : postId
+BlogPost "1" -- "*" BlogSave : postId
+User "1" -- "*" BlogComment : userId
+User "1" -- "*" BlogLike : userId
+User "1" -- "*" BlogSave : userId
+
+@enduml

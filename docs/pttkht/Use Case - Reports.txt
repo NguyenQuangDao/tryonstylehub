@@ -1,0 +1,18 @@
+flowchart LR
+
+    subgraph System[Hệ thống TryOnStyleHub]
+        subgraph Reports[Báo cáo - chi tiết]
+            Reports_Sales([Doanh thu])
+            Reports_TryOnUsage([Sử dụng Try-On])
+            Reports_Funnel([Chuyển đổi/funnel])
+            Reports_Sales --> Reports_Funnel
+            Reports_TryOnUsage --> Reports_Funnel
+        end
+    end
+
+    subgraph External[Hệ thống tích hợp]
+        actorAnalytics([Phân tích/Tracking])
+    end
+
+    Reports_Sales -.-> actorAnalytics
+    Reports_TryOnUsage -.-> actorAnalytics

@@ -1,0 +1,57 @@
+Spec: Tải ảnh/Body scan (Upload)
+
+---
+Upload_Image
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Tải ảnh lên hệ thống |
+| Đầu vào | Ảnh JPEG/PNG ≤ 10MB |
+| Xử lý | Xác thực; nén; loại EXIF |
+| Đầu ra | `imageId`, URL nội bộ |
+| Tích hợp ngoài | Không trực tiếp |
+| Ràng buộc | Bảo mật; quy định nội dung |
+| Lỗi | `UPLOAD_FAILED`, `IMAGE_INVALID` |
+| KPI | Tỉ lệ upload; thời gian |
+
+---
+Upload_BGRemove
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Xóa nền ảnh |
+| Đầu vào | `imageId` |
+| Xử lý | Model xóa nền; hậu xử lý |
+| Đầu ra | `imageId` mới (không nền) |
+| Tích hợp ngoài | `actorAI` |
+| Ràng buộc | Chất lượng biên; thời gian xử lý |
+| Lỗi | `BG_REMOVE_FAILED` |
+| KPI | Điểm chất lượng; thời gian |
+
+---
+Upload_BodyScan
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Thu nhận quét cơ thể |
+| Đầu vào | Ảnh/chuỗi ảnh/video; metadata |
+| Xử lý | Trích xuất số đo; tạo mesh (tuỳ) |
+| Đầu ra | Hồ sơ body scan |
+| Tích hợp ngoài | `actorAI` |
+| Ràng buộc | Bảo vệ PII; mã hóa dữ liệu |
+| Lỗi | `BODYSCAN_FAILED` |
+| KPI | Độ chính xác số đo |
+
+---
+Upload_CDNStore
+
+| Mục | Nội dung |
+|---|---|
+| Mục tiêu | Lưu trữ ảnh lên CDN |
+| Đầu vào | Tệp ảnh kết quả |
+| Xử lý | Upload CDN; thiết lập cache/TTL |
+| Đầu ra | URL công khai |
+| Tích hợp ngoài | `actorCDN` |
+| Ràng buộc | Chính sách cache; giới hạn kích thước |
+| Lỗi | `CDN_UPLOAD_FAILED` |
+| KPI | Tỉ lệ upload CDN; độ trễ |

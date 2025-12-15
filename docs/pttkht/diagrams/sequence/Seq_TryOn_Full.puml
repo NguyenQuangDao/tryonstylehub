@@ -1,0 +1,33 @@
+@startuml
+title Try-On Full Pipeline
+actor User
+boundary WebApp
+control Backend
+entity AIService
+entity RenderService
+entity S3
+database DB
+
+User -> WebApp: Upload ảnh
+WebApp -> Backend: /api/tryon/upload
+Backend -> S3: Lưu source
+User -> WebApp: Chọn item/size
+WebApp -> Backend: /api/tryon/select
+Backend -> DB: Kiểm tra hợp lệ
+User -> WebApp: Bấm Try-On
+WebApp -> Backend: /api/tryon/ai
+Backend -> AIService: Tạo job
+AIService --> Backend: jobId
+loop Polling
+  Backend -> AIService: /status
+  AIService --> Backend: state
+end
+Backend -> RenderService: Encode/resize
+RenderService --> Backend: Binary
+Backend -> S3: Upload kết quả
+S3 --> Backend: URLs
+Backend -> DB: Lưu + trừ token
+Backend --> WebApp: 200 {resultUrls}
+WebApp --> User: Hiển thị + Lưu gallery
+@enduml
+

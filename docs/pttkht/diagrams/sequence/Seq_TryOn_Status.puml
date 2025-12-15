@@ -1,0 +1,19 @@
+@startuml
+title Try-On Trạng thái Job
+actor User
+boundary WebApp
+control Backend
+database DB
+
+WebApp -> Backend: GET /api/tryon/status/{jobId}
+Backend -> DB: Truy vấn trạng thái
+alt Tồn tại
+  DB --> Backend: completed/failed/pending
+  Backend --> WebApp: 200 {status}
+  WebApp --> User: Hiển thị trạng thái
+else Không tồn tại
+  Backend --> WebApp: 404 Not Found
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

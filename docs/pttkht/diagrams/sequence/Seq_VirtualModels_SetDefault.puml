@@ -1,0 +1,22 @@
+@startuml
+title Virtual Models - Set Default
+actor User
+boundary WebApp
+control Backend
+database DB
+
+WebApp -> Backend: PATCH /api/virtual-models/{id}/set-default
+Backend -> Backend: Kiểm tra quyền
+alt Đủ quyền
+  Backend -> DB: Unset default các model khác
+  DB --> Backend: Ok
+  Backend -> DB: Set default cho {id}
+  DB --> Backend: Ok
+  Backend --> WebApp: 200 {defaultId}
+  WebApp --> User: Đặt mặc định thành công
+else Thiếu quyền/Không tồn tại
+  Backend --> WebApp: 403/404
+  WebApp --> User: Báo lỗi
+end
+@enduml
+

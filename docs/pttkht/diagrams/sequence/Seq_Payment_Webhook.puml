@@ -1,0 +1,17 @@
+@startuml
+title Webhook Thanh toán
+entity Stripe
+control Backend
+database DB
+
+Stripe -> Backend: POST /api/payment/webhook {event}
+Backend -> Backend: Xác thực chữ ký
+alt Hợp lệ & success
+  Backend -> DB: Tăng tokenBalance, ghi purchase
+  DB --> Backend: Ok
+  Backend --> Stripe: 200 OK
+else Không hợp lệ/failed
+  Backend --> Stripe: 400/422
+end
+@enduml
+

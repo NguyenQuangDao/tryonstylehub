@@ -1,0 +1,35 @@
+Tên Use Case: Đăng nhập
+
+Actors: Khách hàng; Người bán; Quản trị viên
+
+Mô tả: Người dùng xác thực để truy cập hệ thống bằng mật khẩu hoặc OAuth; hỗ trợ 2FA và quên mật khẩu.
+
+Tiền điều kiện: Tài khoản tồn tại và ở trạng thái hoạt động; với OAuth: nhà cung cấp đăng nhập khả dụng; trình duyệt cho phép cookie.
+
+Luồng sự kiện chính:
+1. Người dùng mở trang Đăng nhập.
+2. Nhập email/username và mật khẩu.
+3. Hệ thống kiểm tra định dạng và áp dụng giới hạn tốc độ khi cần.
+4. Hệ thống xác thực thông tin đăng nhập.
+5. Nếu yêu cầu 2FA: hiển thị yêu cầu mã OTP và xác thực mã.
+6. Hệ thống tạo phiên/tokens và thiết lập cookie/bearer token.
+7. Hệ thống điều hướng tới trang đích (Trang chủ/Tài khoản).
+
+Luồng sự kiện phụ:
+A. Đăng nhập OAuth:
+1. Người dùng chọn nhà cung cấp (Google/Facebook/…).
+2. Hệ thống chuyển hướng tới nhà cung cấp để xác thực.
+3. Hệ thống nhận mã ủy quyền, trao đổi lấy thông tin người dùng.
+4. Ánh xạ tài khoản nội bộ và tạo phiên.
+
+B. Quên mật khẩu / Đặt lại:
+1. Người dùng yêu cầu đặt lại mật khẩu.
+2. Hệ thống gửi email chứa liên kết đặt lại.
+3. Người dùng đặt mật khẩu mới theo chính sách.
+4. Đăng nhập lại với mật khẩu mới.
+
+C. Ngoại lệ/Lỗi:
+- Sai thông tin đăng nhập: thông báo lỗi, tăng đếm thất bại.
+- Tài khoản bị khóa/tạm dừng: từ chối, hướng dẫn liên hệ hỗ trợ.
+- Lỗi/timeout OAuth: thông báo và cho phép thử lại.
+- OTP sai/hết hạn: yêu cầu nhập lại, giới hạn số lần.

@@ -1,0 +1,56 @@
+@startuml
+left to right direction
+actor "Khách hàng" as actorUser
+actor "Người bán" as actorSeller
+actor "Quản trị viên" as actorAdmin
+rectangle "Hệ thống TryOnStyleHub" {
+  usecase "Duyệt & Tìm kiếm sản phẩm" as UC_Browse
+  usecase "Thử đồ ảo / Try-On" as UC_TryOn
+  usecase "Tải ảnh/Body scan" as UC_Upload
+  usecase "Gợi ý trang phục" as UC_Recommend
+  usecase "Yêu thích & Theo dõi" as UC_Wishlist
+  usecase "Thanh toán & Đặt hàng" as UC_Checkout
+  usecase "Theo dõi đơn hàng" as UC_Track
+  usecase "Đánh giá & Bình luận" as UC_Review
+  usecase "Quản lý tài khoản" as UC_Account
+  usecase "Đăng nhập/Đăng ký" as UC_Auth
+  usecase "Quản lý sản phẩm" as UC_AdminProduct
+  usecase "Quản lý đơn hàng" as UC_AdminOrder
+  usecase "Quản lý người dùng & phân quyền" as UC_AdminUser
+  usecase "Kiểm duyệt nội dung" as UC_ContentMod
+  usecase "Báo cáo & Phân tích" as UC_Reports
+}
+rectangle "Hệ thống bên ngoài" {
+  actor "Dịch vụ AI Try-On" as actorAI
+  actor "Cổng thanh toán" as actorPayment
+  actor "Kho/Inventory" as actorStore
+  actor "Lưu trữ hình ảnh" as actorCDN
+  actor "Phân tích/Tracking" as actorAnalytics
+}
+actorUser --> UC_Browse
+actorUser --> UC_TryOn
+actorUser --> UC_Upload
+actorUser --> UC_Recommend
+actorUser --> UC_Wishlist
+actorUser --> UC_Checkout
+actorUser --> UC_Track
+actorUser --> UC_Review
+actorUser --> UC_Account
+actorUser --> UC_Auth
+actorSeller --> UC_AdminProduct
+actorSeller --> UC_AdminOrder
+actorSeller --> UC_Reports
+actorAdmin --> UC_AdminProduct
+actorAdmin --> UC_AdminOrder
+actorAdmin --> UC_AdminUser
+actorAdmin --> UC_ContentMod
+actorAdmin --> UC_Reports
+UC_TryOn ..> actorAI
+UC_Recommend ..> actorAI
+UC_Checkout ..> actorPayment
+UC_AdminProduct ..> actorStore
+UC_AdminOrder ..> actorStore
+UC_Upload ..> actorCDN
+UC_TryOn ..> actorCDN
+UC_Reports ..> actorAnalytics
+@enduml

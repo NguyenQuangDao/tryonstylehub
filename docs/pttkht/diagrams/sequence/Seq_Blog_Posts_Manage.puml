@@ -1,0 +1,27 @@
+@startuml
+title Blog - Quản lý bài viết
+actor Author
+actor Admin
+boundary WebApp
+control Backend
+database DB
+
+Author -> WebApp: Tạo/Sửa/Xoá/Xuất bản
+WebApp -> Backend: POST/PUT/DELETE/PATCH /api/blog/posts
+Backend -> Backend: Kiểm tra quyền Author/Admin
+alt Đủ quyền
+  Backend -> DB: Thực hiện CRUD
+  DB --> Backend: Ok
+  Backend --> WebApp: 200/201
+  WebApp --> Author: Thành công
+else Thiếu quyền
+  Backend --> WebApp: 403 Forbidden
+  WebApp --> Author: Báo lỗi
+end
+Admin -> WebApp: Danh sách quản trị
+WebApp -> Backend: GET /api/blog/admin/posts
+Backend -> DB: Query posts
+DB --> Backend: Posts
+Backend --> WebApp: 200 {posts}
+@enduml
+

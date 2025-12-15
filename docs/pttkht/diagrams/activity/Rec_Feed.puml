@@ -1,0 +1,36 @@
+@startuml
+skinparam linetype ortho
+start
+:Parse body bằng Zod: style, wishlistIds, preferredShops, recentStyles;
+if (Hợp lệ?) then (Có)
+  :Tạo cacheKey theo style + prefs;
+  if (Có cache?) then (Có)
+    :200: Trả feed từ cache;
+    end
+  else (Không)
+    :Prisma: tải danh sách sản phẩm + shop;
+    if (Danh mục trống?) then (Có)
+      :500: Danh mục sản phẩm trống;
+      end
+    else (Không)
+      :Enrich: imageUrl chuẩn hoá, presigned S3 nếu cần, styleTags;
+      :Gọi getRecommendedProductIds(style, enrichedProducts);
+      :Chọn sản phẩm theo IDs;
+      :Personalize: boost wishlist/shops/recent styles;
+      if (Có kết quả?) then (Có)
+        :Phân tích phân bố loại sản phẩm;
+        :Đóng gói payload outfit + shops;
+      else (Không)
+        :Fallback semantic: score theo keywords + diversify;
+        :Đóng gói payload outfit + shops;
+      endif
+      :setCache(cacheKey, payload, TTL=5m);
+      :200: Trả về feed;
+      end
+    endif
+  endif
+else (Không)
+  :400: Lỗi validate;
+  end
+endif
+@enduml
