@@ -23,6 +23,6 @@ export default function () {
     'status is 200': (r) => r.status === 200,
   });
 
-  // 3. Nghỉ ngẫu nhiên 1-3 giây giữa các lần click (giả lập hành vi người thật)
+  // 3. Nghỉ ngẫu nhiên 1-3 giây giữa các lần click (giả lập hành vi người dùng thật)
   sleep(Math.random() * 2 + 1);
 }
