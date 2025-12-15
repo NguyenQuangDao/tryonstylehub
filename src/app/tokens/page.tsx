@@ -232,7 +232,7 @@ export default function TokenPurchasePage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
-                    <p className="text-sm text-muted-foreground">Loading...</p>
+                    <p className="text-sm text-muted-foreground">Đang tải...</p>
                 </div>
             </div>
         )
@@ -243,12 +243,12 @@ export default function TokenPurchasePage() {
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex items-start justify-between mb-6">
                     <div>
-                        <div className="text-xl font-semibold">Refill Balance</div>
-                        <div className="text-sm text-muted-foreground">Choose a package to continue using AI features</div>
+                        <div className="text-xl font-semibold">Nạp số dư</div>
+                        <div className="text-sm text-muted-foreground">Chọn gói để tiếp tục sử dụng các tính năng AI</div>
                     </div>
                     <div className="flex items-center gap-2 border rounded-md px-3 py-2">
                         <Coins className="size-4 text-yellow-500" />
-                        <div className="text-sm font-medium">Available: {currentBalance.toLocaleString()} Credits</div>
+                        <div className="text-sm font-medium">Hiện có: {currentBalance.toLocaleString()} Token</div>
                     </div>
                 </div>
 
@@ -259,7 +259,7 @@ export default function TokenPurchasePage() {
                 )}
                 {success && (
                     <div className="mb-4 text-sm text-green-700 bg-green-100 border border-green-200 rounded-md px-3 py-2">
-                        Payment succeeded. Credits added.
+                        Thanh toán thành công. Đã cộng token.
                     </div>
                 )}
 
@@ -274,11 +274,11 @@ export default function TokenPurchasePage() {
                                     className={`border border-border rounded-xl bg-card p-5 cursor-pointer transition-all ${selected ? 'border-primary bg-primary/5' : 'hover:bg-muted'} relative`}
                                 >
                                     {pkg.featured && (
-                                        <Badge className="absolute top-3 right-3 h-5 text-[10px] rounded-full" variant="default">Popular</Badge>
+                                        <Badge className="absolute top-3 right-3 h-5 text-[10px] rounded-full" variant="default">Phổ biến</Badge>
                                     )}
                                     <div className="flex items-baseline justify-between mb-3">
                                         <div className="text-2xl font-bold tracking-tight">{pkg.tokens}</div>
-                                        <div className="text-sm text-muted-foreground ml-2">Credits</div>
+                                        <div className="text-sm text-muted-foreground ml-2">Token</div>
                                     </div>
                                     <div className="mb-3">
                                         <span className="text-lg font-semibold">
@@ -292,13 +292,13 @@ export default function TokenPurchasePage() {
                                     </div>
                                     <Separator className="my-3" />
                                     <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> No expiry</div>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Priority support</div>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Fast processing</div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Không hết hạn</div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Hỗ trợ ưu tiên</div>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3" /> Xử lý nhanh chóng</div>
                                     </div>
                                     <div className="mt-4">
                                         <Button variant={selected ? 'default' : 'outline'} size="sm" className="w-full h-8" onClick={() => setSelectedPackage(pkg.id)}>
-                                            {selected ? 'Selected' : 'Select'}
+                                            {selected ? 'Đã chọn' : 'Chọn'}
                                         </Button>
                                     </div>
                                 </div>
@@ -310,14 +310,14 @@ export default function TokenPurchasePage() {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="text-base font-bold">
-                                    Total: {(() => {
+                                    Tổng cộng: {(() => {
                                         const pkg = packages.find(p => p.id === selectedPackage)
                                         if (!pkg) return '$0.00'
                                         return pkg.currency === 'VND' ? `${pkg.price.toLocaleString('vi-VN')}₫` : `$${pkg.price.toFixed(2)}`
                                     })()}
                                 </div>
                                 <Button className="h-9 px-6" onClick={handlePurchase} disabled={processing || !selectedPackage || !selectedPaymentMethod}>
-                                    {processing ? 'Processing...' : 'Confirm Payment with PayPal'}
+                                    {processing ? 'Đang xử lý...' : 'Xác nhận thanh toán qua PayPal'}
                                 </Button>
                             </div>
                         </div>
