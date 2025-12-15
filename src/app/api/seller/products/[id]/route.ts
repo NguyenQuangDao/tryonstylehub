@@ -55,7 +55,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     });
   } catch (error) {
     console.error('Get product error:', error);
-    return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Có lỗi xảy ra',
+        details: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -122,7 +128,13 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: 'Dữ liệu không hợp lệ', details: error.errors }, { status: 400 });
     }
     console.error('Update product error:', error);
-    return NextResponse.json({ error: 'Có lỗi xảy ra khi cập nhật sản phẩm' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Có lỗi xảy ra khi cập nhật sản phẩm',
+        details: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -156,6 +168,12 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
     return NextResponse.json({ message: 'Xóa sản phẩm thành công' });
   } catch (error) {
     console.error('Delete product error:', error);
-    return NextResponse.json({ error: 'Có lỗi xảy ra khi xóa sản phẩm' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Có lỗi xảy ra khi xóa sản phẩm',
+        details: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   }
 }
