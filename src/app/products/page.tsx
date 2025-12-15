@@ -314,12 +314,12 @@ export default function ProductsPage() {
                           target={p.shop.url.startsWith('http') ? "_blank" : undefined}
                           rel={p.shop.url.startsWith('http') ? "noopener noreferrer" : undefined}
                         >
-                          Xem
+                          Mua
                         </Link>
                       </Button>
                     ) : (
                       <Button variant="outline" size="sm" className="w-full" disabled>
-                        Xem Shop
+                        Mua
                       </Button>
                     )}
                     <Button asChild size="sm" className="w-full">
