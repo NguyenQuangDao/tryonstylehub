@@ -42,7 +42,7 @@ export default function TokenPurchasePage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [currentBalance, setCurrentBalance] = useState<number>(0)
-
+// URLSearchParams
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
         const payment = params.get('payment')
